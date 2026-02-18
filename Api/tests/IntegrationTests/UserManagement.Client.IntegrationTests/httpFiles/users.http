@@ -1,0 +1,184 @@
+### User Management Endpoints Testing
+@baseUrl = http://localhost:7071/api
+@contentType = application/json
+
+### Set these after logging in
+@accessToken = YOUR_ACCESS_TOKEN_HERE
+@userId = YOUR_USER_ID_HERE
+
+###############################################################################
+# 1. Get User By ID - Valid User
+###############################################################################
+
+GET {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# 2. Get User By ID - Invalid ID (Should fail with 404 Not Found)
+###############################################################################
+
+GET {{baseUrl}}/users/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# 3. Get User By ID - No Auth Token (Should fail with 401)
+###############################################################################
+
+GET {{baseUrl}}/users/{{userId}}
+
+###############################################################################
+# 4. Get All Users
+###############################################################################
+
+GET {{baseUrl}}/users
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# 5. Update User - Valid Update
+###############################################################################
+
+PUT {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Updated",
+  "lastName": "Name"
+}
+
+###############################################################################
+# 6. Update User - Partial Update (First Name Only)
+###############################################################################
+
+PUT {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "firstName": "NewFirstName",
+  "lastName": null
+}
+
+###############################################################################
+# 7. Update User - Partial Update (Last Name Only)
+###############################################################################
+
+PUT {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "firstName": null,
+  "lastName": "NewLastName"
+}
+
+###############################################################################
+# 8. Update User - Empty Request (Should be OK - no changes)
+###############################################################################
+
+PUT {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "firstName": null,
+  "lastName": null
+}
+
+###############################################################################
+# 9. Update User - Name Too Long (Should fail with 400)
+###############################################################################
+
+PUT {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "firstName": "ThisIsAVeryLongFirstNameThatExceedsTheMaximumAllowedLengthOf100CharactersAndShouldFailValidationCheck",
+  "lastName": "Smith"
+}
+
+###############################################################################
+# 10. Update User - Invalid User ID (Should fail with 404)
+###############################################################################
+
+PUT {{baseUrl}}/users/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Updated",
+  "lastName": "Name"
+}
+
+###############################################################################
+# 11. Delete User - Valid User ID
+###############################################################################
+
+DELETE {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# 12. Delete User - Invalid User ID (Should fail with 404)
+###############################################################################
+
+DELETE {{baseUrl}}/users/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# 13. Delete User - No Auth Token (Should fail with 401)
+###############################################################################
+
+DELETE {{baseUrl}}/users/{{userId}}
+
+###############################################################################
+# Complete User Workflow Test
+###############################################################################
+
+### Step 1: Register New User for Testing
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "workflow.test@example.com",
+  "password": "WorkflowPass123!",
+  "confirmPassword": "WorkflowPass123!",
+  "firstName": "Workflow",
+  "lastName": "Test"
+}
+
+### Step 2: Login to Get Token
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "workflow.test@example.com",
+  "password": "WorkflowPass123!"
+}
+
+### Step 3: Get User Details (use token and userId from Step 2)
+# GET {{baseUrl}}/users/{userId-from-step-2}
+# Authorization: Bearer {token-from-step-2}
+
+### Step 4: Update User
+# PUT {{baseUrl}}/users/{userId-from-step-2}
+# Authorization: Bearer {token-from-step-2}
+# Content-Type: {{contentType}}
+#
+# {
+#   "firstName": "Updated Workflow",
+#   "lastName": "Updated Test"
+# }
+
+
+### Step 5: Verify Update
+# GET {{baseUrl}}/users/{userId-from-step-2}
+# Authorization: Bearer {token-from-step-2}
+
+### Step 6: Delete User
+# DELETE {{baseUrl}}/users/{userId-from-step-2}
+# Authorization: Bearer {token-from-step-2}
+
+### Step 7: Verify Deletion (Should fail with 404)
+# GET {{baseUrl}}/users/{userId-from-step-2}
+# Authorization: Bearer {token-from-step-2}

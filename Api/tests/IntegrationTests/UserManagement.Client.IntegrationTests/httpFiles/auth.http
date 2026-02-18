@@ -1,0 +1,173 @@
+### Authentication Endpoints Testing
+@baseUrl = http://localhost:7071/api
+@contentType = application/json
+
+### Variables (will be set from responses)
+@accessToken =
+@refreshToken =
+@userId =
+
+###############################################################################
+# 1. Register New User
+###############################################################################
+
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "testuser@example.com",
+  "password": "Password123!",
+  "confirmPassword": "Password123!",
+  "firstName": "Test",
+  "lastName": "User"
+}
+
+###############################################################################
+# 2. Register - Duplicate Email (Should fail with 409 Conflict)
+###############################################################################
+
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "testuser@example.com",
+  "password": "Password123!",
+  "confirmPassword": "Password123!",
+  "firstName": "Test",
+  "lastName": "User"
+}
+
+###############################################################################
+# 3. Register - Password Mismatch (Should fail with 400 Bad Request)
+###############################################################################
+
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "another@example.com",
+  "password": "Password123!",
+  "confirmPassword": "DifferentPassword123!",
+  "firstName": "Another",
+  "lastName": "User"
+}
+
+###############################################################################
+# 4. Register - Weak Password (Should fail with 400 Bad Request)
+###############################################################################
+
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "weakpass@example.com",
+  "password": "weak",
+  "confirmPassword": "weak",
+  "firstName": "Weak",
+  "lastName": "Password"
+}
+
+###############################################################################
+# 5. Register - Invalid Email (Should fail with 400 Bad Request)
+###############################################################################
+
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "not-an-email",
+  "password": "Password123!",
+  "confirmPassword": "Password123!",
+  "firstName": "Invalid",
+  "lastName": "Email"
+}
+
+###############################################################################
+# 6. Login - Valid Credentials
+###############################################################################
+
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "testuser@example.com",
+  "password": "Password123!"
+}
+
+### Save the accessToken and refreshToken from response for later use
+
+###############################################################################
+# 7. Login - Invalid Email (Should fail with 401 Unauthorized)
+###############################################################################
+
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "nonexistent@example.com",
+  "password": "Password123!"
+}
+
+###############################################################################
+# 8. Login - Invalid Password (Should fail with 401 Unauthorized)
+###############################################################################
+
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "testuser@example.com",
+  "password": "WrongPassword123!"
+}
+
+###############################################################################
+# 9. Refresh Token - Valid Tokens
+###############################################################################
+
+POST {{baseUrl}}/auth/refresh
+Content-Type: {{contentType}}
+
+{
+  "accessToken": "{{accessToken}}",
+  "refreshToken": "{{refreshToken}}"
+}
+
+###############################################################################
+# 10. Refresh Token - Invalid Refresh Token (Should fail with 401)
+###############################################################################
+
+POST {{baseUrl}}/auth/refresh
+Content-Type: {{contentType}}
+
+{
+  "accessToken": "{{accessToken}}",
+  "refreshToken": "invalid-refresh-token"
+}
+
+###############################################################################
+# Test User for Subsequent Tests
+###############################################################################
+
+### Register Admin User
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@example.com",
+  "password": "AdminPass123!",
+  "confirmPassword": "AdminPass123!",
+  "firstName": "Admin",
+  "lastName": "User"
+}
+
+### Register Regular User
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "user@example.com",
+  "password": "UserPass123!",
+  "confirmPassword": "UserPass123!",
+  "firstName": "Regular",
+  "lastName": "User"
+}

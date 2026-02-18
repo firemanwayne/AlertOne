@@ -1,0 +1,340 @@
+@namespace Domains.AlertManagement
+
+@inject IAlertService AlertService
+@inject IAlertTypeService AlertTypeService
+@inject IAlertStatusLevelService AlertStatusLevelService
+@inject AppState AppState
+
+<div class="alert-panel">
+    @if (_isLoading)
+    {
+        <div class="d-flex align-items-center gap-2 text-muted">
+            <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <span>Loading alerts...</span>
+        </div>
+    }
+    else if (_activeAlert != null)
+    {
+        <div class="card border-2" style="border-color: @_activeAlert.Type.Color !important;">
+            <div class="card-header d-flex justify-content-between align-items-center"
+                 style="background-color: @_activeAlert.Type.Color; color: #fff;">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="fw-bold fs-5">⚠ ACTIVE ALERT</span>
+                    <span class="badge"
+                          style="background-color: @_activeAlert.StatusLevel.Color; color: #fff;">
+                        @_activeAlert.StatusLevel.Name
+                    </span>
+                </div>
+                @if (_isManager)
+                {
+                    <button class="btn btn-light btn-sm fw-semibold"
+                            @onclick="@HandleRescindAsync"
+                            disabled="@_isSubmitting">
+                        @if (_isSubmitting)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                        }
+                        Rescind Alert
+                    </button>
+                }
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <p class="mb-1 fw-semibold">@_activeAlert.Type.Name</p>
+                        <p class="mb-0 text-muted small">@_activeAlert.Type.Description</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <p class="mb-1 small text-muted">
+                            Activated by <strong>@_activeAlert.CreatedBy</strong>
+                        </p>
+                        <p class="mb-0 small text-muted">
+                            @_activeAlert.CreatedAt.ToString("MMM d, yyyy h:mm tt")
+                        </p>
+                    </div>
+                </div>
+            </div>
+            @if (!_isManager)
+            {
+                <div class="card-footer text-muted small">
+                    Only managers can rescind this alert.
+                </div>
+            }
+        </div>
+    }
+    else if (_showActivateForm)
+    {
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Activate Alert</h5>
+                <button type="button" class="btn-close" @onclick="@CancelActivate" aria-label="Cancel"></button>
+            </div>
+            <div class="card-body">
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <div class="alert alert-danger" role="alert">@_errorMessage</div>
+                }
+
+                <EditForm Model="@_activateModel" OnValidSubmit="@HandleActivateAsync">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="text-danger" />
+
+                    <div class="mb-3">
+                        <label for="alertType" class="form-label fw-semibold">Alert Type</label>
+                        <InputSelect id="alertType" @bind-Value="_activateModel.TypeId" class="form-select">
+                            <option value="@Guid.Empty">— Select a type —</option>
+                            @foreach (var type in _alertTypes)
+                            {
+                                <option value="@type.Id">@type.Name</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => _activateModel.TypeId)" />
+                        @if (_activateModel.TypeId != Guid.Empty)
+                        {
+                            var selected = _alertTypes.FirstOrDefault(t => t.Id == _activateModel.TypeId.ToString());
+                            if (selected != null)
+                            {
+                                <div class="mt-2 p-2 rounded small"
+                                     style="background-color: @selected.Color + "22"; border-left: 4px solid @selected.Color;">
+                                    @selected.Description
+                                </div>
+                            }
+                        }
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="statusLevel" class="form-label fw-semibold">Status Level</label>
+                        <InputSelect id="statusLevel" @bind-Value="_activateModel.StatusLevelId" class="form-select">
+                            <option value="@Guid.Empty">— Select a status level —</option>
+                            @foreach (var level in _statusLevels)
+                            {
+                                <option value="@level.Id">@level.Name</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => _activateModel.StatusLevelId)" />
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger fw-semibold"
+                                disabled="@_isSubmitting">
+                            @if (_isSubmitting)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                <span>Activating...</span>
+                            }
+                            else
+                            {
+                                <span>Activate Alert</span>
+                            }
+                        </button>
+                        <button type="button" class="btn btn-secondary"
+                                @onclick="@CancelActivate"
+                                disabled="@_isSubmitting">
+                            Cancel
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center gap-2 text-success">
+                <span>✓</span>
+                <span class="small">No active alerts</span>
+            </div>
+            <button class="btn btn-danger btn-sm fw-semibold" @onclick="@ShowActivateForm">
+                Activate Alert
+            </button>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(_successMessage))
+    {
+        <div class="alert alert-success mt-2 mb-0 py-2 small" role="alert">
+            @_successMessage
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback OnAlertChanged { get; set; }
+
+    private AlertViewModel? _activeAlert;
+    private List<AlertTypeViewModel> _alertTypes = new();
+    private List<AlertStatusLevelViewModel> _statusLevels = new();
+    private bool _isLoading = true;
+    private bool _isSubmitting = false;
+    private bool _showActivateForm = false;
+    private string? _errorMessage;
+    private string? _successMessage;
+
+    private bool _isManager =>
+        AppState.CurrentUser?.Roles.Contains("Manager", StringComparer.OrdinalIgnoreCase) == true;
+
+    private ActivateModel _activateModel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _isLoading = true;
+
+        try
+        {
+            var alertsTask = AlertService.GetAllAsync();
+            var typesTask = AlertTypeService.GetAllAsync();
+            var levelsTask = AlertStatusLevelService.GetAllAsync();
+
+            await Task.WhenAll(alertsTask, typesTask, levelsTask);
+
+            if (alertsTask.Result.IsSuccess)
+            {
+                _activeAlert = alertsTask.Result.Value
+                    .Where(a => a.IsActive)
+                    .OrderByDescending(a => a.CreatedAt)
+                    .Select(AlertViewModel.FromResponse)
+                    .FirstOrDefault();
+            }
+
+            if (typesTask.Result.IsSuccess)
+            {
+                _alertTypes = typesTask.Result.Value
+                    .Select(AlertTypeViewModel.FromResponse)
+                    .ToList();
+            }
+
+            if (levelsTask.Result.IsSuccess)
+            {
+                _statusLevels = levelsTask.Result.Value
+                    .Select(AlertStatusLevelViewModel.FromResponse)
+                    .ToList();
+            }
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void ShowActivateForm()
+    {
+        _activateModel = new ActivateModel();
+        _errorMessage = null;
+        _successMessage = null;
+        _showActivateForm = true;
+    }
+
+    private void CancelActivate()
+    {
+        _showActivateForm = false;
+        _errorMessage = null;
+    }
+
+    private async Task HandleActivateAsync()
+    {
+        _isSubmitting = true;
+        _errorMessage = null;
+
+        try
+        {
+            var request = new CreateAlertRequest(
+                _activateModel.TypeId,
+                _activateModel.StatusLevelId,
+                AppState.CurrentUser?.Email ?? string.Empty);
+            var result = await AlertService.CreateAsync(request);
+
+            if (result.IsSuccess)
+            {
+                _activeAlert = AlertViewModel.FromResponse(result.Value);
+                _showActivateForm = false;
+                _successMessage = "Alert activated successfully.";
+                await OnAlertChanged.InvokeAsync();
+            }
+            else
+            {
+                _errorMessage = result.Error?.Message ?? "Failed to activate alert.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private async Task HandleRescindAsync()
+    {
+        if (_activeAlert == null)
+        {
+            return;
+        }
+
+        _isSubmitting = true;
+        _successMessage = null;
+
+        try
+        {
+            var rescindRequest = new RescindAlertRequest(AppState.CurrentUser?.Email ?? string.Empty);
+            var result = await AlertService.RescindAsync(Guid.Parse(_activeAlert.Id), rescindRequest);
+
+            if (result.IsSuccess)
+            {
+                _activeAlert = null;
+                _successMessage = "Alert rescinded successfully.";
+                await OnAlertChanged.InvokeAsync();
+            }
+            else
+            {
+                _errorMessage = result.Error?.Message ?? "Failed to rescind alert.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    public async Task RefreshAsync()
+    {
+        await LoadAsync();
+    }
+
+    private sealed class ActivateModel
+    {
+        [Required(ErrorMessage = "Please select an alert type.")]
+        [NotEmptyGuid(ErrorMessage = "Please select an alert type.")]
+        public Guid TypeId { get; set; }
+
+        [Required(ErrorMessage = "Please select a status level.")]
+        [NotEmptyGuid(ErrorMessage = "Please select a status level.")]
+        public Guid StatusLevelId { get; set; }
+    }
+
+    private sealed class NotEmptyGuidAttribute : ValidationAttribute
+    {
+        protected override ValidationResult? IsValid(object? value, ValidationContext context)
+        {
+            if (value is Guid g && g == Guid.Empty)
+            {
+                return new ValidationResult(ErrorMessage);
+            }
+
+            return ValidationResult.Success;
+        }
+    }
+}

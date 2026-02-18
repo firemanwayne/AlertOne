@@ -1,0 +1,85 @@
+@page "/alerts/types/edit/{id}"
+@attribute [Authorize]
+
+@inject IAlertTypeService AlertTypeService
+@inject NavigationManager Navigation
+
+<div class="container-fluid mt-4">
+    <div class="mb-3">
+        <button class="btn btn-secondary" @onclick="@HandleBack">
+            ← Back to Alert Types
+        </button>
+    </div>
+
+    @if (_isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading alert type...</p>
+        </div>
+    }
+    else if (_alertType == null)
+    {
+        <div class="alert alert-danger">
+            <h5>Alert Type Not Found</h5>
+            <p>The requested alert type could not be found.</p>
+            <button class="btn btn-primary" @onclick="@HandleBack">Back to List</button>
+        </div>
+    }
+    else
+    {
+        <AlertTypeForm AlertType="@_alertType"
+                       OnSaveSuccess="@HandleSaveSuccess"
+                       OnCancelClicked="@HandleBack" />
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string Id { get; set; } = string.Empty;
+
+    private AlertTypeViewModel? _alertType;
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!string.IsNullOrEmpty(Id))
+        {
+            await LoadAsync();
+        }
+    }
+
+    private async Task LoadAsync()
+    {
+        _isLoading = true;
+
+        if (Guid.TryParse(Id, out var id))
+        {
+            var result = await AlertTypeService.GetByIdAsync(id);
+            _alertType = result.IsSuccess ? AlertTypeViewModel.FromResponse(result.Value) : null;
+        }
+        else
+        {
+            _alertType = null;
+        }
+
+        _isLoading = false;
+    }
+
+    private void HandleSaveSuccess()
+    {
+        Navigation.NavigateTo("/alerts/types");
+    }
+
+    private void HandleBack()
+    {
+        Navigation.NavigateTo("/alerts/types");
+    }
+}

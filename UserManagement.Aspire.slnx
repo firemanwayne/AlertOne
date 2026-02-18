@@ -1,0 +1,51 @@
+<Solution>
+  <Folder Name="/Api/" />
+  <Folder Name="/Api/src/" />
+  <Folder Name="/Api/src/alerts/">
+    <Project Path="Api/alerts/src/AlertManagement.Client/AlertManagement.Client.csproj" />
+    <Project Path="Api/alerts/src/AlertManagement.Core/AlertManagement.Core.csproj" />
+    <Project Path="Api/alerts/src/AlertManagement.Infrastructure/AlertManagement.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/Api/src/usrm/">
+    <Project Path="Api/src/UserManagement.Client/UserManagement.Client.csproj" />
+    <Project Path="Api/src/UserManagement.Core/UserManagement.Core.csproj" />
+    <Project Path="Api/src/UserManagement.Infrastructure/UserManagement.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/Api/tests/" />
+  <Folder Name="/Api/tests/IntegrationTests/">
+    <Project Path="Api/tests/IntegrationTests/UserManagement.Client.IntegrationTests/UserManagement.Client.IntegrationTests.csproj" />
+  </Folder>
+  <Folder Name="/Api/tests/UnitTests/">
+    <Project Path="Api/tests/UnitTests/UserManagement.Client.Tests/UserManagement.Client.Tests.csproj" />
+    <Project Path="Api/tests/UnitTests/UserManagement.Core.Tests/UserManagement.Core.Tests.csproj" />
+    <Project Path="Api/tests/UnitTests/UserManagement.Infrastructure.Tests/UserManagement.Infrastructure.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Aspire/">
+    <Project Path="Aspire/UserManagement.AppHost/UserManagement.AppHost.csproj" />
+    <Project Path="Aspire/UserManagement.ServiceDefaults/UserManagement.ServiceDefaults.csproj" />
+    <Project Path="UserManagement.ServiceDefaults.Maui/UserManagement.ServiceDefaults.Maui.csproj" />
+  </Folder>
+  <Folder Name="/Client/" />
+  <Folder Name="/Client/src/" />
+  <Folder Name="/Client/src/Core/">
+    <Project Path="Client/src/Core/UserManagementApps.Core.csproj" />
+  </Folder>
+  <Folder Name="/Client/src/Domains/">
+    <Project Path="Client/src/Domains/Domains.UserManagement/Domains.UserManagement.csproj" />
+    <Project Path="Domains.AlertManagement/Domains.AlertManagement.csproj" />
+  </Folder>
+  <Folder Name="/Client/src/Maui/">
+    <Project Path="Client/src/Maui/UserManagementApps.Maui.csproj">
+      <Deploy Solution="Debug|*" />
+    </Project>
+  </Folder>
+  <Folder Name="/Client/src/Shared/">
+    <Project Path="Client/src/Shared/UserManagementApps.Shared.csproj" />
+  </Folder>
+  <Folder Name="/Client/src/Web/">
+    <Project Path="Client/src/Web/UserManagementApps.Web.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Packages.props" />
+  </Folder>
+</Solution>

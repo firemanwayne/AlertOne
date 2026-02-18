@@ -1,0 +1,156 @@
+@namespace Domains.UserManagement.Forms
+
+@inject IUserManagementService UserService
+
+<div class="card">
+    <div class="card-header">
+        <h3>Edit User</h3>
+    </div>
+    <div class="card-body">
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <div class="alert alert-danger" role="alert">
+                @_errorMessage
+            </div>
+        }
+
+        @if (_successMessage != null)
+        {
+            <div class="alert alert-success" role="alert">
+                @_successMessage
+            </div>
+        }
+
+        <EditForm Model="@_editModel" OnValidSubmit="@HandleUpdateAsync">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="text" class="form-control" value="@User?.Email" disabled readonly />
+                <small class="form-text text-muted">Email cannot be changed</small>
+            </div>
+
+            <div class="mb-3">
+                <label for="firstName" class="form-label">First Name</label>
+                <InputText id="firstName" @bind-Value="_editModel.FirstName" class="form-control" />
+                <ValidationMessage For="@(() => _editModel.FirstName)" />
+            </div>
+
+            <div class="mb-3">
+                <label for="lastName" class="form-label">Last Name</label>
+                <InputText id="lastName" @bind-Value="_editModel.LastName" class="form-control" />
+                <ValidationMessage For="@(() => _editModel.LastName)" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Roles</label>
+                <div>
+                    @if (User?.Roles != null)
+                    {
+                        @foreach (var role in User.Roles)
+                        {
+                            <span class="badge bg-primary me-1">@role</span>
+                        }
+                    }
+                </div>
+                <small class="form-text text-muted">Use role management to change user roles</small>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary" disabled="@_isLoading">
+                    @if (_isLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        <span>Saving...</span>
+                    }
+                    else
+                    {
+                        <span>Save Changes</span>
+                    }
+                </button>
+                <button type="button" class="btn btn-secondary" @onclick="@OnCancelClicked" disabled="@_isLoading">
+                    Cancel
+                </button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public UserResponse? User { get; set; }
+
+    [Parameter]
+    public EventCallback OnSaveSuccess { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancelClicked { get; set; }
+
+    private EditModel _editModel = new();
+    private bool _isLoading = false;
+    private string? _errorMessage;
+    private string? _successMessage;
+
+    protected override void OnParametersSet()
+    {
+        if (User != null)
+        {
+            _editModel = new EditModel
+            {
+                FirstName = User.FirstName,
+                LastName = User.LastName
+            };
+        }
+    }
+
+    private async Task HandleUpdateAsync()
+    {
+        if (User == null)
+        {
+            return;
+        }
+
+        _isLoading = true;
+        _errorMessage = null;
+        _successMessage = null;
+
+        try
+        {
+            var request = new UpdateUserRequest(
+                _editModel.FirstName,
+                _editModel.LastName
+            );
+
+            var result = await UserService.UpdateUserAsync(User.Id, request);
+
+            if (result.IsSuccess)
+            {
+                _successMessage = "User updated successfully!";
+                await Task.Delay(1000);
+                await OnSaveSuccess.InvokeAsync();
+            }
+            else
+            {
+                _errorMessage = result.Error?.Message ?? "Update failed. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private class EditModel
+    {
+        [Required(ErrorMessage = "First name is required")]
+        public string FirstName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Last name is required")]
+        public string LastName { get; set; } = string.Empty;
+    }
+}

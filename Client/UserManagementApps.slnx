@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/UserManagementApps.Core/UserManagementApps.Core.csproj" />
+    <Project Path="src/UserManagementApps.Maui/UserManagementApps.Maui.csproj" />
+    <Project Path="src/UserManagementApps.Shared/UserManagementApps.Shared.csproj" />
+    <Project Path="src/UserManagementApps.Web/UserManagementApps.Web.csproj" />
+  </Folder>
+  <Folder Name="/src/Domains/">
+    <Project Path="src/Domains/Domains.UserManagement/Domains.UserManagement.csproj" />
+  </Folder>
+</Solution>

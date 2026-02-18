@@ -1,0 +1,60 @@
+@page "/users"
+@attribute [Authorize]
+
+@inject IUserManagementService UserService
+@inject NavigationManager Navigation
+
+<div class="container-fluid mt-4">
+    <h2 class="mb-4">User Management</h2>
+
+    <UserList @ref="_userListRef"
+              OnEdit="@HandleEditUser"
+              OnDelete="@HandleDeleteUser" />
+
+    @if (!string.IsNullOrEmpty(_statusMessage))
+    {
+        <div class="alert alert-info mt-3" role="alert">
+            @_statusMessage
+        </div>
+    }
+</div>
+
+@code {
+    private UserList? _userListRef;
+    private string? _statusMessage;
+
+    private void HandleEditUser(UserResponse user)
+    {
+        Navigation.NavigateTo($"/users/edit/{user.Id}");
+    }
+
+    private async Task HandleDeleteUser(UserResponse user)
+    {
+        if (await ConfirmDeleteAsync(user))
+        {
+            _statusMessage = $"Deleting user {user.Email}...";
+
+            var result = await UserService.DeleteUserAsync(user.Id);
+
+            if (result.IsSuccess)
+            {
+                _statusMessage = $"User {user.Email} deleted successfully";
+                if (_userListRef != null)
+                {
+                    await _userListRef.RefreshAsync();
+                }
+            }
+            else
+            {
+                _statusMessage = $"Failed to delete user: {result.Error?.Message}";
+            }
+        }
+    }
+
+    private Task<bool> ConfirmDeleteAsync(UserResponse user)
+    {
+        // In a production app, show a proper confirmation dialog
+        // For now, we'll just confirm
+        return Task.FromResult(true);
+    }
+}

@@ -1,0 +1,149 @@
+@namespace Domains.AlertManagement.Lists
+
+@inject IAlertTypeService AlertTypeService
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="mb-0">Alert Types</h3>
+        <button class="btn btn-outline-secondary btn-sm" @onclick="@LoadAsync">
+            Refresh
+        </button>
+    </div>
+    <div class="card-body">
+        @if (_isLoading)
+        {
+            <div class="text-center py-5">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Loading alert types...</p>
+            </div>
+        }
+        else if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <div class="alert alert-danger" role="alert">@_errorMessage</div>
+        }
+        else if (!_types.Any())
+        {
+            <div class="alert alert-info" role="alert">No alert types defined.</div>
+        }
+        else
+        {
+            <div class="mb-3">
+                <input type="text" class="form-control" placeholder="Search by name..."
+                       @bind="_searchTerm" @bind:event="oninput" />
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Color</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Notify Users</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var type in FilteredTypes)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="d-inline-block rounded"
+                                          style="width:28px;height:28px;background-color:@type.Color;"
+                                          title="@type.Color"></span>
+                                </td>
+                                <td class="fw-semibold">@type.Name</td>
+                                <td class="text-muted">@type.Description</td>
+                                <td>
+                                    <span class="badge bg-secondary">@type.NotifyUserIds.Count user(s)</span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary me-1"
+                                            @onclick="@(() => OnEdit.InvokeAsync(type))">
+                                        Edit
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger"
+                                            @onclick="@(() => OnDelete.InvokeAsync(type))">
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-muted small mt-2">
+                Showing @FilteredTypes.Count() of @_types.Count alert types
+            </p>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback<AlertTypeViewModel> OnEdit { get; set; }
+
+    [Parameter]
+    public EventCallback<AlertTypeViewModel> OnDelete { get; set; }
+
+    private List<AlertTypeViewModel> _types = new();
+    private bool _isLoading = false;
+    private string? _errorMessage;
+    private string _searchTerm = string.Empty;
+
+    private IEnumerable<AlertTypeViewModel> FilteredTypes
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(_searchTerm))
+            {
+                return _types;
+            }
+
+            var term = _searchTerm.ToLowerInvariant();
+            return _types.Where(t => t.Name.ToLowerInvariant().Contains(term));
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _isLoading = true;
+        _errorMessage = null;
+
+        try
+        {
+            var result = await AlertTypeService.GetAllAsync();
+
+            if (result.IsSuccess)
+            {
+                _types = result.Value
+                    .Select(AlertTypeViewModel.FromResponse)
+                    .ToList();
+            }
+            else
+            {
+                _errorMessage = result.Error?.Message ?? "Failed to load alert types.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    public async Task RefreshAsync()
+    {
+        await LoadAsync();
+    }
+}

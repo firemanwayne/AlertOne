@@ -1,0 +1,366 @@
+### Role Management Endpoints Testing
+@baseUrl = http://localhost:7071/api
+@contentType = application/json
+
+### Set these after logging in as admin
+@accessToken = YOUR_ACCESS_TOKEN_HERE
+@roleId = YOUR_ROLE_ID_HERE
+@userId = YOUR_USER_ID_HERE
+
+###############################################################################
+# 1. Get All Roles
+###############################################################################
+
+GET {{baseUrl}}/roles
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# 2. Create New Role - Valid
+###############################################################################
+
+POST {{baseUrl}}/roles
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Manager"
+}
+
+###############################################################################
+# 3. Create New Role - Duplicate Name (Should fail with 409 Conflict)
+###############################################################################
+
+POST {{baseUrl}}/roles
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Manager"
+}
+
+###############################################################################
+# 4. Create New Role - Empty Name (Should fail with 400 Bad Request)
+###############################################################################
+
+POST {{baseUrl}}/roles
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": ""
+}
+
+###############################################################################
+# 5. Create New Role - Null Name (Should fail with 400 Bad Request)
+###############################################################################
+
+POST {{baseUrl}}/roles
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": null
+}
+
+###############################################################################
+# 6. Get Role By ID - Valid Role
+###############################################################################
+
+GET {{baseUrl}}/roles/{{roleId}}
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# 7. Get Role By ID - Invalid ID (Should fail with 404 Not Found)
+###############################################################################
+
+GET {{baseUrl}}/roles/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# 8. Get Role By Name - Valid Role
+###############################################################################
+
+GET {{baseUrl}}/roles/name/Manager
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# 9. Get Role By Name - Non-Existent Role (Should fail with 404)
+###############################################################################
+
+GET {{baseUrl}}/roles/name/NonExistentRole
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# 10. Get Seeded Roles - Admin
+###############################################################################
+
+GET {{baseUrl}}/roles/name/Admin
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# 11. Get Seeded Roles - User
+###############################################################################
+
+GET {{baseUrl}}/roles/name/User
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# 12. Update Role - Valid Update
+###############################################################################
+
+PUT {{baseUrl}}/roles/{{roleId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Senior Manager"
+}
+
+###############################################################################
+# 13. Update Role - Duplicate Name (Should fail with 409)
+###############################################################################
+
+PUT {{baseUrl}}/roles/{{roleId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Admin"
+}
+
+###############################################################################
+# 14. Update Role - Empty Name (Should fail with 400)
+###############################################################################
+
+PUT {{baseUrl}}/roles/{{roleId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": ""
+}
+
+###############################################################################
+# 15. Update Role - Invalid Role ID (Should fail with 404)
+###############################################################################
+
+PUT {{baseUrl}}/roles/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Updated Name"
+}
+
+###############################################################################
+# 16. Assign Role to User - Valid
+###############################################################################
+
+POST {{baseUrl}}/roles/assign
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "userId": "{{userId}}",
+  "roleName": "Manager"
+}
+
+###############################################################################
+# 17. Assign Role to User - Already Assigned (Should fail with 409)
+###############################################################################
+
+POST {{baseUrl}}/roles/assign
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "userId": "{{userId}}",
+  "roleName": "Manager"
+}
+
+###############################################################################
+# 18. Assign Role to User - Invalid User (Should fail with 404)
+###############################################################################
+
+POST {{baseUrl}}/roles/assign
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "userId": "00000000-0000-0000-0000-000000000000",
+  "roleName": "Manager"
+}
+
+###############################################################################
+# 19. Assign Role to User - Invalid Role (Should fail with 404)
+###############################################################################
+
+POST {{baseUrl}}/roles/assign
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "userId": "{{userId}}",
+  "roleName": "NonExistentRole"
+}
+
+###############################################################################
+# 20. Get Users in Role - Valid Role
+###############################################################################
+
+GET {{baseUrl}}/roles/Manager/users
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# 21. Get Users in Role - Empty Role
+###############################################################################
+
+GET {{baseUrl}}/roles/User/users
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# 22. Get Users in Role - Non-Existent Role (Should fail with 404)
+###############################################################################
+
+GET {{baseUrl}}/roles/NonExistentRole/users
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# 23. Remove Role from User - Valid
+###############################################################################
+
+POST {{baseUrl}}/roles/remove
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "userId": "{{userId}}",
+  "roleName": "Manager"
+}
+
+###############################################################################
+# 24. Remove Role from User - Not Assigned (Should fail with 404)
+###############################################################################
+
+POST {{baseUrl}}/roles/remove
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "userId": "{{userId}}",
+  "roleName": "Manager"
+}
+
+###############################################################################
+# 25. Remove Role from User - Invalid User (Should fail with 404)
+###############################################################################
+
+POST {{baseUrl}}/roles/remove
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "userId": "00000000-0000-0000-0000-000000000000",
+  "roleName": "Manager"
+}
+
+###############################################################################
+# 26. Delete Role - With Users Assigned (Should fail with 409)
+###############################################################################
+
+# First assign a role to a user, then try to delete it
+POST {{baseUrl}}/roles/assign
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "userId": "{{userId}}",
+  "roleName": "Manager"
+}
+
+### Then try to delete (should fail)
+DELETE {{baseUrl}}/roles/{{roleId}}
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# 27. Delete Role - Empty Role (Should succeed)
+###############################################################################
+
+# First remove all users from role
+POST {{baseUrl}}/roles/remove
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "userId": "{{userId}}",
+  "roleName": "Manager"
+}
+
+### Then delete (should succeed)
+DELETE {{baseUrl}}/roles/{{roleId}}
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# 28. Delete Role - Invalid Role ID (Should fail with 404)
+###############################################################################
+
+DELETE {{baseUrl}}/roles/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# Complete Role Management Workflow Test
+###############################################################################
+
+### Step 1: Create New Role
+POST {{baseUrl}}/roles
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "TestRole"
+}
+
+### Step 2: Get Role by Name (verify creation)
+# GET {{baseUrl}}/roles/name/TestRole
+# Authorization: Bearer {{accessToken}}
+
+### Step 3: Assign Role to User
+# POST {{baseUrl}}/roles/assign
+# Authorization: Bearer {{accessToken}}
+# Content-Type: {{contentType}}
+#
+# {
+#   "userId": "{{userId}}",
+#   "roleName": "TestRole"
+# }
+
+### Step 4: Get Users in Role (verify assignment)
+# GET {{baseUrl}}/roles/TestRole/users
+# Authorization: Bearer {{accessToken}}
+
+### Step 5: Update Role Name
+# PUT {{baseUrl}}/roles/{roleId-from-step-1}
+# Authorization: Bearer {{accessToken}}
+# Content-Type: {{contentType}}
+#
+# {
+#   "name": "UpdatedTestRole"
+# }
+
+### Step 6: Remove Role from User
+# POST {{baseUrl}}/roles/remove
+# Authorization: Bearer {{accessToken}}
+# Content-Type: {{contentType}}
+#
+# {
+#   "userId": "{{userId}}",
+#   "roleName": "UpdatedTestRole"
+# }
+
+### Step 7: Delete Role
+# DELETE {{baseUrl}}/roles/{roleId-from-step-1}
+# Authorization: Bearer {{accessToken}}
+
+### Step 8: Verify Deletion (Should fail with 404)
+# GET {{baseUrl}}/roles/{roleId-from-step-1}
+# Authorization: Bearer {{accessToken}}

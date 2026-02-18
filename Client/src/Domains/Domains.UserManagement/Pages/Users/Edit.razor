@@ -1,0 +1,100 @@
+@page "/users/edit/{id}"
+@attribute [Authorize]
+
+@inject IUserManagementService UserService
+@inject NavigationManager Navigation
+
+<div class="container-fluid mt-4">
+    @if (_isLoading)
+    {
+        <p>Loading user...</p>
+    }
+    else if (_user == null)
+    {
+        <div class="alert alert-danger">
+            <h4>User Not Found</h4>
+            <p>The requested user could not be found.</p>
+            <button class="btn btn-primary" @onclick="@HandleBackToList">Back to List</button>
+        </div>
+    }
+    else
+    {
+        <div class="mb-3">
+            <button class="btn btn-secondary" @onclick="@HandleBackToList">
+                ← Back to List
+            </button>
+        </div>
+
+        <h2 class="mb-4">Edit User</h2>
+
+        <UserEditForm User="@_user"
+                      OnSaveSuccess="@HandleSaveSuccess"
+                      OnCancelClicked="@HandleBackToList" />
+
+        @if (!string.IsNullOrEmpty(_statusMessage))
+        {
+            <div class="alert alert-info mt-3" role="alert">
+                @_statusMessage
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string Id { get; set; } = string.Empty;
+
+    private UserResponse? _user;
+    private bool _isLoading = true;
+    private string? _statusMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!string.IsNullOrEmpty(Id))
+        {
+            await LoadUserAsync();
+        }
+    }
+
+    private async Task LoadUserAsync()
+    {
+        _isLoading = true;
+
+        if (Guid.TryParse(Id, out var userId))
+        {
+            var result = await UserService.GetUserByIdAsync(userId);
+
+            if (result.IsSuccess)
+            {
+                _user = result.Value;
+            }
+            else
+            {
+                _statusMessage = $"Failed to load user: {result.Error?.Message}";
+            }
+        }
+        else
+        {
+            _statusMessage = "Invalid user ID format";
+        }
+
+        _isLoading = false;
+    }
+
+    private async Task HandleSaveSuccess()
+    {
+        _statusMessage = "User updated successfully";
+        await Task.Delay(1500); // Show success message briefly
+        HandleBackToList();
+    }
+
+    private void HandleBackToList()
+    {
+        Navigation.NavigateTo("/users");
+    }
+}

@@ -1,0 +1,27 @@
+@page "/alerts"
+@attribute [Authorize]
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Alerts</h2>
+    </div>
+
+    <div class="mb-4">
+        <AlertPanel @ref="_alertPanelRef" OnAlertChanged="@HandleAlertChanged" />
+    </div>
+
+    <AlertList @ref="_alertListRef" />
+</div>
+
+@code {
+    private AlertPanel? _alertPanelRef;
+    private AlertList? _alertListRef;
+
+    private async Task HandleAlertChanged()
+    {
+        if (_alertListRef != null)
+        {
+            await _alertListRef.RefreshAsync();
+        }
+    }
+}

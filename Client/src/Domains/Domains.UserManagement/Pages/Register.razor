@@ -1,0 +1,42 @@
+@page "/register"
+
+@inject AppState AppState
+@inject NavigationManager Navigation
+
+<div class="container mt-5">
+    @if (!AppState.IsAuthenticated)
+    {
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <RegisterForm OnRegisterSuccess="@HandleRegisterSuccess"
+                              OnLoginClicked="@HandleLoginClicked" />
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <h4>Already Logged In</h4>
+                    <p>You are already logged in as @AppState.CurrentUser?.Email</p>
+                    <a href="/" class="btn btn-primary">Go to Home</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private async Task HandleRegisterSuccess()
+    {
+        // Navigate to home after successful registration
+        Navigation.NavigateTo("/");
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void HandleLoginClicked()
+    {
+        Navigation.NavigateTo("/login");
+    }
+}

@@ -1,0 +1,60 @@
+@page "/alerts/status-levels"
+@attribute [Authorize]
+
+@inject IAlertStatusLevelService AlertStatusLevelService
+@inject NavigationManager Navigation
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Alert Status Levels</h2>
+        <button class="btn btn-primary" @onclick="@HandleCreate">
+            + New Status Level
+        </button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(_statusMessage))
+    {
+        <div class="alert alert-info" role="alert">@_statusMessage</div>
+    }
+
+    <AlertStatusLevelList @ref="_listRef"
+                          OnEdit="@HandleEdit"
+                          OnDelete="@HandleDelete" />
+</div>
+
+@code {
+    private AlertStatusLevelList? _listRef;
+    private string? _statusMessage;
+
+    private void HandleCreate()
+    {
+        Navigation.NavigateTo("/alerts/status-levels/create");
+    }
+
+    private void HandleEdit(AlertStatusLevelViewModel level)
+    {
+        Navigation.NavigateTo($"/alerts/status-levels/edit/{level.Id}");
+    }
+
+    private async Task HandleDelete(AlertStatusLevelViewModel level)
+    {
+        _statusMessage = $"Deleting '{level.Name}'...";
+        StateHasChanged();
+
+        var result = await AlertStatusLevelService.DeleteAsync(Guid.Parse(level.Id));
+
+        if (result.IsSuccess)
+        {
+            _statusMessage = $"'{level.Name}' deleted successfully.";
+
+            if (_listRef != null)
+            {
+                await _listRef.RefreshAsync();
+            }
+        }
+        else
+        {
+            _statusMessage = $"Failed to delete: {result.Error?.Message}";
+        }
+    }
+}

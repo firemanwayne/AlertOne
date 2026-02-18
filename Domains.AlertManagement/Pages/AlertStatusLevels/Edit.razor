@@ -1,0 +1,85 @@
+@page "/alerts/status-levels/edit/{id}"
+@attribute [Authorize]
+
+@inject IAlertStatusLevelService AlertStatusLevelService
+@inject NavigationManager Navigation
+
+<div class="container-fluid mt-4">
+    <div class="mb-3">
+        <button class="btn btn-secondary" @onclick="@HandleBack">
+            ← Back to Status Levels
+        </button>
+    </div>
+
+    @if (_isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading status level...</p>
+        </div>
+    }
+    else if (_statusLevel == null)
+    {
+        <div class="alert alert-danger">
+            <h5>Status Level Not Found</h5>
+            <p>The requested status level could not be found.</p>
+            <button class="btn btn-primary" @onclick="@HandleBack">Back to List</button>
+        </div>
+    }
+    else
+    {
+        <AlertStatusLevelForm StatusLevel="@_statusLevel"
+                              OnSaveSuccess="@HandleSaveSuccess"
+                              OnCancelClicked="@HandleBack" />
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string Id { get; set; } = string.Empty;
+
+    private AlertStatusLevelViewModel? _statusLevel;
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!string.IsNullOrEmpty(Id))
+        {
+            await LoadAsync();
+        }
+    }
+
+    private async Task LoadAsync()
+    {
+        _isLoading = true;
+
+        if (Guid.TryParse(Id, out var id))
+        {
+            var result = await AlertStatusLevelService.GetByIdAsync(id);
+            _statusLevel = result.IsSuccess ? AlertStatusLevelViewModel.FromResponse(result.Value) : null;
+        }
+        else
+        {
+            _statusLevel = null;
+        }
+
+        _isLoading = false;
+    }
+
+    private void HandleSaveSuccess()
+    {
+        Navigation.NavigateTo("/alerts/status-levels");
+    }
+
+    private void HandleBack()
+    {
+        Navigation.NavigateTo("/alerts/status-levels");
+    }
+}

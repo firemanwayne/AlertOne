@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(test:*)",
+      "Bash(dotnet sln:*)",
+      "Bash(dotnet build:*)",
+      "Bash(powershell -Command \"Get-ChildItem -Path ''C:\\\\Users\\\\wayne.davis\\\\source\\\\repos\\\\UserManagement.Aspire\\\\Api'' -Directory | Select-Object Name\")",
+      "Bash(powershell -Command \"Get-ChildItem -Path ''C:\\\\Users\\\\wayne.davis\\\\source\\\\repos\\\\UserManagement.Aspire\\\\Client'' -Directory | Select-Object Name\")",
+      "Bash(powershell -Command:*)",
+      "Bash(dotnet workload:*)",
+      "Bash(dotnet package search:*)",
+      "Bash(findstr:*)",
+      "Bash(powershell -NoProfile -Command \"Get-ChildItem ''C:\\\\Users\\\\wayne.davis\\\\.nuget\\\\packages\\\\aspire4wasm.apphost'' -Recurse -File | Select-Object FullName\")",
+      "Bash(dir:*)",
+      "Bash(dotnet ef migrations:*)"
+    ]
+  }
+}
