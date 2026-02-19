@@ -20,13 +20,13 @@ public sealed class UserManagementApiClient(HttpClient client) : IApiClient
         }
         catch (HttpRequestException ex)
         {
-            return Result<TResponse>.Failure(
-                Error.Internal("Http.RequestFailed", $"HTTP request failed: {ex.Message}"));
+            return Result<TResponse>
+                .Failure(Error.Internal("Http.RequestFailed", $"HTTP request failed: {ex.Message}"));
         }
         catch (Exception ex)
         {
-            return Result<TResponse>.Failure(
-                Error.Internal("Api.UnexpectedError", $"Unexpected error: {ex.Message}"));
+            return Result<TResponse>
+                .Failure(Error.Internal("Api.UnexpectedError", $"Unexpected error: {ex.Message}"));
         }
     }
 
@@ -40,13 +40,13 @@ public sealed class UserManagementApiClient(HttpClient client) : IApiClient
         }
         catch (HttpRequestException ex)
         {
-            return Result<TResponse>.Failure(
-                Error.Internal("Http.RequestFailed", $"HTTP request failed: {ex.Message}"));
+            return Result<TResponse>
+                .Failure(Error.Internal("Http.RequestFailed", $"HTTP request failed: {ex.Message}"));
         }
         catch (Exception ex)
         {
-            return Result<TResponse>.Failure(
-                Error.Internal("Api.UnexpectedError", $"Unexpected error: {ex.Message}"));
+            return Result<TResponse>
+                .Failure(Error.Internal("Api.UnexpectedError", $"Unexpected error: {ex.Message}"));
         }
     }
 
@@ -60,13 +60,13 @@ public sealed class UserManagementApiClient(HttpClient client) : IApiClient
         }
         catch (HttpRequestException ex)
         {
-            return Result<TResponse>.Failure(
-                Error.Internal("Http.RequestFailed", $"HTTP request failed: {ex.Message}"));
+            return Result<TResponse>
+                .Failure(Error.Internal("Http.RequestFailed", $"HTTP request failed: {ex.Message}"));
         }
         catch (Exception ex)
         {
-            return Result<TResponse>.Failure(
-                Error.Internal("Api.UnexpectedError", $"Unexpected error: {ex.Message}"));
+            return Result<TResponse>
+                .Failure(Error.Internal("Api.UnexpectedError", $"Unexpected error: {ex.Message}"));
         }
     }
 
@@ -87,13 +87,13 @@ public sealed class UserManagementApiClient(HttpClient client) : IApiClient
         }
         catch (HttpRequestException ex)
         {
-            return Result.Failure(
-                Error.Internal("Http.RequestFailed", $"HTTP request failed: {ex.Message}"));
+            return Result
+                .Failure(Error.Internal("Http.RequestFailed", $"HTTP request failed: {ex.Message}"));
         }
         catch (Exception ex)
         {
-            return Result.Failure(
-                Error.Internal("Api.UnexpectedError", $"Unexpected error: {ex.Message}"));
+            return Result
+                .Failure(Error.Internal("Api.UnexpectedError", $"Unexpected error: {ex.Message}"));
         }
     }
 
@@ -119,13 +119,13 @@ public sealed class UserManagementApiClient(HttpClient client) : IApiClient
         }
         catch (HttpRequestException ex)
         {
-            return Result.Failure(
-                Error.Internal("Http.RequestFailed", $"HTTP request failed: {ex.Message}"));
+            return Result
+                .Failure(Error.Internal("Http.RequestFailed", $"HTTP request failed: {ex.Message}"));
         }
         catch (Exception ex)
         {
-            return Result.Failure(
-                Error.Internal("Api.UnexpectedError", $"Unexpected error: {ex.Message}"));
+            return Result
+                .Failure(Error.Internal("Api.UnexpectedError", $"Unexpected error: {ex.Message}"));
         }
     }
 
@@ -137,8 +137,8 @@ public sealed class UserManagementApiClient(HttpClient client) : IApiClient
 
             if (data is null)
             {
-                return Result<TResponse>.Failure(
-                    Error.Internal("Api.DeserializationFailed", "Failed to deserialize response"));
+                return Result<TResponse>
+                    .Failure(Error.Internal("Api.DeserializationFailed", "Failed to deserialize response"));
             }
 
             return Result<TResponse>.Success(data);
@@ -154,7 +154,9 @@ public sealed class UserManagementApiClient(HttpClient client) : IApiClient
         try
         {
             var errorContent = await response.Content.ReadAsStringAsync();
+
             var code = $"Http.{response.StatusCode}";
+
             var message = string.IsNullOrWhiteSpace(errorContent)
                 ? response.ReasonPhrase ?? "Unknown error"
                 : errorContent;

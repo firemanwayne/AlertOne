@@ -1,4 +1,5 @@
 @namespace Domains.AlertManagement
+@using AlertOne.Core.Attributes
 
 @inject IAlertService AlertService
 @inject IAlertTypeService AlertTypeService
@@ -249,6 +250,7 @@
                 _activateModel.TypeId,
                 _activateModel.StatusLevelId,
                 AppState.CurrentUser?.Email ?? string.Empty);
+
             var result = await AlertService.CreateAsync(request);
 
             if (result.IsSuccess)
@@ -323,18 +325,5 @@
         [Required(ErrorMessage = "Please select a status level.")]
         [NotEmptyGuid(ErrorMessage = "Please select a status level.")]
         public Guid StatusLevelId { get; set; }
-    }
-
-    private sealed class NotEmptyGuidAttribute : ValidationAttribute
-    {
-        protected override ValidationResult? IsValid(object? value, ValidationContext context)
-        {
-            if (value is Guid g && g == Guid.Empty)
-            {
-                return new ValidationResult(ErrorMessage);
-            }
-
-            return ValidationResult.Success;
-        }
-    }
+    }   
 }

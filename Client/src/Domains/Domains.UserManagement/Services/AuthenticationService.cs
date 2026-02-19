@@ -66,7 +66,7 @@ internal sealed class AuthenticationService(
                 Email = authResponse.User.Email,
                 FirstName = authResponse.User.FirstName,
                 LastName = authResponse.User.LastName,
-                Roles = authResponse.User.Roles.ToList()
+                Roles = [.. authResponse.User.Roles]
             };
             appState.IsAuthenticated = true;
         }

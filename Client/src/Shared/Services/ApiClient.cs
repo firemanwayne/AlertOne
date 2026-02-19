@@ -24,13 +24,13 @@ public sealed class ApiClient(HttpClient client)
         }
         catch (HttpRequestException ex)
         {
-            return Result<TResponse>.Failure(
-                Error.Internal("Http.RequestFailed", $"HTTP request failed: {ex.Message}"));
+            return Result<TResponse>
+                .Failure(Error.Internal("Http.RequestFailed", $"HTTP request failed: {ex.Message}"));
         }
         catch (Exception ex)
         {
-            return Result<TResponse>.Failure(
-                Error.Internal("Api.UnexpectedError", $"Unexpected error: {ex.Message}"));
+            return Result<TResponse>
+                .Failure(Error.Internal("Api.UnexpectedError", $"Unexpected error: {ex.Message}"));
         }
     }
 
@@ -44,13 +44,13 @@ public sealed class ApiClient(HttpClient client)
         }
         catch (HttpRequestException ex)
         {
-            return Result<TResponse>.Failure(
-                Error.Internal("Http.RequestFailed", $"HTTP request failed: {ex.Message}"));
+            return Result<TResponse>
+                .Failure(Error.Internal("Http.RequestFailed", $"HTTP request failed: {ex.Message}"));
         }
         catch (Exception ex)
         {
-            return Result<TResponse>.Failure(
-                Error.Internal("Api.UnexpectedError", $"Unexpected error: {ex.Message}"));
+            return Result<TResponse>
+                .Failure(Error.Internal("Api.UnexpectedError", $"Unexpected error: {ex.Message}"));
         }
     }
 
@@ -64,13 +64,13 @@ public sealed class ApiClient(HttpClient client)
         }
         catch (HttpRequestException ex)
         {
-            return Result<TResponse>.Failure(
-                Error.Internal("Http.RequestFailed", $"HTTP request failed: {ex.Message}"));
+            return Result<TResponse>
+                .Failure(Error.Internal("Http.RequestFailed", $"HTTP request failed: {ex.Message}"));
         }
         catch (Exception ex)
         {
-            return Result<TResponse>.Failure(
-                Error.Internal("Api.UnexpectedError", $"Unexpected error: {ex.Message}"));
+            return Result<TResponse>
+                .Failure(Error.Internal("Api.UnexpectedError", $"Unexpected error: {ex.Message}"));
         }
     }
 
@@ -90,13 +90,13 @@ public sealed class ApiClient(HttpClient client)
         }
         catch (HttpRequestException ex)
         {
-            return Result.Failure(
-                Error.Internal("Http.RequestFailed", $"HTTP request failed: {ex.Message}"));
+            return Result
+                .Failure(Error.Internal("Http.RequestFailed", $"HTTP request failed: {ex.Message}"));
         }
         catch (Exception ex)
         {
-            return Result.Failure(
-                Error.Internal("Api.UnexpectedError", $"Unexpected error: {ex.Message}"));
+            return Result
+                .Failure(Error.Internal("Api.UnexpectedError", $"Unexpected error: {ex.Message}"));
         }
     }
 
@@ -122,8 +122,8 @@ public sealed class ApiClient(HttpClient client)
         }
         catch (HttpRequestException ex)
         {
-            return Result.Failure(
-                Error.Internal("Http.RequestFailed", $"HTTP request failed: {ex.Message}"));
+            return Result
+                .Failure(Error.Internal("Http.RequestFailed", $"HTTP request failed: {ex.Message}"));
         }
         catch (Exception ex)
         {
@@ -140,14 +140,15 @@ public sealed class ApiClient(HttpClient client)
 
             if (data is null)
             {
-                return Result<TResponse>.Failure(
-                    Error.Internal("Api.DeserializationFailed", "Failed to deserialize response"));
+                return Result<TResponse>
+                    .Failure(Error.Internal("Api.DeserializationFailed", "Failed to deserialize response"));
             }
 
             return Result<TResponse>.Success(data);
         }
 
         var error = await ParseErrorResponseAsync(response);
+
         return Result<TResponse>.Failure(error);
     }
 
@@ -156,7 +157,9 @@ public sealed class ApiClient(HttpClient client)
         try
         {
             var errorContent = await response.Content.ReadAsStringAsync();
+
             var code = $"Http.{response.StatusCode}";
+
             var message = string.IsNullOrWhiteSpace(errorContent) ? response.ReasonPhrase ?? "Unknown error" : errorContent;
 
             return response.StatusCode switch
@@ -171,9 +174,8 @@ public sealed class ApiClient(HttpClient client)
         }
         catch
         {
-            return Error.Internal(
-                $"Http.{response.StatusCode}",
-                response.ReasonPhrase ?? "Unknown error");
+            return Error
+                .Internal($"Http.{response.StatusCode}", response.ReasonPhrase ?? "Unknown error");
         }
     }
 }

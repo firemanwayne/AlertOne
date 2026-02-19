@@ -36,7 +36,9 @@ public sealed class JwtAuthHeaderHandler(
 
         // Check if token is expired or about to expire (within 5 minutes)
         var isExpired = await tokenStorage.IsTokenExpiredAsync();
+
         var expiryTime = await tokenStorage.GetExpiryTimeAsync();
+
         var isAboutToExpire = expiryTime.HasValue && expiryTime.Value.Subtract(DateTime.UtcNow).TotalMinutes < 5;
 
         if (isExpired || isAboutToExpire)
@@ -47,13 +49,16 @@ public sealed class JwtAuthHeaderHandler(
             if (!string.IsNullOrEmpty(refreshToken))
             {
                 var refreshRequest = new RefreshTokenRequest(refreshToken);
+
                 var authService = services.GetRequiredService<IAuthenticationService>();
+
                 var refreshResult = await authService.RefreshTokenAsync(refreshRequest, cancellationToken);
 
                 if (refreshResult.IsSuccess)
                 {
                     // Token refreshed successfully, update storage
                     var authResponse = refreshResult.Value;
+
                     await tokenStorage.SaveTokensAsync(
                         authResponse.AccessToken,
                         authResponse.RefreshToken,
@@ -65,6 +70,7 @@ public sealed class JwtAuthHeaderHandler(
                 {
                     // Refresh failed, clear tokens and return unauthorized
                     await tokenStorage.ClearTokensAsync();
+
                     appState.Clear();
 
                     var response = new HttpResponseMessage(HttpStatusCode.Unauthorized)
@@ -91,6 +97,7 @@ public sealed class JwtAuthHeaderHandler(
         if (httpResponse.StatusCode == HttpStatusCode.Unauthorized)
         {
             await tokenStorage.ClearTokensAsync();
+
             appState.Clear();
         }
 
