@@ -60,9 +60,10 @@
     {
         _isLoading = true;
 
-        if (Guid.TryParse(Id, out var id))
+        if (!string.IsNullOrWhiteSpace(Id))
         {
-            var result = await AlertStatusLevelService.GetByIdAsync(id);
+            var result = await AlertStatusLevelService.GetByIdAsync(Id);
+
             _statusLevel = result.IsSuccess ? AlertStatusLevelViewModel.FromResponse(result.Value) : null;
         }
         else

@@ -14,7 +14,7 @@ public abstract class DataModelBase : INotifyPropertyChanged
 
     private string _id = string.Empty;
 
-    [Display(Name = "ID")]
+    [Display(Name = "Id")]
     public string Id
     {
         get => _id;

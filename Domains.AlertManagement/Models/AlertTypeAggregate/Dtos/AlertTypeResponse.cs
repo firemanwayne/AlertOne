@@ -11,7 +11,7 @@ public sealed class AlertTypeResponse : DataModelBase
 
     public string Color { get; set; } = string.Empty;
 
-    public IReadOnlyList<Guid> NotifyUserIds { get; set; } = [];
+    public IReadOnlyList<string> NotifyUserIds { get; set; } = [];
 
     public DateTime CreatedAt { get; set; }
 

@@ -1,10 +1,10 @@
 namespace AlertManagement.Core.DTOs.Responses;
 
 public sealed record AlertTypeResponse(
-    Guid Id,
+    string Id,
     string Name,
     string Description,
     string Color,
-    IReadOnlyList<Guid> NotifyUserIds,
+    IReadOnlyList<string> NotifyUserIds,
     DateTime CreatedAt,
     DateTime LastModifiedAt);

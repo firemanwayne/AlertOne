@@ -2,9 +2,9 @@ namespace AlertManagement.Core.Entities;
 
 public class Alert
 {
-    public Guid Id { get; set; }
-    public Guid AlertTypeId { get; set; }
-    public Guid AlertStatusLevelId { get; set; }
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public string AlertTypeId { get; set; } = string.Empty;
+    public string AlertStatusLevelId { get; set; } = string.Empty;
     public string CreatedBy { get; set; } = string.Empty;
     public string? LastModifiedBy { get; set; }
     public DateTime CreatedAt { get; set; }

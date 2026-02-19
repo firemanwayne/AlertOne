@@ -1,4 +1,3 @@
-using System.Net;
 using AlertManagement.Client.Extensions;
 using AlertManagement.Core.Common;
 using AlertManagement.Core.DTOs.Requests;
@@ -6,6 +5,7 @@ using AlertManagement.Core.Interfaces;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace AlertManagement.Client.Functions;
 
@@ -45,12 +45,12 @@ public sealed class AlertTypeFunctions(IAlertTypeService alertTypeService, ILogg
     {
         logger.LogInformation("Getting alert type {AlertTypeId}", id);
 
-        if (!Guid.TryParse(id, out var guidId))
+        if (string.IsNullOrWhiteSpace(id))
         {
             return await req.CreateBadRequestResponseAsync("AlertType.InvalidId", "Invalid alert type ID format");
         }
 
-        var result = await alertTypeService.GetByIdAsync(guidId, context.CancellationToken);
+        var result = await alertTypeService.GetByIdAsync(id, context.CancellationToken);
 
         if (result.IsFailure)
         {
@@ -104,7 +104,7 @@ public sealed class AlertTypeFunctions(IAlertTypeService alertTypeService, ILogg
     {
         logger.LogInformation("Updating alert type {AlertTypeId}", id);
 
-        if (!Guid.TryParse(id, out var guidId))
+        if (string.IsNullOrWhiteSpace(id))
         {
             return await req.CreateBadRequestResponseAsync("AlertType.InvalidId", "Invalid alert type ID format");
         }
@@ -116,7 +116,7 @@ public sealed class AlertTypeFunctions(IAlertTypeService alertTypeService, ILogg
             return await req.CreateBadRequestResponseAsync("Request.Invalid", "Invalid request body");
         }
 
-        var result = await alertTypeService.UpdateAsync(guidId, request, context.CancellationToken);
+        var result = await alertTypeService.UpdateAsync(id, request, context.CancellationToken);
 
         if (result.IsFailure)
         {
@@ -141,12 +141,12 @@ public sealed class AlertTypeFunctions(IAlertTypeService alertTypeService, ILogg
     {
         logger.LogInformation("Deleting alert type {AlertTypeId}", id);
 
-        if (!Guid.TryParse(id, out var guidId))
+        if (string.IsNullOrWhiteSpace(id))
         {
             return await req.CreateBadRequestResponseAsync("AlertType.InvalidId", "Invalid alert type ID format");
         }
 
-        var result = await alertTypeService.DeleteAsync(guidId, context.CancellationToken);
+        var result = await alertTypeService.DeleteAsync(id, context.CancellationToken);
 
         if (result.IsFailure)
         {

@@ -1,3 +1,3 @@
 namespace AlertManagement.Core.DTOs.Requests;
 
-public sealed record CreateAlertRequest(Guid AlertTypeId, Guid AlertStatusLevelId, string CreatedBy);
+public sealed record CreateAlertRequest(string AlertTypeId, string AlertStatusLevelId, string CreatedBy);

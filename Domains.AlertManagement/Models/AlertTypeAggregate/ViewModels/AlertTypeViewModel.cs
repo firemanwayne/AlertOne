@@ -29,10 +29,10 @@ public sealed class AlertTypeViewModel : ViewModelBase
         set => SetProperty(ref _color, value);
     }
 
-    private IReadOnlyList<Guid> _notifyUserIds = [];
+    private IReadOnlyList<string> _notifyUserIds = [];
 
     [Display(Name = "Notify Users")]
-    public IReadOnlyList<Guid> NotifyUserIds
+    public IReadOnlyList<string> NotifyUserIds
     {
         get => _notifyUserIds;
         set => SetProperty(ref _notifyUserIds, value);

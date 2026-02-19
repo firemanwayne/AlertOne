@@ -41,7 +41,7 @@
         _statusMessage = $"Deleting '{level.Name}'...";
         StateHasChanged();
 
-        var result = await AlertStatusLevelService.DeleteAsync(Guid.Parse(level.Id));
+        var result = await AlertStatusLevelService.DeleteAsync(level.Id);
 
         if (result.IsSuccess)
         {

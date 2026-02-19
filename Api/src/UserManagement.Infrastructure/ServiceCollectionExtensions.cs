@@ -10,7 +10,7 @@ using UserManagement.Infrastructure.Configurations;
 using UserManagement.Infrastructure.Identity;
 using UserManagement.Infrastructure.Services;
 
-namespace UserManagement.Infrastructure.Extensions;
+namespace UserManagement.Infrastructure;
 
 /// <summary>
 /// Extension methods for service collection to configure infrastructure services
@@ -66,22 +66,23 @@ public static class ServiceCollectionExtensions
     {
         var dbSettings = configuration
             .GetSection(nameof(DatabaseSettings))
-            .Get<DatabaseSettings>() ?? throw new InvalidOperationException("DatabaseSettings not configured");
+            .Get<DatabaseSettings[]>() ?? throw new InvalidOperationException("DatabaseSettings not configured");
 
-        services.Configure<DatabaseSettings>(configuration.GetSection(nameof(DatabaseSettings)));
+        services
+            .Configure<DatabaseSettings>(configuration.GetSection(nameof(DatabaseSettings)));
 
         services.AddDbContext<ApplicationDbContext>(options =>
         {
-            if (dbSettings.Provider.Equals("Sqlite", StringComparison.OrdinalIgnoreCase))
+            if (dbSettings[1].Provider.Equals("Sqlite", StringComparison.OrdinalIgnoreCase))
             {
                 options.UseSqlite(
-                    dbSettings.ConnectionString,
+                    dbSettings[1].ConnectionString,
                     b => b.MigrationsAssembly("UserManagement.Infrastructure"));
             }
             else
             {
-                options.UseSqlServer(
-                    dbSettings.ConnectionString,
+                options.UseAzureSql(
+                    dbSettings[1].ConnectionString,
                     b => b.MigrationsAssembly("UserManagement.Infrastructure"));
             }
         });

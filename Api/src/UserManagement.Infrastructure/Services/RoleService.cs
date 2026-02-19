@@ -13,7 +13,10 @@ namespace UserManagement.Infrastructure.Services;
 /// <summary>
 /// Service for role management operations
 /// </summary>
-internal sealed class RoleService(RoleManager<IdentityRole<Guid>> roleManager, UserManager<ApplicationUser> userManager, ILogger<RoleService> logger) : IRoleService
+internal sealed class RoleService(
+    RoleManager<IdentityRole<Guid>> roleManager,
+    UserManager<ApplicationUser> userManager,
+    ILogger<RoleService> logger) : IRoleService
 {
     public async Task<Result<RoleResponse>> CreateRoleAsync(CreateRoleRequest request, CancellationToken cancellationToken = default)
     {

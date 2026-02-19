@@ -13,7 +13,9 @@ namespace UserManagement.Infrastructure.Services;
 /// <summary>
 /// Service for device/session management operations
 /// </summary>
-internal sealed class DeviceService(ApplicationDbContext context, ILogger<DeviceService> logger) : IDeviceService
+internal sealed class DeviceService(
+    ApplicationDbContext context,
+    ILogger<DeviceService> logger) : IDeviceService
 {
     private const int MaxDevicesPerUser = 10;
 

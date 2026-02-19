@@ -39,9 +39,10 @@
     private async Task HandleDelete(AlertTypeViewModel alertType)
     {
         _statusMessage = $"Deleting '{alertType.Name}'...";
+
         StateHasChanged();
 
-        var result = await AlertTypeService.DeleteAsync(Guid.Parse(alertType.Id));
+        var result = await AlertTypeService.DeleteAsync(alertType.Id);
 
         if (result.IsSuccess)
         {

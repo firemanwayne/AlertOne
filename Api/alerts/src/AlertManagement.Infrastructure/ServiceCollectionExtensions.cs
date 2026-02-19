@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AlertManagement.Infrastructure.Extensions;
+namespace AlertManagement.Infrastructure;
 
 /// <summary>
 /// Extension methods for service collection to configure infrastructure services
@@ -31,24 +31,18 @@ public static class ServiceCollectionExtensions
     {
         var dbSettings = configuration
             .GetSection(nameof(DatabaseSettings))
-            .Get<DatabaseSettings>() ?? throw new InvalidOperationException("DatabaseSettings not configured");
+            .Get<DatabaseSettings[]>() ?? throw new InvalidOperationException("DatabaseSettings not configured");
 
-        services.Configure<DatabaseSettings>(configuration.GetSection(nameof(DatabaseSettings)));
+        services
+            .Configure<DatabaseSettings>(configuration.GetSection(nameof(DatabaseSettings)));
 
-        services.AddDbContext<AlertDbContext>(options =>
+        services
+            .AddDbContext<AlertDbContext>(options =>
         {
-            if (dbSettings.Provider.Equals("Sqlite", StringComparison.OrdinalIgnoreCase))
-            {
-                options.UseSqlite(
-                    dbSettings.ConnectionString,
-                    b => b.MigrationsAssembly("AlertManagement.Infrastructure"));
-            }
-            else
-            {
-                options.UseSqlServer(
-                    dbSettings.ConnectionString,
-                    b => b.MigrationsAssembly("AlertManagement.Infrastructure"));
-            }
+            options.UseAzureSql(
+                dbSettings[1].ConnectionString,
+                b => b.MigrationsAssembly("AlertManagement.Infrastructure"));
+
         });
 
         return services;

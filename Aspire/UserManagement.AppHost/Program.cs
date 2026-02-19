@@ -15,7 +15,7 @@ var alertsApi = builder
 // API URL is read from wwwroot/appsettings.json (browser can't read process env vars)
 
 var blazor = builder
-    .AddStandaloneBlazorWebAssemblyProject<Projects.UserManagementApps_Web>("blazor")
+    .AddStandaloneBlazorWebAssemblyProject<Projects.AlertOne_Web>("blazor")
     .WithReference(userApi)
     .WithReference(alertsApi)
     .WaitFor(userApi)

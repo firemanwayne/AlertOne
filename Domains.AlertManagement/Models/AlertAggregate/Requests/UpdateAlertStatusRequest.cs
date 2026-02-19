@@ -2,4 +2,4 @@
 namespace Domains.AlertManagement.AlertAggregate.Requests;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 
-public sealed record UpdateAlertStatusRequest(Guid AlertStatusLevelId, string UpdatedBy);
+public sealed record UpdateAlertStatusRequest(string AlertStatusLevelId, string UpdatedBy);

@@ -1,4 +1,3 @@
-using System.Net;
 using AlertManagement.Client.Extensions;
 using AlertManagement.Core.Common;
 using AlertManagement.Core.DTOs.Requests;
@@ -6,6 +5,7 @@ using AlertManagement.Core.Interfaces;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace AlertManagement.Client.Functions;
 
@@ -71,12 +71,12 @@ public sealed class AlertFunctions(IAlertService alertService, ILogger<AlertFunc
     {
         logger.LogInformation("Getting alert {AlertId}", id);
 
-        if (!Guid.TryParse(id, out var guidId))
+        if (string.IsNullOrWhiteSpace(id))
         {
             return await req.CreateBadRequestResponseAsync("Alert.InvalidId", "Invalid alert ID format");
         }
 
-        var result = await alertService.GetByIdAsync(guidId, context.CancellationToken);
+        var result = await alertService.GetByIdAsync(id, context.CancellationToken);
 
         if (result.IsFailure)
         {
@@ -99,12 +99,12 @@ public sealed class AlertFunctions(IAlertService alertService, ILogger<AlertFunc
     {
         logger.LogInformation("Getting history for alert {AlertId}", id);
 
-        if (!Guid.TryParse(id, out var guidId))
+        if (string.IsNullOrWhiteSpace(id))
         {
             return await req.CreateBadRequestResponseAsync("Alert.InvalidId", "Invalid alert ID format");
         }
 
-        var result = await alertService.GetHistoryAsync(guidId, context.CancellationToken);
+        var result = await alertService.GetHistoryAsync(id, context.CancellationToken);
 
         if (result.IsFailure)
         {
@@ -127,7 +127,7 @@ public sealed class AlertFunctions(IAlertService alertService, ILogger<AlertFunc
     {
         logger.LogInformation("Updating status for alert {AlertId}", id);
 
-        if (!Guid.TryParse(id, out var guidId))
+        if (string.IsNullOrWhiteSpace(id))
         {
             return await req.CreateBadRequestResponseAsync("Alert.InvalidId", "Invalid alert ID format");
         }
@@ -139,7 +139,7 @@ public sealed class AlertFunctions(IAlertService alertService, ILogger<AlertFunc
             return await req.CreateBadRequestResponseAsync("Request.Invalid", "Invalid request body");
         }
 
-        var result = await alertService.UpdateStatusAsync(guidId, request, context.CancellationToken);
+        var result = await alertService.UpdateStatusAsync(id, request, context.CancellationToken);
 
         if (result.IsFailure)
         {
@@ -194,7 +194,7 @@ public sealed class AlertFunctions(IAlertService alertService, ILogger<AlertFunc
     {
         logger.LogInformation("Rescinding alert {AlertId}", id);
 
-        if (!Guid.TryParse(id, out var guidId))
+        if (string.IsNullOrWhiteSpace(id))
         {
             return await req.CreateBadRequestResponseAsync("Alert.InvalidId", "Invalid alert ID format");
         }
@@ -206,7 +206,7 @@ public sealed class AlertFunctions(IAlertService alertService, ILogger<AlertFunc
             return await req.CreateBadRequestResponseAsync("Request.Invalid", "Invalid request body");
         }
 
-        var result = await alertService.RescindAsync(guidId, request, context.CancellationToken);
+        var result = await alertService.RescindAsync(id, request, context.CancellationToken);
 
         if (result.IsFailure)
         {

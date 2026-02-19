@@ -6,15 +6,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using UserManagement.Client.Middleware;
-using UserManagement.Infrastructure.Extensions;
+using UserManagement.Infrastructure;
 using UserManagement.Infrastructure.Identity;
 
 var builder = FunctionsApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
-
-builder
-    .ConfigureFunctionsWebApplication();
 
 builder
     .Services
@@ -24,11 +21,6 @@ builder
 builder
     .Services
     .AddInfrastructure(builder.Configuration);
-
-// Add Authorization
-builder
-    .Services
-    .AddAuthorization();
 
 builder
     .UseMiddleware<ExceptionHandlingMiddleware>()

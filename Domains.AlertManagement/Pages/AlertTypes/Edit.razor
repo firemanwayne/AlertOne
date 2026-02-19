@@ -61,9 +61,10 @@
     {
         _isLoading = true;
 
-        if (Guid.TryParse(Id, out var id))
+        if (!string.IsNullOrWhiteSpace(Id))
         {
-            var result = await AlertTypeService.GetByIdAsync(id);
+            var result = await AlertTypeService.GetByIdAsync(Id);
+
             _alertType = result.IsSuccess ? AlertTypeViewModel.FromResponse(result.Value) : null;
         }
         else

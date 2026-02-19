@@ -7,4 +7,4 @@ public sealed record UpdateAlertTypeRequest(
     string Name,
     string Description,
     string Color,
-    List<Guid> NotifyUserIds);
+    List<string> NotifyUserIds);

@@ -4,8 +4,7 @@
 @inject IUserManagementService UserService
 @inject NavigationManager Navigation
 
-<div class="container-fluid mt-4">
-    <h2 class="mb-4">User Management</h2>
+<div class="container-fluid mt-4">    
 
     <UserList @ref="_userListRef"
               OnEdit="@HandleEditUser"

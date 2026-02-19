@@ -1,7 +1,7 @@
 namespace AlertManagement.Core.DTOs.Responses;
 
 public sealed record AlertResponse(
-    Guid Id,
+    string Id,
     AlertTypeResponse Type,
     AlertStatusLevelResponse StatusLevel,
     string CreatedBy,

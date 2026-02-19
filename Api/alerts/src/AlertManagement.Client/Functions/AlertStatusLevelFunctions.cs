@@ -1,4 +1,3 @@
-using System.Net;
 using AlertManagement.Client.Extensions;
 using AlertManagement.Core.Common;
 using AlertManagement.Core.DTOs.Requests;
@@ -6,6 +5,7 @@ using AlertManagement.Core.Interfaces;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace AlertManagement.Client.Functions;
 
@@ -45,12 +45,12 @@ public sealed class AlertStatusLevelFunctions(IAlertStatusLevelService alertStat
     {
         logger.LogInformation("Getting alert status level {AlertStatusLevelId}", id);
 
-        if (!Guid.TryParse(id, out var guidId))
+        if (string.IsNullOrWhiteSpace(id))
         {
             return await req.CreateBadRequestResponseAsync("AlertStatusLevel.InvalidId", "Invalid alert status level ID format");
         }
 
-        var result = await alertStatusLevelService.GetByIdAsync(guidId, context.CancellationToken);
+        var result = await alertStatusLevelService.GetByIdAsync(id, context.CancellationToken);
 
         if (result.IsFailure)
         {
@@ -104,7 +104,7 @@ public sealed class AlertStatusLevelFunctions(IAlertStatusLevelService alertStat
     {
         logger.LogInformation("Updating alert status level {AlertStatusLevelId}", id);
 
-        if (!Guid.TryParse(id, out var guidId))
+        if (string.IsNullOrWhiteSpace(id))
         {
             return await req.CreateBadRequestResponseAsync("AlertStatusLevel.InvalidId", "Invalid alert status level ID format");
         }
@@ -116,7 +116,7 @@ public sealed class AlertStatusLevelFunctions(IAlertStatusLevelService alertStat
             return await req.CreateBadRequestResponseAsync("Request.Invalid", "Invalid request body");
         }
 
-        var result = await alertStatusLevelService.UpdateAsync(guidId, request, context.CancellationToken);
+        var result = await alertStatusLevelService.UpdateAsync(id, request, context.CancellationToken);
 
         if (result.IsFailure)
         {
@@ -141,12 +141,12 @@ public sealed class AlertStatusLevelFunctions(IAlertStatusLevelService alertStat
     {
         logger.LogInformation("Deleting alert status level {AlertStatusLevelId}", id);
 
-        if (!Guid.TryParse(id, out var guidId))
+        if (string.IsNullOrWhiteSpace(id))
         {
             return await req.CreateBadRequestResponseAsync("AlertStatusLevel.InvalidId", "Invalid alert status level ID format");
         }
 
-        var result = await alertStatusLevelService.DeleteAsync(guidId, context.CancellationToken);
+        var result = await alertStatusLevelService.DeleteAsync(id, context.CancellationToken);
 
         if (result.IsFailure)
         {

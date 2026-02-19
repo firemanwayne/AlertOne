@@ -28,7 +28,7 @@ internal sealed class AlertTypeService(AlertDbContext context, ILogger<AlertType
         return Result.Success(responses);
     }
 
-    public async Task<Result<AlertTypeResponse>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Result<AlertTypeResponse>> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting alert type {AlertTypeId}", id);
 
@@ -68,7 +68,7 @@ internal sealed class AlertTypeService(AlertDbContext context, ILogger<AlertType
 
         var alertType = new AlertType
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.NewGuid().ToString(),
             Name = request.Name,
             Description = request.Description,
             Color = request.Color,
@@ -97,7 +97,7 @@ internal sealed class AlertTypeService(AlertDbContext context, ILogger<AlertType
         return Result.Success(MapToResponse(created));
     }
 
-    public async Task<Result<AlertTypeResponse>> UpdateAsync(Guid id, UpdateAlertTypeRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<AlertTypeResponse>> UpdateAsync(string id, UpdateAlertTypeRequest request, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Updating alert type {AlertTypeId}", id);
 
@@ -155,7 +155,7 @@ internal sealed class AlertTypeService(AlertDbContext context, ILogger<AlertType
         return Result.Success(MapToResponse(updated));
     }
 
-    public async Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Deleting alert type {AlertTypeId}", id);
 

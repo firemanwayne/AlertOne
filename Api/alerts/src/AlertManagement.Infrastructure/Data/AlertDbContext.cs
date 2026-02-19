@@ -6,17 +6,13 @@ namespace AlertManagement.Infrastructure.Data;
 /// <summary>
 /// Database context for alert management
 /// </summary>
-public sealed class AlertDbContext : DbContext
+public sealed class AlertDbContext(DbContextOptions<AlertDbContext> options) : DbContext(options)
 {
     public DbSet<Alert> Alerts => Set<Alert>();
     public DbSet<AlertType> AlertTypes => Set<AlertType>();
     public DbSet<AlertTypeUser> AlertTypeUsers => Set<AlertTypeUser>();
     public DbSet<AlertStatusLevel> AlertStatusLevels => Set<AlertStatusLevel>();
     public DbSet<AlertHistory> AlertHistories => Set<AlertHistory>();
-
-    public AlertDbContext(DbContextOptions<AlertDbContext> options) : base(options)
-    {
-    }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

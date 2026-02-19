@@ -27,7 +27,7 @@ internal sealed class AlertStatusLevelService(AlertDbContext context, ILogger<Al
         return Result.Success(responses);
     }
 
-    public async Task<Result<AlertStatusLevelResponse>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Result<AlertStatusLevelResponse>> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting alert status level {AlertStatusLevelId}", id);
 
@@ -66,7 +66,7 @@ internal sealed class AlertStatusLevelService(AlertDbContext context, ILogger<Al
 
         var statusLevel = new AlertStatusLevel
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.NewGuid().ToString(),
             Name = request.Name,
             Description = request.Description,
             Color = request.Color,
@@ -84,7 +84,7 @@ internal sealed class AlertStatusLevelService(AlertDbContext context, ILogger<Al
         return Result.Success(MapToResponse(statusLevel));
     }
 
-    public async Task<Result<AlertStatusLevelResponse>> UpdateAsync(Guid id, UpdateAlertStatusLevelRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<AlertStatusLevelResponse>> UpdateAsync(string id, UpdateAlertStatusLevelRequest request, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Updating alert status level {AlertStatusLevelId}", id);
 
@@ -127,7 +127,7 @@ internal sealed class AlertStatusLevelService(AlertDbContext context, ILogger<Al
         return Result.Success(MapToResponse(statusLevel));
     }
 
-    public async Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Deleting alert status level {AlertStatusLevelId}", id);
 

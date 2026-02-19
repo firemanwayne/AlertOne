@@ -151,7 +151,7 @@
                     _model.Color,
                     _model.SendNotifications);
 
-                var result = await AlertStatusLevelService.UpdateAsync(Guid.Parse(StatusLevel.Id), request);
+                var result = await AlertStatusLevelService.UpdateAsync(StatusLevel.Id, request);
 
                 if (result.IsSuccess)
                 {

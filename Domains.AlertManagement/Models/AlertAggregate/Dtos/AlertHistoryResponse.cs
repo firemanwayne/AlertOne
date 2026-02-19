@@ -1,5 +1,3 @@
-using AlertOne.Core.Abstractions;
-
 namespace Domains.AlertManagement.AlertAggregate.Dtos;
 
 public sealed class AlertHistoryResponse : DataModelBase

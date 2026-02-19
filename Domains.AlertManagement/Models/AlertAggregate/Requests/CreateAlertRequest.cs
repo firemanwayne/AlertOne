@@ -6,6 +6,6 @@ namespace Domains.AlertManagement.AlertAggregate.Requests;
 /// Request model for creating a new alert
 /// </summary>
 public sealed record CreateAlertRequest(
-    Guid AlertTypeId,
-    Guid AlertStatusLevelId,
+    string AlertTypeId,
+    string AlertStatusLevelId,
     string CreatedBy);

@@ -12,8 +12,8 @@ public sealed class AlertDbContextFactory : IDesignTimeDbContextFactory<AlertDbC
     {
         var optionsBuilder = new DbContextOptionsBuilder<AlertDbContext>();
 
-        // Use SQLite for migrations (can be changed as needed)
-        optionsBuilder.UseSqlite("Data Source=alertmanagement.db");
+        optionsBuilder
+            .UseAzureSql("Server=tcp:alert-one-sql-server-dev.database.windows.net,1433;Initial Catalog=alert-one-sql-db-dev;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;Authentication='Active Directory Default'");
 
         return new AlertDbContext(optionsBuilder.Options);
     }

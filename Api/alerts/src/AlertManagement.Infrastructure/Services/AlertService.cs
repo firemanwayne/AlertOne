@@ -96,7 +96,7 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
 
         var alert = new Alert
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.NewGuid().ToString(),
             AlertTypeId = request.AlertTypeId,
             AlertStatusLevelId = request.AlertStatusLevelId,
             CreatedBy = request.CreatedBy,
@@ -109,7 +109,7 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
 
         var historyEntry = new AlertHistory
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.NewGuid().ToString(),
             AlertId = alert.Id,
             EventType = EventTypeCreated,
             ChangedBy = request.CreatedBy,
@@ -129,7 +129,7 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
         return Result.Success(MapToResponse(alert));
     }
 
-    public async Task<Result> RescindAsync(Guid id, RescindAlertRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result> RescindAsync(string id, RescindAlertRequest request, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Rescinding alert {AlertId}", id);
 
@@ -165,7 +165,7 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
 
         var historyEntry = new AlertHistory
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.NewGuid().ToString(),
             AlertId = alert.Id,
             EventType = EventTypeRescinded,
             ChangedBy = request.RescindedBy,
@@ -182,7 +182,7 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
         return Result.Success();
     }
 
-    public async Task<Result<AlertResponse>> UpdateStatusAsync(Guid id, UpdateAlertStatusRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<AlertResponse>> UpdateStatusAsync(string id, UpdateAlertStatusRequest request, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Updating status for alert {AlertId}", id);
 
@@ -225,7 +225,7 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
 
         var historyEntry = new AlertHistory
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.NewGuid().ToString(),
             AlertId = alert.Id,
             EventType = EventTypeStatusUpdated,
             ChangedBy = request.UpdatedBy,
@@ -248,7 +248,7 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
         return Result.Success(MapToResponse(updatedAlert));
     }
 
-    public async Task<Result<AlertResponse>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Result<AlertResponse>> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting alert {AlertId}", id);
 
@@ -268,7 +268,7 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
         return Result.Success(MapToResponse(alert));
     }
 
-    public async Task<Result<IEnumerable<AlertHistoryResponse>>> GetHistoryAsync(Guid alertId, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<AlertHistoryResponse>>> GetHistoryAsync(string alertId, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting history for alert {AlertId}", alertId);
 

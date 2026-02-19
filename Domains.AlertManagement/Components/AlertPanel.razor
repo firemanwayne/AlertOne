@@ -85,20 +85,21 @@
                     <div class="mb-3">
                         <label for="alertType" class="form-label fw-semibold">Alert Type</label>
                         <InputSelect id="alertType" @bind-Value="_activateModel.TypeId" class="form-select">
-                            <option value="@Guid.Empty">— Select a type —</option>
+                            <option value="@string.Empty">— Select a type —</option>
                             @foreach (var type in _alertTypes)
                             {
                                 <option value="@type.Id">@type.Name</option>
                             }
                         </InputSelect>
                         <ValidationMessage For="@(() => _activateModel.TypeId)" />
-                        @if (_activateModel.TypeId != Guid.Empty)
+                        @if (_activateModel.TypeId != string.Empty)
                         {
-                            var selected = _alertTypes.FirstOrDefault(t => t.Id == _activateModel.TypeId.ToString());
+                            var selected = _alertTypes.FirstOrDefault(t => t.Id == _activateModel.TypeId);
+
                             if (selected != null)
                             {
                                 <div class="mt-2 p-2 rounded small"
-                                     style="background-color: @selected.Color + "22"; border-left: 4px solid @selected.Color;">
+                                     style="background-color: @(selected.Color + "22"); border-left: 4px solid @selected.Color;">
                                     @selected.Description
                                 </div>
                             }
@@ -108,7 +109,8 @@
                     <div class="mb-3">
                         <label for="statusLevel" class="form-label fw-semibold">Status Level</label>
                         <InputSelect id="statusLevel" @bind-Value="_activateModel.StatusLevelId" class="form-select">
-                            <option value="@Guid.Empty">— Select a status level —</option>
+                            <option value="@string.Empty">— Select a status level —</option>
+
                             @foreach (var level in _statusLevels)
                             {
                                 <option value="@level.Id">@level.Name</option>
@@ -288,7 +290,8 @@
         try
         {
             var rescindRequest = new RescindAlertRequest(AppState.CurrentUser?.Email ?? string.Empty);
-            var result = await AlertService.RescindAsync(Guid.Parse(_activeAlert.Id), rescindRequest);
+
+            var result = await AlertService.RescindAsync(_activeAlert.Id, rescindRequest);
 
             if (result.IsSuccess)
             {
@@ -319,11 +322,9 @@
     private sealed class ActivateModel
     {
         [Required(ErrorMessage = "Please select an alert type.")]
-        [NotEmptyGuid(ErrorMessage = "Please select an alert type.")]
-        public Guid TypeId { get; set; }
+        public string TypeId { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Please select a status level.")]
-        [NotEmptyGuid(ErrorMessage = "Please select a status level.")]
-        public Guid StatusLevelId { get; set; }
+        public string StatusLevelId { get; set; } = string.Empty;
     }   
 }

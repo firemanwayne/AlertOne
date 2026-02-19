@@ -165,7 +165,7 @@
                     <div class="mb-3">
                         <label for="statusLevelSelect" class="form-label fw-semibold">New Status Level</label>
                         <select id="statusLevelSelect" class="form-select" @bind="_selectedStatusLevelId" disabled="@_isSaving">
-                            <option value="@Guid.Empty">— Select a status level —</option>
+                            <option value="@string.Empty">— Select a status level —</option>
                             @foreach (var level in _availableStatusLevels)
                             {
                                 <option value="@level.Id">@level.Name</option>
@@ -175,7 +175,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" @onclick="CloseStatusModal" disabled="@_isSaving">Cancel</button>
-                    <button type="button" class="btn btn-primary" @onclick="SaveStatusAsync" disabled="@(_isSaving || _selectedStatusLevelId == Guid.Empty)">
+                    <button type="button" class="btn btn-primary" @onclick="SaveStatusAsync" disabled="@(_isSaving || _selectedStatusLevelId == string.Empty)">
                         @if (_isSaving)
                         {
                             <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
@@ -206,7 +206,7 @@
     private bool _isSaving = false;
     private string? _modalError;
     private List<AlertStatusLevelViewModel> _availableStatusLevels = new();
-    private Guid _selectedStatusLevelId = Guid.Empty;
+    private string _selectedStatusLevelId = string.Empty;
 
     private bool _isManager =>
         AppState.CurrentUser?.Roles.Contains("Manager", StringComparer.OrdinalIgnoreCase) == true;
@@ -221,16 +221,16 @@
         _isLoading = true;
         _historyError = null;
 
-        if (!Guid.TryParse(Id, out var guid))
+        if (string.IsNullOrWhiteSpace(Id))
         {
             _alert = null;
             _isLoading = false;
             return;
         }
 
-        var alertTask = AlertService.GetByIdAsync(guid);
+        var alertTask = AlertService.GetByIdAsync(Id);
 
-        var historyTask = AlertService.GetHistoryAsync(guid);
+        var historyTask = AlertService.GetHistoryAsync(Id);
 
         await Task.WhenAll(alertTask, historyTask);
 
@@ -260,7 +260,7 @@
     private async Task OpenStatusModalAsync()
     {
         _modalError = null;
-        _selectedStatusLevelId = Guid.Empty;
+        _selectedStatusLevelId = string.Empty;
 
         if (!_availableStatusLevels.Any())
         {
@@ -285,7 +285,7 @@
 
     private async Task SaveStatusAsync()
     {
-        if (_alert is null || _selectedStatusLevelId == Guid.Empty)
+        if (_alert is null || _selectedStatusLevelId == string.Empty)
         {
             return;
         }
@@ -299,14 +299,14 @@
                 _selectedStatusLevelId,
                 AppState.CurrentUser?.Email ?? string.Empty);
 
-            var result = await AlertService.UpdateStatusAsync(Guid.Parse(_alert.Id), request);
+            var result = await AlertService.UpdateStatusAsync(_alert.Id, request);
 
             if (result.IsSuccess)
             {
                 _alert = AlertViewModel.FromResponse(result.Value);
                 _showStatusModal = false;
 
-                var historyResult = await AlertService.GetHistoryAsync(Guid.Parse(_alert.Id));
+                var historyResult = await AlertService.GetHistoryAsync(_alert.Id);
 
                 if (historyResult.IsSuccess)
                 {
