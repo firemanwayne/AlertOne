@@ -1,6 +1,4 @@
-using Domains.AlertManagement.Interfaces;
-using Domains.AlertManagement.Services;
-using Microsoft.Extensions.DependencyInjection;
+using AlertOne.Shared.Handlers;
 
 namespace Domains.AlertManagement;
 
@@ -17,6 +15,14 @@ public static class ServiceRegistryExtensions
         services.AddScoped<IAlertService, AlertService>();
         services.AddScoped<IAlertTypeService, AlertTypeService>();
         services.AddScoped<IAlertStatusLevelService, AlertStatusLevelService>();
+
+        services
+            .AddHttpClient<AlertManagementApiClient>(client =>
+            {
+                client.BaseAddress = new Uri("http://alerts-api");
+                client.Timeout = TimeSpan.FromSeconds(30);
+            })
+            .AddHttpMessageHandler<JwtAuthHeaderHandler>();
 
         return services;
     }

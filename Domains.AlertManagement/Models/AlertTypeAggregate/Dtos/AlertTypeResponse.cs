@@ -1,5 +1,3 @@
-using UserManagementApps.Core.Abstractions;
-
 namespace Domains.AlertManagement.AlertTypeAggregate.Dtos;
 
 /// <summary>

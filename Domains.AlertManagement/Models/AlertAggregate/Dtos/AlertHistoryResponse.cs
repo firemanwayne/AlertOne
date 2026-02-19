@@ -1,4 +1,4 @@
-using UserManagementApps.Core.Abstractions;
+using AlertOne.Core.Abstractions;
 
 namespace Domains.AlertManagement.AlertAggregate.Dtos;
 

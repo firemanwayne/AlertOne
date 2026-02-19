@@ -1,7 +1,3 @@
-using Domains.AlertManagement.AlertStatusLevelAggregate.Dtos;
-using Domains.AlertManagement.AlertStatusLevelAggregate.Requests;
-using UserManagementApps.Core.Common;
-
 namespace Domains.AlertManagement.Interfaces;
 
 /// <summary>

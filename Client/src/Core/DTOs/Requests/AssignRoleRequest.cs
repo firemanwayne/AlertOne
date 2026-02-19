@@ -1,4 +1,4 @@
-namespace UserManagementApps.Core.DTOs.Requests;
+namespace AlertOne.Core.DTOs.Requests;
 
 /// <summary>
 /// Request model for assigning a role to a user

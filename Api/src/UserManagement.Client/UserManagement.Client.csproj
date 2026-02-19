@@ -8,7 +8,7 @@
 	</PropertyGroup>
 	
 	<ItemGroup>
-		<ProjectReference Include="..\..\..\Aspire\UserManagement.ServiceDefaults\UserManagement.ServiceDefaults.csproj" />
+		<ProjectReference Include="..\..\..\Aspire\UserManagement.ServiceDefaults\AlertOne.ServiceDefaults.csproj" />
 		<ProjectReference Include="..\UserManagement.Infrastructure\UserManagement.Infrastructure.csproj" />
 	</ItemGroup>
 

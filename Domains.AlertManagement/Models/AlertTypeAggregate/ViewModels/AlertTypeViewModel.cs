@@ -1,7 +1,3 @@
-using Domains.AlertManagement.AlertTypeAggregate.Dtos;
-using UserManagementApps.Core.Abstractions;
-using System.ComponentModel.DataAnnotations;
-
 namespace Domains.AlertManagement.AlertTypeAggregate.ViewModels;
 
 public sealed class AlertTypeViewModel : ViewModelBase

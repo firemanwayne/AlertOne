@@ -16,6 +16,6 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\Api\src\UserManagement.Client\UserManagement.Client.csproj" />
 		<ProjectReference Include="..\..\Api\alerts\src\AlertManagement.Client\AlertManagement.Client.csproj" />
-		<ProjectReference Include="..\..\Client\src\Web\UserManagementApps.Web.csproj" />
+		<ProjectReference Include="..\..\Client\src\Web\AlertOne.Web.csproj" />
 	</ItemGroup>
 </Project>

@@ -84,7 +84,7 @@
                                 <td>@alert.CreatedAt.ToString("MMM d, yyyy h:mm tt")</td>
                                 <td>@alert.LastModifiedAt.ToString("MMM d, yyyy h:mm tt")</td>
                                 <td>@(alert.RescindedBy ?? "—")</td>
-                                <td>@(alert.RescindedAt?.ToString("MMM d, yyyy h:mm tt") ?? "—")</td>
+                                <td>@(alert.RescindedBy ?? "—")</td>
                                 <td>
                                     <a href="/alerts/@alert.Id" class="btn btn-outline-primary btn-sm">View</a>
                                 </td>

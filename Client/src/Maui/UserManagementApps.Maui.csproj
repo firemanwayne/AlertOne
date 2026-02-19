@@ -70,7 +70,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\UserManagement.ServiceDefaults.Maui\UserManagement.ServiceDefaults.Maui.csproj" />
+      <ProjectReference Include="..\..\..\UserManagement.ServiceDefaults.Maui\AlertOne.ServiceDefaults.Maui.csproj" />
       <ProjectReference Include="..\Domains\Domains.UserManagement\Domains.UserManagement.csproj" />
     </ItemGroup>
 

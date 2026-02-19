@@ -1,6 +1,6 @@
-using UserManagementApps.Core.Enums;
+using AlertOne.Core.Enums;
 
-namespace UserManagementApps.Core.DTOs.Responses;
+namespace AlertOne.Core.DTOs.Responses;
 
 /// <summary>
 /// Response model for device session information

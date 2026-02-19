@@ -1,6 +1,6 @@
-using UserManagementApps.Core.Enums;
+using AlertOne.Core.Enums;
 
-namespace UserManagementApps.Core.DTOs.Requests;
+namespace AlertOne.Core.DTOs.Requests;
 
 /// <summary>
 /// Information about the device making the authentication request

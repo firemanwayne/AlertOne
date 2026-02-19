@@ -1,0 +1,17 @@
+﻿global using AlertOne.Core.Abstractions;
+global using AlertOne.Core.Common;
+global using AlertOne.Core.Interfaces;
+global using Domains.AlertManagement.AlertAggregate.Dtos;
+global using Domains.AlertManagement.AlertAggregate.Requests;
+global using Domains.AlertManagement.AlertStatusLevelAggregate.Dtos;
+global using Domains.AlertManagement.AlertStatusLevelAggregate.Requests;
+global using Domains.AlertManagement.AlertStatusLevelAggregate.ViewModels;
+global using Domains.AlertManagement.AlertTypeAggregate.Dtos;
+global using Domains.AlertManagement.AlertTypeAggregate.Requests;
+global using Domains.AlertManagement.AlertTypeAggregate.ViewModels;
+global using Domains.AlertManagement.Interfaces;
+global using Domains.AlertManagement.Services;
+global using Microsoft.Extensions.DependencyInjection;
+global using System.ComponentModel.DataAnnotations;
+global using System.Net.Http.Json;
+global using System.Text.Json;

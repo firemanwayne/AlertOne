@@ -1,8 +1,3 @@
-using Domains.AlertManagement.AlertTypeAggregate.Dtos;
-using Domains.AlertManagement.AlertTypeAggregate.Requests;
-using Domains.AlertManagement.Interfaces;
-using UserManagementApps.Core.Common;
-
 namespace Domains.AlertManagement.Services;
 
 internal sealed class AlertTypeService(AlertManagementApiClient apiClient) : IAlertTypeService

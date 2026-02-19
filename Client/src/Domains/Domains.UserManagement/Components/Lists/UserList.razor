@@ -68,8 +68,11 @@
                                     <button class="btn btn-sm btn-outline-primary me-1" @onclick="@(() => OnEditUser(user))">
                                         Edit
                                     </button>
-                                    <button class="btn btn-sm btn-outline-danger" @onclick="@(() => OnDeleteUser(user))">
+                                    <button class="btn btn-sm btn-outline-danger me-1" @onclick="@(() => OnDeleteUser(user))">
                                         Delete
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary" @onclick="@(() => OpenRolesModalAsync(user))">
+                                        Roles
                                     </button>
                                 </td>
                             </tr>
@@ -85,6 +88,91 @@
     </div>
 </div>
 
+@if (_showRolesModal && _managingRolesUser != null)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal fade show d-block" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Manage Roles — @_managingRolesUser.Email</h5>
+                    <button type="button" class="btn-close" @onclick="CloseRolesModal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    @if (!string.IsNullOrEmpty(_rolesModalError))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @_rolesModalError
+                        </div>
+                    }
+
+                    <h6>Current Roles</h6>
+                    @if (_managingRolesUser.Roles.Any())
+                    {
+                        <div class="mb-3">
+                            @foreach (var role in _managingRolesUser.Roles)
+                            {
+                                <span class="badge bg-primary me-1">
+                                    @role
+                                    <button type="button"
+                                            class="btn-close btn-close-white ms-1"
+                                            style="font-size: 0.6rem;"
+                                            aria-label="Remove @role"
+                                            disabled="@_isSavingRole"
+                                            @onclick="@(() => RemoveRoleFromUserAsync(role))">
+                                    </button>
+                                </span>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-3">No roles assigned.</p>
+                    }
+
+                    <h6>Add Role</h6>
+                    @{
+                        var unassignedRoles = _availableRoles
+                            .Where(r => !_managingRolesUser.Roles.Contains(r.Name))
+                            .ToList();
+                    }
+                    @if (unassignedRoles.Any())
+                    {
+                        <div class="d-flex gap-2">
+                            <select class="form-select" @bind="_selectedRoleToAdd" disabled="@_isSavingRole">
+                                <option value="">— Select a role —</option>
+                                @foreach (var role in unassignedRoles)
+                                {
+                                    <option value="@role.Name">@role.Name</option>
+                                }
+                            </select>
+                            <button class="btn btn-primary"
+                                    @onclick="AssignRoleToUserAsync"
+                                    disabled="@(string.IsNullOrEmpty(_selectedRoleToAdd) || _isSavingRole)">
+                                @if (_isSavingRole)
+                                {
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                }
+                                else
+                                {
+                                    <span>Add Role</span>
+                                }
+                            </button>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">All available roles are already assigned.</p>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseRolesModal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     [Parameter]
     public EventCallback<UserResponse> OnEdit { get; set; }
@@ -96,6 +184,13 @@
     private bool _isLoading = false;
     private string? _errorMessage;
     private string _searchTerm = string.Empty;
+
+    private UserResponse? _managingRolesUser = null;
+    private bool _showRolesModal = false;
+    private bool _isSavingRole = false;
+    private string? _rolesModalError;
+    private List<RoleResponse> _availableRoles = new();
+    private string _selectedRoleToAdd = string.Empty;
 
     private IEnumerable<UserResponse> FilteredUsers
     {
@@ -165,5 +260,119 @@
     public async Task RefreshAsync()
     {
         await LoadUsersAsync();
+    }
+
+    private async Task OpenRolesModalAsync(UserResponse user)
+    {
+        _managingRolesUser = user;
+        _rolesModalError = null;
+        _selectedRoleToAdd = string.Empty;
+
+        if (!_availableRoles.Any())
+        {
+            var result = await RoleService.GetAllRolesAsync();
+
+            if (result.IsSuccess)
+            {
+                _availableRoles = result.Value.ToList();
+            }
+        }
+
+        _showRolesModal = true;
+    }
+
+    private void CloseRolesModal()
+    {
+        _showRolesModal = false;
+        _managingRolesUser = null;
+        _rolesModalError = null;
+        _selectedRoleToAdd = string.Empty;
+    }
+
+    private async Task AssignRoleToUserAsync()
+    {
+        if (_managingRolesUser == null || string.IsNullOrEmpty(_selectedRoleToAdd))
+        {
+            return;
+        }
+
+        _isSavingRole = true;
+        _rolesModalError = null;
+
+        try
+        {
+            var request = new AssignRoleRequest(_managingRolesUser.Id, _selectedRoleToAdd);
+            var result = await RoleService.AssignRoleAsync(request);
+
+            if (result.IsSuccess)
+            {
+                await RefreshUserInListAsync(_managingRolesUser.Id);
+                _selectedRoleToAdd = string.Empty;
+            }
+            else
+            {
+                _rolesModalError = result.Error?.Message ?? "Failed to assign role";
+            }
+        }
+        catch (Exception ex)
+        {
+            _rolesModalError = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            _isSavingRole = false;
+        }
+    }
+
+    private async Task RemoveRoleFromUserAsync(string roleName)
+    {
+        if (_managingRolesUser == null)
+        {
+            return;
+        }
+
+        _isSavingRole = true;
+        _rolesModalError = null;
+
+        try
+        {
+            var request = new AssignRoleRequest(_managingRolesUser.Id, roleName);
+            var result = await RoleService.RemoveRoleAsync(request);
+
+            if (result.IsSuccess)
+            {
+                await RefreshUserInListAsync(_managingRolesUser.Id);
+            }
+            else
+            {
+                _rolesModalError = result.Error?.Message ?? "Failed to remove role";
+            }
+        }
+        catch (Exception ex)
+        {
+            _rolesModalError = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            _isSavingRole = false;
+        }
+    }
+
+    private async Task RefreshUserInListAsync(Guid userId)
+    {
+        var result = await UserService.GetUserByIdAsync(userId);
+
+        if (result.IsSuccess && _users != null)
+        {
+            var updatedUser = result.Value;
+            var index = _users.FindIndex(u => u.Id == userId);
+
+            if (index >= 0)
+            {
+                _users[index] = updatedUser;
+            }
+
+            _managingRolesUser = updatedUser;
+        }
     }
 }

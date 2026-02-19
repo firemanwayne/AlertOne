@@ -1,4 +1,4 @@
-namespace UserManagementApps.Core.Abstractions;
+namespace AlertOne.Core.Abstractions;
 
 /// <summary>
 /// Base class for all client-side view models.

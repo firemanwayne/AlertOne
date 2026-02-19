@@ -1,3 +1,4 @@
+using AlertOne.ServiceDefaults;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.EntityFrameworkCore;

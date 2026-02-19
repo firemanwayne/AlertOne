@@ -1,6 +1,4 @@
-using UserManagementApps.Core.DTOs.Responses;
-
-namespace UserManagementApps.Core.Models;
+namespace AlertOne.Core.Models;
 
 /// <summary>
 /// Represents the current authentication state

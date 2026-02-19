@@ -1,7 +1,8 @@
-@using UserManagementApps.Shared.Layout
-
 <CascadingAuthenticationState>
-    <Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="@(new[] { typeof(Domains.UserManagement._Imports).Assembly, typeof(Domains.AlertManagement._Imports).Assembly })">
+    <Router AppAssembly="@typeof(App).Assembly" 
+    AdditionalAssemblies="@(new[] { 
+typeof(Domains.UserManagement._Imports).Assembly, 
+typeof(Domains.AlertManagement._Imports).Assembly })">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
                 <NotAuthorized>

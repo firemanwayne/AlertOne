@@ -21,14 +21,14 @@
     <Project Path="Api/tests/UnitTests/UserManagement.Infrastructure.Tests/UserManagement.Infrastructure.Tests.csproj" />
   </Folder>
   <Folder Name="/Aspire/">
-    <Project Path="Aspire/UserManagement.AppHost/UserManagement.AppHost.csproj" />
-    <Project Path="Aspire/UserManagement.ServiceDefaults/UserManagement.ServiceDefaults.csproj" />
-    <Project Path="UserManagement.ServiceDefaults.Maui/UserManagement.ServiceDefaults.Maui.csproj" />
+    <Project Path="Aspire/UserManagement.AppHost/AlertOne.AppHost.csproj" />
+    <Project Path="Aspire/UserManagement.ServiceDefaults/AlertOne.ServiceDefaults.csproj" />
+    <Project Path="UserManagement.ServiceDefaults.Maui/AlertOne.ServiceDefaults.Maui.csproj" />
   </Folder>
   <Folder Name="/Client/" />
   <Folder Name="/Client/src/" />
   <Folder Name="/Client/src/Core/">
-    <Project Path="Client/src/Core/UserManagementApps.Core.csproj" />
+    <Project Path="Client/src/Core/AlertOne.Core.csproj" />
   </Folder>
   <Folder Name="/Client/src/Domains/">
     <Project Path="Client/src/Domains/Domains.UserManagement/Domains.UserManagement.csproj" />
@@ -40,10 +40,10 @@
     </Project>
   </Folder>
   <Folder Name="/Client/src/Shared/">
-    <Project Path="Client/src/Shared/UserManagementApps.Shared.csproj" />
+    <Project Path="Client/src/Shared/AlertOne.Shared.csproj" />
   </Folder>
   <Folder Name="/Client/src/Web/">
-    <Project Path="Client/src/Web/UserManagementApps.Web.csproj" />
+    <Project Path="Client/src/Web/AlertOne.Web.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="Directory.Packages.props" />

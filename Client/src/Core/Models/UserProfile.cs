@@ -1,4 +1,4 @@
-namespace UserManagementApps.Core.Models;
+namespace AlertOne.Core.Models;
 
 /// <summary>
 /// Represents a user profile

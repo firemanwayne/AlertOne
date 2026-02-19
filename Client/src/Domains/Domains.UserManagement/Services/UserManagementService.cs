@@ -1,8 +1,3 @@
-using UserManagementApps.Core.Common;
-using UserManagementApps.Core.DTOs.Requests;
-using UserManagementApps.Core.DTOs.Responses;
-using UserManagementApps.Core.Interfaces;
-
 namespace Domains.UserManagement.Services;
 
 /// <summary>

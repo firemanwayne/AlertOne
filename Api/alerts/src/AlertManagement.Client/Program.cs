@@ -1,6 +1,7 @@
 using AlertManagement.Client.Middleware;
 using AlertManagement.Infrastructure.Data;
 using AlertManagement.Infrastructure.Extensions;
+using AlertOne.ServiceDefaults;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

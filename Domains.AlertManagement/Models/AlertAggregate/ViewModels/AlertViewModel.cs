@@ -1,9 +1,3 @@
-using Domains.AlertManagement.AlertAggregate.Dtos;
-using Domains.AlertManagement.AlertStatusLevelAggregate.ViewModels;
-using Domains.AlertManagement.AlertTypeAggregate.ViewModels;
-using UserManagementApps.Core.Abstractions;
-using System.ComponentModel.DataAnnotations;
-
 namespace Domains.AlertManagement.AlertAggregate.ViewModels;
 
 public sealed class AlertViewModel : ViewModelBase

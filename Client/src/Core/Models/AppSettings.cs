@@ -1,4 +1,4 @@
-namespace UserManagementApps.Core.Models;
+namespace AlertOne.Core.Models;
 
 /// <summary>
 /// Application settings

@@ -1,18 +1,16 @@
+using AlertOne.Core.Interfaces;
+using AlertOne.Shared.Handlers;
+using AlertOne.Shared.States;
+using AlertOne.Web;
+using AlertOne.Web.Auth;
+using AlertOne.Web.Services;
 using Blazored.LocalStorage;
 using Domains.AlertManagement;
-using Domains.AlertManagement.Services;
 using Domains.UserManagement;
-using Domains.UserManagement.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using UserManagementApps.Core.Interfaces;
-using UserManagementApps.Shared.Handlers;
-using UserManagementApps.Shared.States;
-using UserManagementApps.Web;
-using UserManagementApps.Web.Auth;
-using UserManagementApps.Web.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -43,32 +41,15 @@ builder.Services.AddAuthorizationCore(options =>
         .RequireAuthenticatedUser()
         .Build();
 });
+
 builder.Services.AddScoped<JwtAuthenticationStateProvider>();
-builder.Services.AddScoped<AuthenticationStateProvider>(
-    sp => sp.GetRequiredService<JwtAuthenticationStateProvider>());
+
+builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<JwtAuthenticationStateProvider>());
 
 builder
     .Services
     .AddUserManagement()
     .AddAlertManagement();
-
-builder
-    .Services
-    .AddHttpClient<UserManagementApiClient>(client =>
-    {
-        client.BaseAddress = new Uri("http://api");
-        client.Timeout = TimeSpan.FromSeconds(30);
-    })
-    .AddHttpMessageHandler<JwtAuthHeaderHandler>();
-
-builder
-    .Services
-    .AddHttpClient<AlertManagementApiClient>(client =>
-    {
-        client.BaseAddress = new Uri("http://alerts-api");
-        client.Timeout = TimeSpan.FromSeconds(30);
-    })
-    .AddHttpMessageHandler<JwtAuthHeaderHandler>();
 
 await builder
     .Build()

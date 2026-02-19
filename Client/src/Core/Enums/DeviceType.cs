@@ -1,4 +1,4 @@
-namespace UserManagementApps.Core.Enums;
+namespace AlertOne.Core.Enums;
 
 /// <summary>
 /// Represents the type of device used for authentication

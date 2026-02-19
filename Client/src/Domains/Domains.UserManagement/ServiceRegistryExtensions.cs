@@ -1,6 +1,4 @@
-using Domains.UserManagement.Services;
-using Microsoft.Extensions.DependencyInjection;
-using UserManagementApps.Core.Interfaces;
+using AlertOne.Shared.Handlers;
 
 namespace Domains.UserManagement;
 
@@ -26,6 +24,14 @@ public static class ServiceRegistryExtensions
         // services.AddTransient<UserListViewModel>();
         // services.AddTransient<UserEditViewModel>();
         // services.AddTransient<RoleListViewModel>();
+
+        services
+            .AddHttpClient<UserManagementApiClient>(client =>
+            {
+                client.BaseAddress = new Uri("http://api");
+                client.Timeout = TimeSpan.FromSeconds(30);
+            })
+            .AddHttpMessageHandler<JwtAuthHeaderHandler>();
 
         return services;
     }

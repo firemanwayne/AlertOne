@@ -1,0 +1,96 @@
+@page "/roles/create"
+@attribute [Authorize]
+
+@inject IRoleManagementService RoleService
+@inject NavigationManager Navigation
+
+<div class="container-fluid mt-4">
+    <div class="mb-3">
+        <button class="btn btn-secondary" @onclick="@(() => Navigation.NavigateTo("/roles"))">
+            ← Back to Roles
+        </button>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="mb-0">Create New Role</h3>
+        </div>
+        <div class="card-body">
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @_errorMessage
+                </div>
+            }
+
+            <EditForm Model="@_editModel" OnValidSubmit="@HandleSubmitAsync">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="text-danger" />
+
+                <div class="mb-3">
+                    <label for="roleName" class="form-label">Role Name</label>
+                    <InputText id="roleName" @bind-Value="_editModel.Name" class="form-control" />
+                    <ValidationMessage For="@(() => _editModel.Name)" />
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary" disabled="@_isLoading">
+                        @if (_isLoading)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <span>Creating...</span>
+                        }
+                        else
+                        {
+                            <span>Create Role</span>
+                        }
+                    </button>
+                    <button type="button" class="btn btn-secondary" @onclick="@(() => Navigation.NavigateTo("/roles"))" disabled="@_isLoading">
+                        Cancel
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    private EditModel _editModel = new();
+    private bool _isLoading = false;
+    private string? _errorMessage;
+
+    private async Task HandleSubmitAsync()
+    {
+        _isLoading = true;
+        _errorMessage = null;
+
+        try
+        {
+            var result = await RoleService.CreateRoleAsync(new CreateRoleRequest(_editModel.Name));
+
+            if (result.IsSuccess)
+            {
+                Navigation.NavigateTo("/roles");
+            }
+            else
+            {
+                _errorMessage = result.Error?.Message ?? "Failed to create role";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private class EditModel
+    {
+        [Required(ErrorMessage = "Role name is required")]
+        [MaxLength(100, ErrorMessage = "Role name cannot exceed 100 characters")]
+        public string Name { get; set; } = string.Empty;
+    }
+}

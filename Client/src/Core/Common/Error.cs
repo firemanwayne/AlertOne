@@ -1,6 +1,6 @@
-using UserManagementApps.Core.Enums;
+using AlertOne.Core.Enums;
 
-namespace UserManagementApps.Core.Common;
+namespace AlertOne.Core.Common;
 
 /// <summary>
 /// Represents an error with code, message, and type

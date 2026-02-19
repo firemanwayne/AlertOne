@@ -1,12 +1,12 @@
+using AlertOne.Core.Interfaces;
+using AlertOne.Core.Models;
+using AlertOne.Shared.States;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
-using UserManagementApps.Core.Interfaces;
-using UserManagementApps.Core.Models;
-using UserManagementApps.Shared.States;
 
-namespace UserManagementApps.Web.Auth;
+namespace AlertOne.Web.Auth;
 
 public sealed class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisposable
 {

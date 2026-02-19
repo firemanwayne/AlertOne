@@ -1,7 +1,3 @@
-using Domains.AlertManagement.AlertStatusLevelAggregate.Dtos;
-using UserManagementApps.Core.Abstractions;
-using System.ComponentModel.DataAnnotations;
-
 namespace Domains.AlertManagement.AlertStatusLevelAggregate.ViewModels;
 
 public sealed class AlertStatusLevelViewModel : ViewModelBase

@@ -1,0 +1,145 @@
+@page "/roles"
+@attribute [Authorize]
+
+@inject IRoleManagementService RoleService
+@inject NavigationManager Navigation
+
+<div class="container-fluid mt-4">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">Role Management</h3>
+            <button class="btn btn-primary btn-sm" @onclick="@(() => Navigation.NavigateTo("/roles/create"))">
+                Create New Role
+            </button>
+        </div>
+        <div class="card-body">
+            @if (_isLoading)
+            {
+                <div class="text-center py-5">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading roles...</p>
+                </div>
+            }
+            else if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @_errorMessage
+                </div>
+            }
+            else if (_roles == null || !_roles.Any())
+            {
+                <div class="alert alert-info" role="alert">
+                    No roles found.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Users</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var role in _roles)
+                            {
+                                <tr>
+                                    <td>@role.Name</td>
+                                    <td>@role.UserCount</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-danger"
+                                                @onclick="@(() => DeleteRoleAsync(role.Id))"
+                                                disabled="@(_deletingRoleId == role.Id)">
+                                            @if (_deletingRoleId == role.Id)
+                                            {
+                                                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                                <span>Deleting...</span>
+                                            }
+                                            else
+                                            {
+                                                <span>Delete</span>
+                                            }
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<RoleResponse>? _roles;
+    private bool _isLoading = false;
+    private string? _errorMessage;
+    private Guid? _deletingRoleId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRolesAsync();
+    }
+
+    private async Task LoadRolesAsync()
+    {
+        _isLoading = true;
+        _errorMessage = null;
+
+        try
+        {
+            var result = await RoleService.GetAllRolesAsync();
+
+            if (result.IsSuccess)
+            {
+                _roles = result.Value.ToList();
+            }
+            else
+            {
+                _errorMessage = result.Error?.Message ?? "Failed to load roles";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task DeleteRoleAsync(Guid roleId)
+    {
+        _deletingRoleId = roleId;
+        _errorMessage = null;
+
+        try
+        {
+            var result = await RoleService.DeleteRoleAsync(roleId);
+
+            if (result.IsSuccess)
+            {
+                await LoadRolesAsync();
+            }
+            else
+            {
+                _errorMessage = result.Error?.Message ?? "Failed to delete role";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            _deletingRoleId = null;
+        }
+    }
+}

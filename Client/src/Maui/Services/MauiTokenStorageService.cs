@@ -1,5 +1,5 @@
 
-using UserManagementApps.Core.Interfaces;
+using AlertOne.Core.Interfaces;
 
 namespace UserManagementApps.Maui.Services;
 

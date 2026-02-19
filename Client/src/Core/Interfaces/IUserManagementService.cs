@@ -1,8 +1,8 @@
-using UserManagementApps.Core.Common;
-using UserManagementApps.Core.DTOs.Requests;
-using UserManagementApps.Core.DTOs.Responses;
+using AlertOne.Core.Common;
+using AlertOne.Core.DTOs.Requests;
+using AlertOne.Core.DTOs.Responses;
 
-namespace UserManagementApps.Core.Interfaces;
+namespace AlertOne.Core.Interfaces;
 
 /// <summary>
 /// Service for user management operations

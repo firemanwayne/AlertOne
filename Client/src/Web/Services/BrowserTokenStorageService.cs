@@ -1,7 +1,7 @@
+using AlertOne.Core.Interfaces;
 using Blazored.LocalStorage;
-using UserManagementApps.Core.Interfaces;
 
-namespace UserManagementApps.Web.Services;
+namespace AlertOne.Web.Services;
 
 /// <summary>
 /// Browser-specific token storage implementation using LocalStorage

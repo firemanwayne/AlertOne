@@ -1,8 +1,8 @@
-using UserManagementApps.Core.Common;
-using UserManagementApps.Core.DTOs.Requests;
-using UserManagementApps.Core.DTOs.Responses;
+using AlertOne.Core.Common;
+using AlertOne.Core.DTOs.Requests;
+using AlertOne.Core.DTOs.Responses;
 
-namespace UserManagementApps.Core.Interfaces;
+namespace AlertOne.Core.Interfaces;
 
 /// <summary>
 /// Service for role management operations
@@ -23,4 +23,14 @@ public interface IRoleManagementService
     /// Removes a role from a user
     /// </summary>
     Task<IApiResult> RemoveRoleAsync(AssignRoleRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Creates a new role
+    /// </summary>
+    Task<IApiResult<RoleResponse>> CreateRoleAsync(CreateRoleRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes a role by ID
+    /// </summary>
+    Task<IApiResult> DeleteRoleAsync(Guid roleId, CancellationToken cancellationToken = default);
 }

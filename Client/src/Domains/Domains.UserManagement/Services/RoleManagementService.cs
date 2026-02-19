@@ -1,8 +1,3 @@
-using UserManagementApps.Core.Common;
-using UserManagementApps.Core.DTOs.Requests;
-using UserManagementApps.Core.DTOs.Responses;
-using UserManagementApps.Core.Interfaces;
-
 namespace Domains.UserManagement.Services;
 
 /// <summary>
@@ -46,4 +41,10 @@ internal sealed class RoleManagementService(UserManagementApiClient apiClient) :
 
         return Result.Failure(result.Error!);
     }
+
+    public Task<IApiResult<RoleResponse>> CreateRoleAsync(CreateRoleRequest request, CancellationToken cancellationToken = default)
+        => apiClient.PostAsync<CreateRoleRequest, RoleResponse>("/api/roles", request, cancellationToken);
+
+    public Task<IApiResult> DeleteRoleAsync(Guid roleId, CancellationToken cancellationToken = default)
+        => apiClient.DeleteAsync($"/api/roles/{roleId}", cancellationToken);
 }

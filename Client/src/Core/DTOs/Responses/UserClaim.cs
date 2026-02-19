@@ -1,4 +1,4 @@
-namespace UserManagementApps.Core.DTOs.Responses;
+namespace AlertOne.Core.DTOs.Responses;
 
 /// <summary>
 /// Represents a user claim with type and value

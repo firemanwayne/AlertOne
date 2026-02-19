@@ -1,4 +1,5 @@
 @page "/alerts/{id}"
+
 @attribute [Authorize]
 
 @inject IAlertService AlertService
@@ -68,19 +69,19 @@
                     </div>
                     <div class="col-md-3">
                         <h6 class="text-muted mb-1">Created By</h6>
-                        <p class="mb-0">@_alert.CreatedBy</p>
+                        <p class="mb-0">@_alert.Type.Description</p>
                     </div>
                     <div class="col-md-3">
                         <h6 class="text-muted mb-1">Created At</h6>
-                        <p class="mb-0">@_alert.CreatedAt.ToString("MMM d, yyyy h:mm tt")</p>
+                        <p class="mb-0">@_alert.StatusLevel.Description</p>
                     </div>
                     <div class="col-md-3">
                         <h6 class="text-muted mb-1">Last Modified By</h6>
-                        <p class="mb-0">@(_alert.LastModifiedBy ?? "—")</p>
+                        <p class="mb-0">@(_alert.CreatedBy)</p>
                     </div>
                     <div class="col-md-3">
                         <h6 class="text-muted mb-1">Last Modified At</h6>
-                        <p class="mb-0">@_alert.LastModifiedAt.ToString("MMM d, yyyy h:mm tt")</p>
+                        <p class="mb-0">@_alert.CreatedAt.ToString("MMM d, yyyy h:mm tt")</p>
                     </div>
                     @if (!_alert.IsActive)
                     {
@@ -193,10 +194,11 @@
 
 @code {
     [Parameter]
-    public string Id { get; set; } = string.Empty;
+    public string Id { get; set; } = string.Empty;    
 
     private AlertViewModel? _alert;
     private List<AlertHistoryViewModel> _history = new();
+
     private bool _isLoading = true;
     private string? _historyError;
 

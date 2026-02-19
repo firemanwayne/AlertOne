@@ -15,7 +15,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Core\UserManagementApps.Core.csproj" />
+		<ProjectReference Include="..\Core\AlertOne.Core.csproj" />
 		<ProjectReference Include="..\Domains\Domains.UserManagement\Domains.UserManagement.csproj" />
 		<ProjectReference Include="..\..\..\Domains.AlertManagement\Domains.AlertManagement.csproj" />
 	</ItemGroup>

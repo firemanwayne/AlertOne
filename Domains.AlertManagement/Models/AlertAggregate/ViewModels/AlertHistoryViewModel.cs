@@ -1,7 +1,3 @@
-using Domains.AlertManagement.AlertAggregate.Dtos;
-using UserManagementApps.Core.Abstractions;
-using System.ComponentModel.DataAnnotations;
-
 namespace Domains.AlertManagement.AlertAggregate.ViewModels;
 
 public sealed class AlertHistoryViewModel : ViewModelBase

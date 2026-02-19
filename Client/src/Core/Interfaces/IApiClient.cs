@@ -1,6 +1,6 @@
-using UserManagementApps.Core.Common;
+using AlertOne.Core.Common;
 
-namespace UserManagementApps.Core.Interfaces;
+namespace AlertOne.Core.Interfaces;
 
 /// <summary>
 /// HTTP client for API communication

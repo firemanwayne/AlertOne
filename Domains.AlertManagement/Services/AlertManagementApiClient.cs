@@ -1,8 +1,3 @@
-using System.Net.Http.Json;
-using System.Text.Json;
-using UserManagementApps.Core.Common;
-using UserManagementApps.Core.Interfaces;
-
 namespace Domains.AlertManagement.Services;
 
 /// <summary>

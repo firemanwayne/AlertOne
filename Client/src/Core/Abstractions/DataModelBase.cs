@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
 
-namespace UserManagementApps.Core.Abstractions;
+namespace AlertOne.Core.Abstractions;
 
 /// <summary>
 /// Base class for all client-side entities and data models.

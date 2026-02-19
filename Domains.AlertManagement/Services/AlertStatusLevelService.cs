@@ -1,8 +1,3 @@
-using Domains.AlertManagement.AlertStatusLevelAggregate.Dtos;
-using Domains.AlertManagement.AlertStatusLevelAggregate.Requests;
-using Domains.AlertManagement.Interfaces;
-using UserManagementApps.Core.Common;
-
 namespace Domains.AlertManagement.Services;
 
 internal sealed class AlertStatusLevelService(AlertManagementApiClient apiClient) : IAlertStatusLevelService

@@ -1,6 +1,4 @@
-using Domains.AlertManagement.AlertStatusLevelAggregate.Dtos;
-using Domains.AlertManagement.AlertTypeAggregate.Dtos;
-using UserManagementApps.Core.Abstractions;
+using AlertOne.Core.Abstractions;
 
 namespace Domains.AlertManagement.AlertAggregate.Dtos;
 

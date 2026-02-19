@@ -1,4 +1,4 @@
-namespace UserManagementApps.Core.Common;
+namespace AlertOne.Core.Common;
 
 /// <summary>
 /// Represents the result of an API operation without a return value

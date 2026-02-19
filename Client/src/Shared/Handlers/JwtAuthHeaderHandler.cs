@@ -1,11 +1,11 @@
+using AlertOne.Core.DTOs.Requests;
+using AlertOne.Core.Interfaces;
+using AlertOne.Shared.States;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Net.Http.Headers;
-using UserManagementApps.Core.DTOs.Requests;
-using UserManagementApps.Core.Interfaces;
-using UserManagementApps.Shared.States;
 
-namespace UserManagementApps.Shared.Handlers;
+namespace AlertOne.Shared.Handlers;
 
 /// <summary>
 /// HTTP message handler that adds JWT authentication headers to requests

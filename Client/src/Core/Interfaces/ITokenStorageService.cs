@@ -1,4 +1,4 @@
-namespace UserManagementApps.Core.Interfaces;
+namespace AlertOne.Core.Interfaces;
 
 /// <summary>
 /// Service for storing and retrieving authentication tokens

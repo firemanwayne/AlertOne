@@ -1,13 +1,13 @@
 
+using AlertOne.Core.Interfaces;
+using AlertOne.Shared.Handlers;
+using AlertOne.Shared.States;
 using Domains.AlertManagement;
 using Domains.AlertManagement.Services;
 using Domains.UserManagement;
 using Domains.UserManagement.Services;
 using Microsoft.Extensions.Logging;
-using UserManagementApps.Core.Interfaces;
 using UserManagementApps.Maui.Services;
-using UserManagementApps.Shared.Handlers;
-using UserManagementApps.Shared.States;
 
 namespace UserManagementApps.Maui;
 

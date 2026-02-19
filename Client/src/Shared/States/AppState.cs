@@ -1,8 +1,8 @@
+using AlertOne.Core.Models;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using UserManagementApps.Core.Models;
 
-namespace UserManagementApps.Shared.States;
+namespace AlertOne.Shared.States;
 
 /// <summary>
 /// Global application state with reactive property change notifications

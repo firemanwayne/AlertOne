@@ -1,4 +1,4 @@
-namespace UserManagementApps.Shared;
+namespace AlertOne.Shared;
 
 /// <summary>
 /// Extension methods for registering shared services

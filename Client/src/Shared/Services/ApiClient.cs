@@ -1,8 +1,8 @@
+using AlertOne.Core.Common;
 using System.Net.Http.Json;
 using System.Text.Json;
-using UserManagementApps.Core.Common;
 
-namespace UserManagementApps.Shared.Services;
+namespace AlertOne.Shared.Services;
 
 /// <summary>
 /// HTTP client wrapper for API communication
