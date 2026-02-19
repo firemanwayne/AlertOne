@@ -1,9 +1,9 @@
-﻿namespace UserManagementApps.Maui;
+﻿namespace AlertOne.Maui;
 
 public partial class MainPage : ContentPage
 {
-	public MainPage()
-	{
-		InitializeComponent();
-	}
+    public MainPage()
+    {
+        InitializeComponent();
+    }
 }

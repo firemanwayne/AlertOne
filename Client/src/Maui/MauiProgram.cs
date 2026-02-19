@@ -1,15 +1,14 @@
 
 using AlertOne.Core.Interfaces;
+using AlertOne.Maui.Services;
 using AlertOne.Shared.Handlers;
 using AlertOne.Shared.States;
 using Domains.AlertManagement;
-using Domains.AlertManagement.Services;
 using Domains.UserManagement;
-using Domains.UserManagement.Services;
-using Microsoft.Extensions.Logging;
-using UserManagementApps.Maui.Services;
 
-namespace UserManagementApps.Maui;
+using Microsoft.Extensions.Logging;
+
+namespace AlertOne.Maui;
 
 public static class MauiProgram
 {
@@ -45,27 +44,10 @@ public static class MauiProgram
 
         builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://api") });
 
-        builder.Services
+        builder
+            .Services
             .AddUserManagement()
             .AddAlertManagement();
-
-        builder
-            .Services
-            .AddHttpClient<UserManagementApiClient>(client =>
-            {
-                client.BaseAddress = new Uri("http://api");
-                client.Timeout = TimeSpan.FromSeconds(30);
-            })
-            .AddHttpMessageHandler<JwtAuthHeaderHandler>();
-
-        builder
-            .Services
-            .AddHttpClient<AlertManagementApiClient>(client =>
-            {
-                client.BaseAddress = new Uri("http://alerts-api");
-                client.Timeout = TimeSpan.FromSeconds(30);
-            })
-            .AddHttpMessageHandler<JwtAuthHeaderHandler>();
 
         return builder.Build();
     }

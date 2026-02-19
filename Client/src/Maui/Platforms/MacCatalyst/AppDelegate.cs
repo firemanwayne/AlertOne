@@ -1,9 +1,9 @@
 ﻿using Foundation;
 
-namespace UserManagementApps.Maui.Platforms.MacCatalyst;
+namespace AlertOne.Maui.Platforms.MacCatalyst;
 
 [Register("AppDelegate")]
 public class AppDelegate : MauiUIApplicationDelegate
 {
-	protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
+    protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 }

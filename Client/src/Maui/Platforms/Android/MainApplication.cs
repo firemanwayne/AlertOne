@@ -1,7 +1,7 @@
 ﻿using Android.App;
 using Android.Runtime;
 
-namespace UserManagementApps.Maui.Platforms.Android;
+namespace AlertOne.Maui.Platforms.Android;
 
 [Application]
 public class MainApplication : MauiApplication

@@ -35,7 +35,7 @@
     <Project Path="Domains.AlertManagement/Domains.AlertManagement.csproj" />
   </Folder>
   <Folder Name="/Client/src/Maui/">
-    <Project Path="Client/src/Maui/UserManagementApps.Maui.csproj">
+    <Project Path="Client/src/Maui/AlertOne.Maui.csproj">
       <Deploy Solution="Debug|*" />
     </Project>
   </Folder>

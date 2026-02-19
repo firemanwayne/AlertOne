@@ -1,7 +1,4 @@
-﻿@using System.Reflection
-@using UserManagementApps.Shared.Layout
-
-<Router AppAssembly="@typeof(MauiProgram).Assembly"
+﻿<Router AppAssembly="@typeof(MauiProgram).Assembly"
         AdditionalAssemblies="@(new[] { typeof(Domains.UserManagement._Imports).Assembly })">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />

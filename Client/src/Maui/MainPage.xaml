@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:UserManagementApps.Maui"
-             xmlns:components="clr-namespace:UserManagementApps.Maui.Components"
-             x:Class="UserManagementApps.Maui.MainPage">
+             xmlns:local="clr-namespace:AlertOne.Maui"
+             xmlns:components="clr-namespace:AlertOne.Maui.Components"
+             x:Class="AlertOne.Maui.MainPage">
 
     <BlazorWebView x:Name="blazorWebView" HostPage="wwwroot/index.html">
         <BlazorWebView.RootComponents>

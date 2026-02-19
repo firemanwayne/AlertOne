@@ -2,7 +2,7 @@ using System;
 using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
 
-namespace UserManagementApps.Maui;
+namespace AlertOne.Maui;
 
 class Program : MauiApplication
 {

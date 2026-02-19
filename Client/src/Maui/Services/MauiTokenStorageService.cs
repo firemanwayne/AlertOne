@@ -1,7 +1,7 @@
 
 using AlertOne.Core.Interfaces;
 
-namespace UserManagementApps.Maui.Services;
+namespace AlertOne.Maui.Services;
 
 /// <summary>
 /// Token storage service using MAUI SecureStorage
