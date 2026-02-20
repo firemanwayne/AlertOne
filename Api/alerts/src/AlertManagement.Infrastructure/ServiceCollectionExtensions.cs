@@ -1,5 +1,4 @@
 using AlertManagement.Core.Interfaces;
-using AlertManagement.Infrastructure.Configurations;
 using AlertManagement.Infrastructure.Data;
 using AlertManagement.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -29,18 +28,15 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
     {
-        var dbSettings = configuration
-            .GetSection(nameof(DatabaseSettings))
-            .Get<DatabaseSettings[]>() ?? throw new InvalidOperationException("DatabaseSettings not configured");
-
-        services
-            .Configure<DatabaseSettings>(configuration.GetSection(nameof(DatabaseSettings)));
+        var connectionString = configuration
+            .GetConnectionString("SqlServer");
 
         services
             .AddDbContext<AlertDbContext>(options =>
         {
-            options.UseAzureSql(
-                dbSettings[1].ConnectionString,
+            options
+            .UseAzureSql(
+                connectionString,
                 b => b.MigrationsAssembly("AlertManagement.Infrastructure"));
 
         });

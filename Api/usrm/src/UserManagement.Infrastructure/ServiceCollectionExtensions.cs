@@ -64,27 +64,14 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
     {
-        var dbSettings = configuration
-            .GetSection(nameof(DatabaseSettings))
-            .Get<DatabaseSettings[]>() ?? throw new InvalidOperationException("DatabaseSettings not configured");
-
-        services
-            .Configure<DatabaseSettings>(configuration.GetSection(nameof(DatabaseSettings)));
+        var connectionString = configuration
+            .GetConnectionString("SqlServer");
 
         services.AddDbContext<ApplicationDbContext>(options =>
         {
-            if (dbSettings[1].Provider.Equals("Sqlite", StringComparison.OrdinalIgnoreCase))
-            {
-                options.UseSqlite(
-                    dbSettings[1].ConnectionString,
-                    b => b.MigrationsAssembly("UserManagement.Infrastructure"));
-            }
-            else
-            {
-                options.UseAzureSql(
-                    dbSettings[1].ConnectionString,
-                    b => b.MigrationsAssembly("UserManagement.Infrastructure"));
-            }
+            options.UseAzureSql(
+                connectionString,
+                b => b.MigrationsAssembly("UserManagement.Infrastructure"));
         });
 
         return services;
