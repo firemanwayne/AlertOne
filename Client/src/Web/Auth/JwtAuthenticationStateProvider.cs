@@ -41,15 +41,15 @@ public sealed class JwtAuthenticationStateProvider : AuthenticationStateProvider
 
         var claims = ParseClaimsFromJwt(token).ToList();
 
-        // Hydrate AppState.CurrentUser from JWT claims when missing (e.g. page refresh)
-        if (_appState.CurrentUser is null)
+        // Hydrate AppState from JWT claims when missing (e.g. page refresh)
+        if (_appState.CurrentUser?.Id == Guid.Empty || !_appState.IsAuthenticated)
         {
-            var userId = claims
-                .FirstOrDefault(c => c.Type == "sub")?.Value ?? throw new ArgumentNullException();
+            var userId = claims.FirstOrDefault(c => c.Type == "sub")?.Value;
 
-            if (!Guid.TryParse(userId, out var userIdResult))
+            if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userIdResult))
             {
-                throw new InvalidCastException();
+                // Invalid token - return unauthenticated
+                return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
             }
 
             var email = claims
@@ -68,6 +68,7 @@ public sealed class JwtAuthenticationStateProvider : AuthenticationStateProvider
 
             _appState.PropertyChanged -= OnAppStatePropertyChanged;
 
+            _appState.AccessToken = token;
             _appState.CurrentUser = new UserProfile
             {
                 Id = userIdResult,
@@ -76,6 +77,7 @@ public sealed class JwtAuthenticationStateProvider : AuthenticationStateProvider
                 LastName = lastName,
                 Roles = roles
             };
+            _appState.IsAuthenticated = true;
 
             _appState.PropertyChanged += OnAppStatePropertyChanged;
         }

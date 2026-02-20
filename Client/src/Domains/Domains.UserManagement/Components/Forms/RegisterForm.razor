@@ -2,6 +2,7 @@
 
 @inject IAuthenticationService AuthService
 @inject AppState AppState
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 
 <MudCard Elevation="2">
     <MudCardHeader>
@@ -156,11 +157,13 @@
 
         try
         {
+            var deviceId = await GetOrCreateDeviceIdAsync();
+
             var deviceInfo = new DeviceInfo(
-                DeviceId: Guid.NewGuid().ToString(),
-                DeviceName: Environment.MachineName,
+                DeviceId: deviceId,
+                DeviceName: "Web Browser",
                 DeviceType: DeviceType.Web,
-                Platform: Environment.OSVersion.Platform.ToString(),
+                Platform: "Web",
                 AppVersion: "1.0.0",
                 UserAgent: null,
                 PushNotificationToken: null
@@ -194,6 +197,21 @@
         {
             _isLoading = false;
         }
+    }
+
+    private async Task<string> GetOrCreateDeviceIdAsync()
+    {
+        const string key = "device_id";
+
+        var deviceId = await LocalStorage.GetItemAsync<string>(key);
+
+        if (string.IsNullOrEmpty(deviceId))
+        {
+            deviceId = Guid.NewGuid().ToString();
+            await LocalStorage.SetItemAsync(key, deviceId);
+        }
+
+        return deviceId;
     }
 
     private class RegisterModel
