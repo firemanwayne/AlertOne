@@ -15,17 +15,17 @@
   </Folder>
   <Folder Name="/Api/tests/" />
   <Folder Name="/Api/tests/IntegrationTests/">
-    <Project Path="Api/tests/IntegrationTests/UserManagement.Client.IntegrationTests/UserManagement.Client.IntegrationTests.csproj" />
+    <Project Path="Api/usrm/tests/IntegrationTests/UserManagement.Client.IntegrationTests/UserManagement.Client.IntegrationTests.csproj" />
   </Folder>
   <Folder Name="/Api/tests/UnitTests/">
-    <Project Path="Api/tests/UnitTests/UserManagement.Client.Tests/UserManagement.Client.Tests.csproj" />
-    <Project Path="Api/tests/UnitTests/UserManagement.Core.Tests/UserManagement.Core.Tests.csproj" />
-    <Project Path="Api/tests/UnitTests/UserManagement.Infrastructure.Tests/UserManagement.Infrastructure.Tests.csproj" />
+    <Project Path="Api/usrm/tests/UnitTests/UserManagement.Client.Tests/UserManagement.Client.Tests.csproj" />
+    <Project Path="Api/usrm/tests/UnitTests/UserManagement.Core.Tests/UserManagement.Core.Tests.csproj" />
+    <Project Path="Api/usrm/tests/UnitTests/UserManagement.Infrastructure.Tests/UserManagement.Infrastructure.Tests.csproj" />
   </Folder>
   <Folder Name="/Aspire/">
-    <Project Path="Aspire/UserManagement.AppHost/AlertOne.AppHost.csproj" />
-    <Project Path="Aspire/UserManagement.ServiceDefaults/AlertOne.ServiceDefaults.csproj" />
-    <Project Path="UserManagement.ServiceDefaults.Maui/AlertOne.ServiceDefaults.Maui.csproj" />
+    <Project Path="Aspire/AlertOne.AppHost/AlertOne.AppHost.csproj" />
+    <Project Path="Aspire/AlertOne.ServiceDefaults.Maui/AlertOne.ServiceDefaults.Maui.csproj" />
+    <Project Path="Aspire/AlertOne.ServiceDefaults/AlertOne.ServiceDefaults.csproj" />
   </Folder>
   <Folder Name="/Client/" />
   <Folder Name="/Client/src/" />
@@ -33,8 +33,8 @@
     <Project Path="Client/src/Core/AlertOne.Core.csproj" />
   </Folder>
   <Folder Name="/Client/src/Domains/">
+    <Project Path="Client/src/Domains/Domains.AlertManagement/Domains.AlertManagement.csproj" />
     <Project Path="Client/src/Domains/Domains.UserManagement/Domains.UserManagement.csproj" />
-    <Project Path="Domains.AlertManagement/Domains.AlertManagement.csproj" />
   </Folder>
   <Folder Name="/Client/src/Maui/">
     <Project Path="Client/src/Maui/AlertOne.Maui.csproj">

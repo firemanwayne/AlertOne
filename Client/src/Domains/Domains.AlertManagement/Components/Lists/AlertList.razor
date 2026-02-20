@@ -1,0 +1,225 @@
+@namespace Domains.AlertManagement.Lists
+
+@inject IAlertService AlertService
+@inject AppState AppState
+@inject NavigationManager Navigation
+
+<MudPaper Elevation="1">
+    <MudToolBar>
+        <MudText Typo="Typo.h6">Alerts</MudText>
+        <MudSpacer />
+        <MudSelect T="string"
+                   @bind-Value="_filter"
+                   Variant="Variant.Outlined"
+                   Margin="Margin.Dense"
+                   Style="width: 160px;"
+                   Class="mr-2">
+            <MudSelectItem Value="@("all")">All Alerts</MudSelectItem>
+            <MudSelectItem Value="@("active")">Active Only</MudSelectItem>
+            <MudSelectItem Value="@("rescinded")">Rescinded Only</MudSelectItem>
+        </MudSelect>
+        <MudIconButton Icon="@Icons.Material.Filled.Refresh" OnClick="@LoadAsync" />
+    </MudToolBar>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+    }
+
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <MudAlert Severity="Severity.Error" Class="ma-4">@_errorMessage</MudAlert>
+    }
+    else if (!FilteredAlerts.Any() && !_isLoading)
+    {
+        <MudAlert Severity="Severity.Info" Class="ma-4">No alerts found.</MudAlert>
+    }
+    else
+    {
+        @* Desktop Table View *@
+        <div class="d-none d-sm-block">
+            <MudTable Items="@FilteredAlerts" Hover="true" Striped="true" Dense="true">
+                <HeaderContent>
+                    <MudTh Style="text-align: center">Status</MudTh>
+                    <MudTh Style="text-align: center">Type</MudTh>
+                    <MudTh Style="text-align: center">Level</MudTh>
+                    <MudTh Style="text-align: center">Created By</MudTh>
+                    <MudTh Style="text-align: center">Created</MudTh>
+                    <MudTh Style="text-align: center">Last Modified</MudTh>
+                    <MudTh Style="text-align: center">Rescinded By</MudTh>
+                    <MudTh Style="text-align: center">Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd Style="text-align: center">
+                        @if (context.IsActive)
+                        {
+                            <MudChip T="string" Color="Color.Error" Size="Size.Small">Active</MudChip>
+                        }
+                        else
+                        {
+                            <MudChip T="string" Color="Color.Default" Size="Size.Small">Rescinded</MudChip>
+                        }
+                    </MudTd>
+                    <MudTd Style="text-align: center">
+                        <div class="d-flex align-center gap-2 justify-center">
+                            <MudAvatar Size="Size.Small" Style="@($"background-color: {context.Type.Color}; width: 12px; height: 12px;")"> </MudAvatar>
+                            <MudText Typo="Typo.body2">@context.Type.Name</MudText>
+                        </div>
+                    </MudTd>
+                    <MudTd Style="text-align: center">
+                        <MudChip T="string"
+                                 Style="@($"background-color: {context.StatusLevel.Color}; color: #fff;")"
+                                 Size="Size.Small">
+                            @context.StatusLevel.Name
+                        </MudChip>
+                    </MudTd>
+                    <MudTd Style="text-align: center">
+                        <MudText Typo="Typo.body2">@context.CreatedBy</MudText>
+                    </MudTd>
+                    <MudTd Style="text-align: center">
+                        <MudText Typo="Typo.body2">@context.CreatedDate.ToString("MMM d, yyyy h:mm tt")</MudText>
+                    </MudTd>
+                    <MudTd Style="text-align: center">
+                        <MudText Typo="Typo.body2">@context.UpdatedDate.ToString("MMM d, yyyy h:mm tt")</MudText>
+                    </MudTd>
+                    <MudTd Style="text-align: center">
+                        <MudText Typo="Typo.body2">@(context.RescindedBy ?? "—")</MudText>
+                    </MudTd>
+                    <MudTd Style="text-align: center">
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Primary"
+                                   Size="Size.Small"
+                                   Href="@($"/alerts/{context.Id}")">
+                            View
+                        </MudButton>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </div>
+
+        @* Mobile Card View *@
+        <div class="d-block d-sm-none pa-2">
+            <MudStack Spacing="2">
+                @foreach (var alert in FilteredAlerts)
+                {
+                    <MudCard Elevation="1">
+                        <MudCardContent Class="pa-3">
+                            <div class="d-flex justify-space-between align-center mb-2">
+                                <div class="d-flex align-center gap-2">
+                                    <MudAvatar Size="Size.Small" Style="@($"background-color: {alert.Type.Color}; width: 12px; height: 12px;")"> </MudAvatar>
+                                    <MudText Typo="Typo.subtitle2">@alert.Type.Name</MudText>
+                                </div>
+                                @if (alert.IsActive)
+                                {
+                                    <MudChip T="string" Color="Color.Error" Size="Size.Small">Active</MudChip>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Color="Color.Default" Size="Size.Small">Rescinded</MudChip>
+                                }
+                            </div>
+
+                            <MudGrid Spacing="1">
+                                <MudItem xs="6">
+                                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Status</MudText>
+                                    <MudChip T="string"
+                                             Style="@($"background-color: {alert.StatusLevel.Color}; color: #fff;")"
+                                             Size="Size.Small">
+                                        @alert.StatusLevel.Name
+                                    </MudChip>
+                                </MudItem>
+                                <MudItem xs="6">
+                                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Created By</MudText>
+                                    <MudText Typo="Typo.body2">@alert.CreatedBy</MudText>
+                                </MudItem>
+                                <MudItem xs="6">
+                                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Created</MudText>
+                                    <MudText Typo="Typo.body2">@alert.CreatedDate.ToString("MMM d, yyyy")</MudText>
+                                </MudItem>
+                                <MudItem xs="6">
+                                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Modified</MudText>
+                                    <MudText Typo="Typo.body2">@alert.UpdatedDate.ToString("MMM d, yyyy")</MudText>
+                                </MudItem>
+                                @if (!alert.IsActive && !string.IsNullOrEmpty(alert.RescindedBy))
+                                {
+                                    <MudItem xs="12">
+                                        <MudText Typo="Typo.caption" Class="mud-text-secondary">Rescinded By</MudText>
+                                        <MudText Typo="Typo.body2">@alert.RescindedBy</MudText>
+                                    </MudItem>
+                                }
+                            </MudGrid>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton Variant="Variant.Text"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       Href="@($"/alerts/{alert.Id}")"
+                                       FullWidth="true">
+                                View Details
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                }
+            </MudStack>
+        </div>
+
+        <MudText Typo="Typo.caption" Class="pa-4 mud-text-secondary">
+            Showing @FilteredAlerts.Count() of @_alerts.Count alerts
+        </MudText>
+    }
+</MudPaper>
+
+@code {
+    private List<AlertViewModel> _alerts = new();
+    private bool _isLoading = false;
+    private string? _errorMessage;
+    private string _filter = "all";
+
+    private IEnumerable<AlertViewModel> FilteredAlerts => _filter switch
+    {
+        "active" => _alerts.Where(a => a.IsActive),
+        "rescinded" => _alerts.Where(a => !a.IsActive),
+        _ => _alerts
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _isLoading = true;
+        _errorMessage = null;
+
+        try
+        {
+            var result = await AlertService.GetAllAsync();
+
+            if (result.IsSuccess)
+            {
+                _alerts = result.Value
+                    .OrderByDescending(a => a.CreatedDate)
+                    .Select(AlertViewModel.FromResponse)
+                    .ToList();
+            }
+            else
+            {
+                _errorMessage = result.Error?.Message ?? "Failed to load alerts.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    public async Task RefreshAsync()
+    {
+        await LoadAsync();
+    }
+}

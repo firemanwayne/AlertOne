@@ -17,7 +17,7 @@ internal sealed class DeviceService(
     ApplicationDbContext context,
     ILogger<DeviceService> logger) : IDeviceService
 {
-    private const int MaxDevicesPerUser = 10;
+    private const int MaxDevicesPerUser = 20;
 
     public async Task<Result<RegisterDeviceResponse>> RegisterOrUpdateDeviceAsync(UserId userId, DeviceInfo deviceInfo, string? ipAddress, CancellationToken cancellationToken = default)
     {

@@ -16,8 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Client\src\Core\AlertOne.Core.csproj" />
-    <ProjectReference Include="..\Client\src\Shared\AlertOne.Shared.csproj" />
+    <ProjectReference Include="..\..\Core\AlertOne.Core.csproj" />
+    <ProjectReference Include="..\..\Shared\AlertOne.Shared.csproj" />
   </ItemGroup>
 
 </Project>

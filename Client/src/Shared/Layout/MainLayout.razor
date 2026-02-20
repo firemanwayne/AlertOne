@@ -4,6 +4,17 @@
 @inject IAuthenticationService AuthService
 @inject NavigationManager NavigationManager
 
+<style>
+    .mud-drawer .mud-nav-link.active {
+        background-color: rgba(255, 255, 255, 0.15);
+        color: #fff;
+        border-left: 3px solid @Colors.BlueGray.Lighten2;
+    }
+    .mud-drawer .mud-nav-link.active .mud-nav-link-icon {
+        color: #fff;
+    }
+</style>
+
 <MudLayout>
     <AuthorizeView>
         <Authorized Context="state">
@@ -19,8 +30,8 @@
                     <ChildContent>
                         <MudMenuItem Disabled="true">
                             <div class="d-flex flex-column">
-                                <MudText Typo="Typo.subtitle2">@AppState.CurrentUser.FullName</MudText>
-                                <MudText Typo="Typo.caption" Class="mud-text-secondary">@AppState.CurrentUser.Email</MudText>
+                                <MudText Typo="Typo.subtitle2">@AppState.CurrentUser?.FullName</MudText>
+                                <MudText Typo="Typo.caption" Class="mud-text-secondary">@AppState.CurrentUser?.Email</MudText>
                             </div>
                         </MudMenuItem>
                         <MudDivider />
@@ -86,7 +97,7 @@
 
     private string GetInitials()
     {
-        var fullName = AppState.CurrentUser.FullName;
+        var fullName = AppState.CurrentUser?.FullName;
 
         if (string.IsNullOrWhiteSpace(fullName))
         {
