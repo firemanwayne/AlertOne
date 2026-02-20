@@ -40,6 +40,7 @@ jobs:
         id: fa
         with:
           app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-          slot-name: 'Production'
           package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_BB75283BCCC94D7E99FDA2F5BD53A061 }}
+          scm-do-build-during-deployment: false
+          enable-oryx-build: false
