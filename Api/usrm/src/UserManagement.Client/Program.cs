@@ -1,4 +1,3 @@
-using AlertOne.ServiceDefaults;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -10,8 +9,6 @@ using UserManagement.Infrastructure;
 using UserManagement.Infrastructure.Identity;
 
 var builder = FunctionsApplication.CreateBuilder(args);
-
-builder.AddServiceDefaults();
 
 builder
     .Services

@@ -1,7 +1,6 @@
 using AlertManagement.Client.Middleware;
 using AlertManagement.Infrastructure;
 using AlertManagement.Infrastructure.Data;
-using AlertOne.ServiceDefaults;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,8 +8,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 var builder = FunctionsApplication.CreateBuilder(args);
-
-builder.AddServiceDefaults();
 
 builder
     .Services
