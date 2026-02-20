@@ -1,0 +1,211 @@
+@namespace Domains.UserManagement.Dialogs
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Manage Roles</MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Class="mb-4">@_errorMessage</MudAlert>
+        }
+
+        <MudText Typo="Typo.subtitle2" Class="mb-2">Current Roles</MudText>
+        @if (_currentUser?.Roles.Any() == true)
+        {
+            <div class="mb-4">
+                @foreach (var role in _currentUser.Roles)
+                {
+                    <MudChip T="string"
+                             Color="Color.Primary"
+                             Size="Size.Small"
+                             Class="mr-1"
+                             OnClose="@(() => RemoveRoleAsync(role))"
+                             Disabled="@_isSaving">
+                        @role
+                    </MudChip>
+                }
+            </div>
+        }
+        else
+        {
+            <MudText Typo="Typo.body2" Class="mud-text-secondary mb-4">No roles assigned.</MudText>
+        }
+
+        <MudText Typo="Typo.subtitle2" Class="mb-2">Add Role</MudText>
+        @{
+            var unassignedRoles = _availableRoles
+                .Where(r => _currentUser?.Roles.Contains(r.Name) != true)
+                .ToList();
+        }
+        @if (unassignedRoles.Any())
+        {
+            <div class="d-flex gap-2 align-center">
+                <MudSelect T="string"
+                           @bind-Value="_selectedRoleToAdd"
+                           Label="Select a role"
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           Disabled="@_isSaving"
+                           Style="flex-grow: 1;">
+                    @foreach (var role in unassignedRoles)
+                    {
+                        <MudSelectItem Value="@role.Name">@role.Name</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           OnClick="@AssignRoleAsync"
+                           Disabled="@(string.IsNullOrEmpty(_selectedRoleToAdd) || _isSaving)">
+                    @if (_isSaving)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                    }
+                    Add
+                </MudButton>
+            </div>
+        }
+        else
+        {
+            <MudText Typo="Typo.body2" Class="mud-text-secondary">All available roles are already assigned.</MudText>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@Close" Variant="Variant.Outlined">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter]
+    public UserResponse? User { get; set; }
+
+    [Parameter]
+    public IRoleManagementService RoleService { get; set; } = null!;
+
+    [Parameter]
+    public IUserManagementService UserService { get; set; } = null!;
+
+    private UserResponse? _currentUser;
+    private List<RoleResponse> _availableRoles = new();
+    private string _selectedRoleToAdd = string.Empty;
+    private bool _isSaving = false;
+    private string? _errorMessage;
+    private bool _hasChanges = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _currentUser = User;
+        await LoadRolesAsync();
+    }
+
+    private async Task LoadRolesAsync()
+    {
+        var result = await RoleService.GetAllRolesAsync();
+
+        if (result.IsSuccess)
+        {
+            _availableRoles = result.Value.ToList();
+        }
+    }
+
+    private async Task AssignRoleAsync()
+    {
+        if (_currentUser == null || string.IsNullOrEmpty(_selectedRoleToAdd))
+        {
+            return;
+        }
+
+        _isSaving = true;
+        _errorMessage = null;
+
+        try
+        {
+            var request = new AssignRoleRequest(_currentUser.Id, _selectedRoleToAdd);
+            var result = await RoleService.AssignRoleAsync(request);
+
+            if (result.IsSuccess)
+            {
+                await RefreshUserAsync();
+                _selectedRoleToAdd = string.Empty;
+                _hasChanges = true;
+            }
+            else
+            {
+                _errorMessage = result.Error?.Message ?? "Failed to assign role";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private async Task RemoveRoleAsync(string roleName)
+    {
+        if (_currentUser == null)
+        {
+            return;
+        }
+
+        _isSaving = true;
+        _errorMessage = null;
+
+        try
+        {
+            var request = new AssignRoleRequest(_currentUser.Id, roleName);
+            var result = await RoleService.RemoveRoleAsync(request);
+
+            if (result.IsSuccess)
+            {
+                await RefreshUserAsync();
+                _hasChanges = true;
+            }
+            else
+            {
+                _errorMessage = result.Error?.Message ?? "Failed to remove role";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private async Task RefreshUserAsync()
+    {
+        if (_currentUser == null)
+        {
+            return;
+        }
+
+        var result = await UserService.GetUserByIdAsync(_currentUser.Id);
+
+        if (result.IsSuccess)
+        {
+            _currentUser = result.Value;
+        }
+    }
+
+    private void Close()
+    {
+        if (_hasChanges)
+        {
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        else
+        {
+            MudDialog.Cancel();
+        }
+    }
+}

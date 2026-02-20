@@ -3,66 +3,75 @@
 
 @inject IRoleManagementService RoleService
 @inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 
-<div class="container-fluid mt-4">
-    <div class="mb-3">
-        <button class="btn btn-secondary" @onclick="@(() => Navigation.NavigateTo("/roles"))">
-            ← Back to Roles
-        </button>
-    </div>
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-4">
+    <MudButton Variant="Variant.Text"
+               Color="Color.Default"
+               StartIcon="@Icons.Material.Filled.ArrowBack"
+               OnClick="@(() => Navigation.NavigateTo("/roles"))"
+               Class="mb-4">
+        Back to Roles
+    </MudButton>
 
-    <div class="card">
-        <div class="card-header">
-            <h3 class="mb-0">Create New Role</h3>
-        </div>
-        <div class="card-body">
-            @if (!string.IsNullOrEmpty(_errorMessage))
-            {
-                <div class="alert alert-danger" role="alert">
-                    @_errorMessage
-                </div>
-            }
-
-            <EditForm Model="@_editModel" OnValidSubmit="@HandleSubmitAsync">
-                <DataAnnotationsValidator />
-                <ValidationSummary class="text-danger" />
-
-                <div class="mb-3">
-                    <label for="roleName" class="form-label">Role Name</label>
-                    <InputText id="roleName" @bind-Value="_editModel.Name" class="form-control" />
-                    <ValidationMessage For="@(() => _editModel.Name)" />
-                </div>
-
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary" disabled="@_isLoading">
-                        @if (_isLoading)
-                        {
-                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                            <span>Creating...</span>
-                        }
-                        else
-                        {
-                            <span>Create Role</span>
-                        }
-                    </button>
-                    <button type="button" class="btn btn-secondary" @onclick="@(() => Navigation.NavigateTo("/roles"))" disabled="@_isLoading">
-                        Cancel
-                    </button>
-                </div>
-            </EditForm>
-        </div>
-    </div>
-</div>
+    <MudCard Elevation="2">
+        <MudCardHeader>
+            <MudText Typo="Typo.h6">Create New Role</MudText>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudForm @ref="_form" @bind-IsValid="@_formIsValid">
+                <MudTextField T="string"
+                              @bind-Value="_editModel.Name"
+                              Label="Role Name"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              RequiredError="Role name is required"
+                              MaxLength="100"
+                              Class="mb-4" />
+            </MudForm>
+        </MudCardContent>
+        <MudCardActions Class="pa-4">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Disabled="@(!_formIsValid || _isLoading)"
+                       OnClick="@HandleSubmitAsync">
+                @if (_isLoading)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                    <span>Creating...</span>
+                }
+                else
+                {
+                    <span>Create Role</span>
+                }
+            </MudButton>
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Default"
+                       OnClick="@(() => Navigation.NavigateTo("/roles"))"
+                       Disabled="@_isLoading"
+                       Class="ml-2">
+                Cancel
+            </MudButton>
+        </MudCardActions>
+    </MudCard>
+</MudContainer>
 
 @code {
+    private MudForm _form = null!;
     private EditModel _editModel = new();
     private bool _isLoading = false;
-    private string? _errorMessage;
+    private bool _formIsValid = false;
 
     private async Task HandleSubmitAsync()
     {
+        await _form.Validate();
+
+        if (!_form.IsValid)
+        {
+            return;
+        }
+
         _isLoading = true;
-        _errorMessage = null;
 
         try
         {
@@ -70,16 +79,17 @@
 
             if (result.IsSuccess)
             {
+                Snackbar.Add("Role created successfully", Severity.Success);
                 Navigation.NavigateTo("/roles");
             }
             else
             {
-                _errorMessage = result.Error?.Message ?? "Failed to create role";
+                Snackbar.Add(result.Error?.Message ?? "Failed to create role", Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            _errorMessage = $"An error occurred: {ex.Message}";
+            Snackbar.Add($"An error occurred: {ex.Message}", Severity.Error);
         }
         finally
         {
@@ -89,8 +99,6 @@
 
     private class EditModel
     {
-        [Required(ErrorMessage = "Role name is required")]
-        [MaxLength(100, ErrorMessage = "Role name cannot exceed 100 characters")]
         public string Name { get; set; } = string.Empty;
     }
 }

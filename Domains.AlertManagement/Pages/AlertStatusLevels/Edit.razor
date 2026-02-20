@@ -4,29 +4,28 @@
 @inject IAlertStatusLevelService AlertStatusLevelService
 @inject NavigationManager Navigation
 
-<div class="container-fluid mt-4">
-    <div class="mb-3">
-        <button class="btn btn-secondary" @onclick="@HandleBack">
-            ← Back to Status Levels
-        </button>
-    </div>
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4">
+    <MudButton Variant="Variant.Text"
+               Color="Color.Default"
+               StartIcon="@Icons.Material.Filled.ArrowBack"
+               OnClick="@HandleBack"
+               Class="mb-4">
+        Back to Status Levels
+    </MudButton>
 
     @if (_isLoading)
     {
-        <div class="text-center py-5">
-            <div class="spinner-border" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-2">Loading status level...</p>
-        </div>
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
     }
     else if (_statusLevel == null)
     {
-        <div class="alert alert-danger">
-            <h5>Status Level Not Found</h5>
-            <p>The requested status level could not be found.</p>
-            <button class="btn btn-primary" @onclick="@HandleBack">Back to List</button>
-        </div>
+        <MudAlert Severity="Severity.Error" Class="mb-4">
+            <MudText Typo="Typo.h6">Status Level Not Found</MudText>
+            <MudText>The requested status level could not be found.</MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@HandleBack" Class="mt-2">
+                Back to List
+            </MudButton>
+        </MudAlert>
     }
     else
     {
@@ -34,7 +33,7 @@
                               OnSaveSuccess="@HandleSaveSuccess"
                               OnCancelClicked="@HandleBack" />
     }
-</div>
+</MudContainer>
 
 @code {
     [Parameter]
@@ -63,7 +62,6 @@
         if (!string.IsNullOrWhiteSpace(Id))
         {
             var result = await AlertStatusLevelService.GetByIdAsync(Id);
-
             _statusLevel = result.IsSuccess ? AlertStatusLevelViewModel.FromResponse(result.Value) : null;
         }
         else

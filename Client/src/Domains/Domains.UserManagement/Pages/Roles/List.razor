@@ -3,78 +3,78 @@
 
 @inject IRoleManagementService RoleService
 @inject NavigationManager Navigation
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
-<div class="container-fluid mt-4">
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h3 class="mb-0">Role Management</h3>
-            <button class="btn btn-primary btn-sm" @onclick="@(() => Navigation.NavigateTo("/roles/create"))">
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudPaper Elevation="1">
+        <MudToolBar>
+            <MudText Typo="Typo.h6">Role Management</MudText>
+            <MudSpacer />
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       Size="Size.Small"
+                       OnClick="@(() => Navigation.NavigateTo("/roles/create"))">
                 Create New Role
-            </button>
-        </div>
-        <div class="card-body">
-            @if (_isLoading)
+            </MudButton>
+        </MudToolBar>
+
+        @if (_isLoading)
+        {
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+        }
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Class="ma-4">@_errorMessage</MudAlert>
+        }
+        else if (_roles == null || !_roles.Any())
+        {
+            @if (!_isLoading)
             {
-                <div class="text-center py-5">
-                    <div class="spinner-border" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <p class="mt-2">Loading roles...</p>
-                </div>
+                <MudAlert Severity="Severity.Info" Class="ma-4">No roles found.</MudAlert>
             }
-            else if (!string.IsNullOrEmpty(_errorMessage))
-            {
-                <div class="alert alert-danger" role="alert">
-                    @_errorMessage
-                </div>
-            }
-            else if (_roles == null || !_roles.Any())
-            {
-                <div class="alert alert-info" role="alert">
-                    No roles found.
-                </div>
-            }
-            else
-            {
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Users</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var role in _roles)
+        }
+        else
+        {
+            <MudTable Items="@_roles" Hover="true" Striped="true" Dense="true">
+                <HeaderContent>
+                    <MudTh>Name</MudTh>
+                    <MudTh>Users</MudTh>
+                    <MudTh>Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Name">
+                        <MudText Typo="Typo.body2" Class="font-weight-bold">@context.Name</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Users">
+                        <MudChip T="string" Color="Color.Primary" Size="Size.Small">
+                            @context.UserCount user(s)
+                        </MudChip>
+                    </MudTd>
+                    <MudTd>
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Error"
+                                   Size="Size.Small"
+                                   OnClick="@(() => DeleteRoleAsync(context))"
+                                   Disabled="@(_deletingRoleId == context.Id)">
+                            @if (_deletingRoleId == context.Id)
                             {
-                                <tr>
-                                    <td>@role.Name</td>
-                                    <td>@role.UserCount</td>
-                                    <td>
-                                        <button class="btn btn-sm btn-outline-danger"
-                                                @onclick="@(() => DeleteRoleAsync(role.Id))"
-                                                disabled="@(_deletingRoleId == role.Id)">
-                                            @if (_deletingRoleId == role.Id)
-                                            {
-                                                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                                                <span>Deleting...</span>
-                                            }
-                                            else
-                                            {
-                                                <span>Delete</span>
-                                            }
-                                        </button>
-                                    </td>
-                                </tr>
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-1" />
+                                <span>Deleting...</span>
                             }
-                        </tbody>
-                    </table>
-                </div>
-            }
-        </div>
-    </div>
-</div>
+                            else
+                            {
+                                <span>Delete</span>
+                            }
+                        </MudButton>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
+    </MudPaper>
+</MudContainer>
 
 @code {
     private List<RoleResponse>? _roles;
@@ -115,31 +115,45 @@
         }
     }
 
-    private async Task DeleteRoleAsync(Guid roleId)
+    private async Task DeleteRoleAsync(RoleResponse role)
     {
-        _deletingRoleId = roleId;
-        _errorMessage = null;
+        var parameters = new DialogParameters<ConfirmDialog>
+        {
+            { x => x.ContentText, $"Are you sure you want to delete role '{role.Name}'?" },
+            { x => x.ButtonText, "Delete" },
+            { x => x.Color, Color.Error }
+        };
 
-        try
-        {
-            var result = await RoleService.DeleteRoleAsync(roleId);
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Delete Role", parameters);
+        var result = await dialog.Result;
 
-            if (result.IsSuccess)
-            {
-                await LoadRolesAsync();
-            }
-            else
-            {
-                _errorMessage = result.Error?.Message ?? "Failed to delete role";
-            }
-        }
-        catch (Exception ex)
+        if (result != null && !result.Canceled)
         {
-            _errorMessage = $"An error occurred: {ex.Message}";
-        }
-        finally
-        {
-            _deletingRoleId = null;
+            _deletingRoleId = role.Id;
+            _errorMessage = null;
+
+            try
+            {
+                var deleteResult = await RoleService.DeleteRoleAsync(role.Id);
+
+                if (deleteResult.IsSuccess)
+                {
+                    Snackbar.Add($"Role '{role.Name}' deleted successfully", Severity.Success);
+                    await LoadRolesAsync();
+                }
+                else
+                {
+                    Snackbar.Add(deleteResult.Error?.Message ?? "Failed to delete role", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"An error occurred: {ex.Message}", Severity.Error);
+            }
+            finally
+            {
+                _deletingRoleId = null;
+            }
         }
     }
 }

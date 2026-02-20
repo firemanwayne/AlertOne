@@ -4,101 +4,101 @@
 @inject AppState AppState
 @inject NavigationManager Navigation
 
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h3 class="mb-0">Alerts</h3>
-        <div class="d-flex gap-2 align-items-center">
-            <select class="form-select form-select-sm" @bind="_filter" @bind:event="onchange" style="width: auto;">
-                <option value="all">All Alerts</option>
-                <option value="active">Active Only</option>
-                <option value="rescinded">Rescinded Only</option>
-            </select>
-            <button class="btn btn-outline-secondary btn-sm" @onclick="@LoadAsync">
-                Refresh
-            </button>
-        </div>
-    </div>
-    <div class="card-body">
-        @if (_isLoading)
-        {
-            <div class="text-center py-5">
-                <div class="spinner-border" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p class="mt-2">Loading alerts...</p>
-            </div>
-        }
-        else if (!string.IsNullOrEmpty(_errorMessage))
-        {
-            <div class="alert alert-danger" role="alert">@_errorMessage</div>
-        }
-        else if (!FilteredAlerts.Any())
-        {
-            <div class="alert alert-info" role="alert">No alerts found.</div>
-        }
-        else
-        {
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th style="text-align:center">Status</th>
-                            <th style="text-align:center">Type</th>
-                            <th style="text-align:center">Status</th>
-                            <th style="text-align:center">Created By</th>
-                            <th style="text-align:center">Created</th>
-                            <th style="text-align:center">Last Modified</th>
-                            <th style="text-align:center">Rescinded By</th>
-                            <th style="text-align:center">Rescinded At</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var alert in FilteredAlerts)
-                        {
-                            <tr>
-                                <td style="text-align:center">
-                                    @if (alert.IsActive)
-                                    {
-                                        <span class="badge bg-danger">Active</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-secondary">Rescinded</span>
-                                    }
-                                </td>
-                                <td style="text-align:center">
-                                    <span class="d-flex align-items-center gap-2">
-                                        <span class="rounded-circle d-inline-block"
-                                              style="width:12px;height:12px;background-color:@alert.Type.Color;"></span>
-                                        @alert.Type.Name
-                                    </span>
-                                </td>
-                                <td style="text-align:center">
-                                    <span class="badge"
-                                          style="background-color:@alert.StatusLevel.Color;color:#fff;">
-                                        @alert.StatusLevel.Name
-                                    </span>
-                                </td>
-                                <td style="text-align:center">@alert.CreatedBy</td>
-                                <td style="text-align:center">@alert.CreatedDate.ToString("MMM d, yyyy h:mm tt")</td>
-                                <td style="text-align:center">@alert.UpdatedDate.ToString("MMM d, yyyy h:mm tt")</td>
-                                <td style="text-align:center">@(alert.RescindedBy ?? "—")</td>
-                                <td style="text-align:center">@(alert.RescindedBy ?? "—")</td>
-                                <td style="text-align:center">
-                                    <a href="/alerts/@alert.Id" class="btn btn-outline-primary btn-sm">View</a>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-            <p class="text-muted small mt-2">
-                Showing @FilteredAlerts.Count() of @_alerts.Count alerts
-            </p>
-        }
-    </div>
-</div>
+<MudPaper Elevation="1">
+    <MudToolBar>
+        <MudText Typo="Typo.h6">Alerts</MudText>
+        <MudSpacer />
+        <MudSelect T="string"
+                   @bind-Value="_filter"
+                   Variant="Variant.Outlined"
+                   Margin="Margin.Dense"
+                   Style="width: 160px;"
+                   Class="mr-2">
+            <MudSelectItem Value="@("all")">All Alerts</MudSelectItem>
+            <MudSelectItem Value="@("active")">Active Only</MudSelectItem>
+            <MudSelectItem Value="@("rescinded")">Rescinded Only</MudSelectItem>
+        </MudSelect>
+        <MudIconButton Icon="@Icons.Material.Filled.Refresh" OnClick="@LoadAsync" />
+    </MudToolBar>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+    }
+
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <MudAlert Severity="Severity.Error" Class="ma-4">@_errorMessage</MudAlert>
+    }
+    else if (!FilteredAlerts.Any() && !_isLoading)
+    {
+        <MudAlert Severity="Severity.Info" Class="ma-4">No alerts found.</MudAlert>
+    }
+    else
+    {
+        <MudTable Items="@FilteredAlerts" Hover="true" Striped="true" Dense="true">
+            <HeaderContent>
+                <MudTh Style="text-align: center">Status</MudTh>
+                <MudTh Style="text-align: center">Type</MudTh>
+                <MudTh Style="text-align: center">Level</MudTh>
+                <MudTh Style="text-align: center">Created By</MudTh>
+                <MudTh Style="text-align: center">Created</MudTh>
+                <MudTh Style="text-align: center">Last Modified</MudTh>
+                <MudTh Style="text-align: center">Rescinded By</MudTh>
+                <MudTh Style="text-align: center">Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd Style="text-align: center">
+                    @if (context.IsActive)
+                    {
+                        <MudChip T="string" Color="Color.Error" Size="Size.Small">Active</MudChip>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Color="Color.Default" Size="Size.Small">Rescinded</MudChip>
+                    }
+                </MudTd>
+                <MudTd Style="text-align: center">
+                    <div class="d-flex align-center gap-2 justify-center">
+                        <MudAvatar Size="Size.Small" Style="@($"background-color: {context.Type.Color}; width: 12px; height: 12px;")"> </MudAvatar>
+                        <MudText Typo="Typo.body2">@context.Type.Name</MudText>
+                    </div>
+                </MudTd>
+                <MudTd Style="text-align: center">
+                    <MudChip T="string"
+                             Style="@($"background-color: {context.StatusLevel.Color}; color: #fff;")"
+                             Size="Size.Small">
+                        @context.StatusLevel.Name
+                    </MudChip>
+                </MudTd>
+                <MudTd Style="text-align: center">
+                    <MudText Typo="Typo.body2">@context.CreatedBy</MudText>
+                </MudTd>
+                <MudTd Style="text-align: center">
+                    <MudText Typo="Typo.body2">@context.CreatedDate.ToString("MMM d, yyyy h:mm tt")</MudText>
+                </MudTd>
+                <MudTd Style="text-align: center">
+                    <MudText Typo="Typo.body2">@context.UpdatedDate.ToString("MMM d, yyyy h:mm tt")</MudText>
+                </MudTd>
+                <MudTd Style="text-align: center">
+                    <MudText Typo="Typo.body2">@(context.RescindedBy ?? "—")</MudText>
+                </MudTd>
+                <MudTd Style="text-align: center">
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               Href="@($"/alerts/{context.Id}")">
+                        View
+                    </MudButton>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+
+        <MudText Typo="Typo.caption" Class="pa-4 mud-text-secondary">
+            Showing @FilteredAlerts.Count() of @_alerts.Count alerts
+        </MudText>
+    }
+</MudPaper>
 
 @code {
     private List<AlertViewModel> _alerts = new();

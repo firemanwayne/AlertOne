@@ -2,84 +2,79 @@
 
 @inject IAlertTypeService AlertTypeService
 
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h3 class="mb-0">Alert Types</h3>
-        <button class="btn btn-outline-secondary btn-sm" @onclick="@LoadAsync">
-            Refresh
-        </button>
-    </div>
-    <div class="card-body">
-        @if (_isLoading)
-        {
-            <div class="text-center py-5">
-                <div class="spinner-border" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p class="mt-2">Loading alert types...</p>
-            </div>
-        }
-        else if (!string.IsNullOrEmpty(_errorMessage))
-        {
-            <div class="alert alert-danger" role="alert">@_errorMessage</div>
-        }
-        else if (!_types.Any())
-        {
-            <div class="alert alert-info" role="alert">No alert types defined.</div>
-        }
-        else
-        {
-            <div class="mb-3">
-                <input type="text" class="form-control" placeholder="Search by name..."
-                       @bind="_searchTerm" @bind:event="oninput" />
-            </div>
+<MudPaper Elevation="1">
+    <MudToolBar>
+        <MudText Typo="Typo.h6">Alert Types</MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.Refresh" OnClick="@LoadAsync" />
+    </MudToolBar>
 
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Color</th>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th>Notify Users</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var type in FilteredTypes)
-                        {
-                            <tr>
-                                <td>
-                                    <span class="d-inline-block rounded"
-                                          style="width:28px;height:28px;background-color:@type.Color;"
-                                          title="@type.Color"></span>
-                                </td>
-                                <td class="fw-semibold">@type.Name</td>
-                                <td class="text-muted">@type.Description</td>
-                                <td>
-                                    <span class="badge bg-secondary">@type.NotifyUserIds.Count user(s)</span>
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-primary me-1"
-                                            @onclick="@(() => OnEdit.InvokeAsync(type))">
-                                        Edit
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger"
-                                            @onclick="@(() => OnDelete.InvokeAsync(type))">
-                                        Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-            <p class="text-muted small mt-2">
-                Showing @FilteredTypes.Count() of @_types.Count alert types
-            </p>
-        }
-    </div>
-</div>
+    @if (_isLoading)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+    }
+
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <MudAlert Severity="Severity.Error" Class="ma-4">@_errorMessage</MudAlert>
+    }
+    else if (!_types.Any() && !_isLoading)
+    {
+        <MudAlert Severity="Severity.Info" Class="ma-4">No alert types defined.</MudAlert>
+    }
+    else
+    {
+        <MudTextField T="string"
+                      @bind-Value="_searchTerm"
+                      Placeholder="Search by name..."
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Class="ma-4"
+                      Immediate="true" />
+
+        <MudTable Items="@FilteredTypes" Hover="true" Striped="true" Dense="true">
+            <HeaderContent>
+                <MudTh>Color</MudTh>
+                <MudTh>Name</MudTh>
+                <MudTh>Description</MudTh>
+                <MudTh>Notify Users</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>
+                    <MudAvatar Size="Size.Small" Style="@($"background-color: {context.Color}")"> </MudAvatar>
+                </MudTd>
+                <MudTd DataLabel="Name">
+                    <MudText Typo="Typo.body2" Class="font-weight-bold">@context.Name</MudText>
+                </MudTd>
+                <MudTd DataLabel="Description">
+                    <MudText Typo="Typo.body2" Class="mud-text-secondary">@context.Description</MudText>
+                </MudTd>
+                <MudTd DataLabel="Notify Users">
+                    <MudChip T="string" Color="Color.Secondary" Size="Size.Small">
+                        @context.NotifyUserIds.Count user(s)
+                    </MudChip>
+                </MudTd>
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                   Size="Size.Small"
+                                   Color="Color.Primary"
+                                   OnClick="@(() => OnEdit.InvokeAsync(context))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                   Size="Size.Small"
+                                   Color="Color.Error"
+                                   OnClick="@(() => OnDelete.InvokeAsync(context))" />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+
+        <MudText Typo="Typo.caption" Class="pa-4 mud-text-secondary">
+            Showing @FilteredTypes.Count() of @_types.Count alert types
+        </MudText>
+    }
+</MudPaper>
 
 @code {
     [Parameter]

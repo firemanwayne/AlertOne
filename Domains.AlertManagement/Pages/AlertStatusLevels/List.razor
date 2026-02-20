@@ -3,28 +3,27 @@
 
 @inject IAlertStatusLevelService AlertStatusLevelService
 @inject NavigationManager Navigation
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
-<div class="container-fluid mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">Alert Status Levels</h2>
-        <button class="btn btn-primary" @onclick="@HandleCreate">
-            + New Status Level
-        </button>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <div class="d-flex justify-space-between align-center mb-4">
+        <MudText Typo="Typo.h4">Alert Status Levels</MudText>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="@HandleCreate">
+            New Status Level
+        </MudButton>
     </div>
-
-    @if (!string.IsNullOrEmpty(_statusMessage))
-    {
-        <div class="alert alert-info" role="alert">@_statusMessage</div>
-    }
 
     <AlertStatusLevelList @ref="_listRef"
                           OnEdit="@HandleEdit"
                           OnDelete="@HandleDelete" />
-</div>
+</MudContainer>
 
 @code {
     private AlertStatusLevelList? _listRef;
-    private string? _statusMessage;
 
     private void HandleCreate()
     {
@@ -38,23 +37,33 @@
 
     private async Task HandleDelete(AlertStatusLevelViewModel level)
     {
-        _statusMessage = $"Deleting '{level.Name}'...";
-        StateHasChanged();
-
-        var result = await AlertStatusLevelService.DeleteAsync(level.Id);
-
-        if (result.IsSuccess)
+        var parameters = new DialogParameters<ConfirmDialog>
         {
-            _statusMessage = $"'{level.Name}' deleted successfully.";
+            { x => x.ContentText, $"Are you sure you want to delete '{level.Name}'?" },
+            { x => x.ButtonText, "Delete" },
+            { x => x.Color, Color.Error }
+        };
 
-            if (_listRef != null)
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Delete Status Level", parameters);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            var deleteResult = await AlertStatusLevelService.DeleteAsync(level.Id);
+
+            if (deleteResult.IsSuccess)
             {
-                await _listRef.RefreshAsync();
+                Snackbar.Add($"'{level.Name}' deleted successfully", Severity.Success);
+
+                if (_listRef != null)
+                {
+                    await _listRef.RefreshAsync();
+                }
             }
-        }
-        else
-        {
-            _statusMessage = $"Failed to delete: {result.Error?.Message}";
+            else
+            {
+                Snackbar.Add($"Failed to delete: {deleteResult.Error?.Message}", Severity.Error);
+            }
         }
     }
 }

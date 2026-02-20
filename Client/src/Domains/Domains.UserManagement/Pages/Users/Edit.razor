@@ -1,52 +1,48 @@
 @page "/users/edit/{id}"
-
 @attribute [Authorize]
 
 @inject IUserManagementService UserService
 @inject NavigationManager Navigation
 
-<div class="container-fluid mt-4">
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4">
     @if (_isLoading)
     {
-        <p>Loading user...</p>
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
     }
     else if (_user == null)
     {
-        <div class="alert alert-danger">
-            <h4>User Not Found</h4>
-            <p>The requested user could not be found.</p>
-            <button class="btn btn-primary" @onclick="@HandleBackToList">Back to List</button>
-        </div>
+        <MudAlert Severity="Severity.Error" Class="mb-4">
+            <MudText Typo="Typo.h6">User Not Found</MudText>
+            <MudText>The requested user could not be found.</MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@HandleBackToList" Class="mt-2">
+                Back to List
+            </MudButton>
+        </MudAlert>
     }
     else
     {
-        <div class="mb-3">
-            <button class="btn btn-secondary" @onclick="@HandleBackToList">
-                ← Back to List
-            </button>
-        </div>
+        <MudButton Variant="Variant.Text"
+                   Color="Color.Default"
+                   StartIcon="@Icons.Material.Filled.ArrowBack"
+                   OnClick="@HandleBackToList"
+                   Class="mb-4">
+            Back to List
+        </MudButton>
 
-        <h2 class="mb-4">Edit User</h2>
+        <MudText Typo="Typo.h4" Class="mb-4">Edit User</MudText>
 
         <UserEditForm User="@_user"
                       OnSaveSuccess="@HandleSaveSuccess"
                       OnCancelClicked="@HandleBackToList" />
-
-        @if (!string.IsNullOrEmpty(_statusMessage))
-        {
-            <div class="alert alert-info mt-3" role="alert">
-                @_statusMessage
-            </div>
-        }
     }
-</div>
+</MudContainer>
 
 @code {
-    [Parameter] public string Id { get; set; } = string.Empty;
+    [Parameter]
+    public string Id { get; set; } = string.Empty;
 
     private UserResponse? _user;
     private bool _isLoading = true;
-    private string? _statusMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -73,23 +69,13 @@
             {
                 _user = result.Value;
             }
-            else
-            {
-                _statusMessage = $"Failed to load user: {result.Error?.Message}";
-            }
-        }
-        else
-        {
-            _statusMessage = "Invalid user ID format";
         }
 
         _isLoading = false;
     }
 
-    private async Task HandleSaveSuccess()
+    private void HandleSaveSuccess()
     {
-        _statusMessage = "User updated successfully";
-        await Task.Delay(1500); // Show success message briefly
         HandleBackToList();
     }
 

@@ -1,81 +1,80 @@
 @namespace Domains.UserManagement.Forms
 
 @inject IUserManagementService UserService
+@inject ISnackbar Snackbar
 
-<div class="card">
-    <div class="card-header">
-        <h3>Edit User</h3>
-    </div>
-    <div class="card-body">
-        @if (!string.IsNullOrEmpty(_errorMessage))
-        {
-            <div class="alert alert-danger" role="alert">
-                @_errorMessage
-            </div>
-        }
+<MudCard Elevation="2">
+    <MudCardHeader>
+        <MudText Typo="Typo.h6">Edit User</MudText>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudForm @ref="_form" @bind-IsValid="@_formIsValid">
+            <MudTextField T="string"
+                          Value="@User?.Email"
+                          Label="Email"
+                          Variant="Variant.Outlined"
+                          Disabled="true"
+                          ReadOnly="true"
+                          HelperText="Email cannot be changed"
+                          Class="mb-4" />
 
-        @if (_successMessage != null)
-        {
-            <div class="alert alert-success" role="alert">
-                @_successMessage
-            </div>
-        }
+            <MudTextField T="string"
+                          @bind-Value="_editModel.FirstName"
+                          Label="First Name"
+                          Variant="Variant.Outlined"
+                          Required="true"
+                          RequiredError="First name is required"
+                          Class="mb-4" />
 
-        <EditForm Model="@_editModel" OnValidSubmit="@HandleUpdateAsync">
-            <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" />
+            <MudTextField T="string"
+                          @bind-Value="_editModel.LastName"
+                          Label="Last Name"
+                          Variant="Variant.Outlined"
+                          Required="true"
+                          RequiredError="Last name is required"
+                          Class="mb-4" />
 
-            <div class="mb-3">
-                <label class="form-label">Email</label>
-                <input type="text" class="form-control" value="@User?.Email" disabled readonly />
-                <small class="form-text text-muted">Email cannot be changed</small>
-            </div>
-
-            <div class="mb-3">
-                <label for="firstName" class="form-label">First Name</label>
-                <InputText id="firstName" @bind-Value="_editModel.FirstName" class="form-control" />
-                <ValidationMessage For="@(() => _editModel.FirstName)" />
-            </div>
-
-            <div class="mb-3">
-                <label for="lastName" class="form-label">Last Name</label>
-                <InputText id="lastName" @bind-Value="_editModel.LastName" class="form-control" />
-                <ValidationMessage For="@(() => _editModel.LastName)" />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Roles</label>
-                <div>
-                    @if (User?.Roles != null)
+            <MudText Typo="Typo.subtitle2" Class="mb-2">Roles</MudText>
+            <div class="mb-4">
+                @if (User?.Roles != null && User.Roles.Any())
+                {
+                    @foreach (var role in User.Roles)
                     {
-                        @foreach (var role in User.Roles)
-                        {
-                            <span class="badge bg-primary me-1">@role</span>
-                        }
+                        <MudChip T="string" Color="Color.Primary" Size="Size.Small" Class="mr-1">@role</MudChip>
                     }
-                </div>
-                <small class="form-text text-muted">Use role management to change user roles</small>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Class="mud-text-secondary">No roles assigned</MudText>
+                }
             </div>
-
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary" disabled="@_isLoading">
-                    @if (_isLoading)
-                    {
-                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                        <span>Saving...</span>
-                    }
-                    else
-                    {
-                        <span>Save Changes</span>
-                    }
-                </button>
-                <button type="button" class="btn btn-secondary" @onclick="@OnCancelClicked" disabled="@_isLoading">
-                    Cancel
-                </button>
-            </div>
-        </EditForm>
-    </div>
-</div>
+            <MudText Typo="Typo.caption" Class="mud-text-secondary">Use role management to change user roles</MudText>
+        </MudForm>
+    </MudCardContent>
+    <MudCardActions Class="pa-4">
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Disabled="@(!_formIsValid || _isLoading)"
+                   OnClick="@HandleUpdateAsync">
+            @if (_isLoading)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                <span>Saving...</span>
+            }
+            else
+            {
+                <span>Save Changes</span>
+            }
+        </MudButton>
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Default"
+                   OnClick="@OnCancelClicked"
+                   Disabled="@_isLoading"
+                   Class="ml-2">
+            Cancel
+        </MudButton>
+    </MudCardActions>
+</MudCard>
 
 @code {
     [Parameter]
@@ -87,10 +86,10 @@
     [Parameter]
     public EventCallback OnCancelClicked { get; set; }
 
+    private MudForm _form = null!;
     private EditModel _editModel = new();
     private bool _isLoading = false;
-    private string? _errorMessage;
-    private string? _successMessage;
+    private bool _formIsValid = false;
 
     protected override void OnParametersSet()
     {
@@ -111,9 +110,14 @@
             return;
         }
 
+        await _form.Validate();
+
+        if (!_form.IsValid)
+        {
+            return;
+        }
+
         _isLoading = true;
-        _errorMessage = null;
-        _successMessage = null;
 
         try
         {
@@ -126,18 +130,17 @@
 
             if (result.IsSuccess)
             {
-                _successMessage = "User updated successfully!";
-                await Task.Delay(1000);
+                Snackbar.Add("User updated successfully", Severity.Success);
                 await OnSaveSuccess.InvokeAsync();
             }
             else
             {
-                _errorMessage = result.Error?.Message ?? "Update failed. Please try again.";
+                Snackbar.Add(result.Error?.Message ?? "Update failed. Please try again.", Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            _errorMessage = $"An error occurred: {ex.Message}";
+            Snackbar.Add($"An error occurred: {ex.Message}", Severity.Error);
         }
         finally
         {
@@ -147,10 +150,7 @@
 
     private class EditModel
     {
-        [Required(ErrorMessage = "First name is required")]
         public string FirstName { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Last name is required")]
         public string LastName { get; set; } = string.Empty;
     }
 }

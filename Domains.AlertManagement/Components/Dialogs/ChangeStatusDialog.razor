@@ -1,0 +1,98 @@
+@namespace Domains.AlertManagement.Dialogs
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Change Status Level</MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Class="mb-4">@_errorMessage</MudAlert>
+        }
+
+        <MudSelect T="string"
+                   @bind-Value="_selectedStatusLevelId"
+                   Label="New Status Level"
+                   Variant="Variant.Outlined"
+                   Disabled="@_isSaving">
+            @foreach (var level in AvailableStatusLevels)
+            {
+                <MudSelectItem Value="@level.Id">@level.Name</MudSelectItem>
+            }
+        </MudSelect>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@Cancel" Variant="Variant.Outlined" Disabled="@_isSaving">Cancel</MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   OnClick="@SaveAsync"
+                   Disabled="@(_isSaving || string.IsNullOrEmpty(_selectedStatusLevelId))">
+            @if (_isSaving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                <span>Saving...</span>
+            }
+            else
+            {
+                <span>Confirm</span>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter]
+    public List<AlertStatusLevelViewModel> AvailableStatusLevels { get; set; } = new();
+
+    [Parameter]
+    public IAlertService AlertService { get; set; } = null!;
+
+    [Parameter]
+    public string AlertId { get; set; } = string.Empty;
+
+    [Parameter]
+    public string CurrentUser { get; set; } = string.Empty;
+
+    private string _selectedStatusLevelId = string.Empty;
+    private bool _isSaving = false;
+    private string? _errorMessage;
+
+    private async Task SaveAsync()
+    {
+        if (string.IsNullOrEmpty(_selectedStatusLevelId))
+        {
+            return;
+        }
+
+        _isSaving = true;
+        _errorMessage = null;
+
+        try
+        {
+            var request = new UpdateAlertStatusRequest(_selectedStatusLevelId, CurrentUser);
+            var result = await AlertService.UpdateStatusAsync(AlertId, request);
+
+            if (result.IsSuccess)
+            {
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                _errorMessage = result.Error?.Message ?? "Failed to update status.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

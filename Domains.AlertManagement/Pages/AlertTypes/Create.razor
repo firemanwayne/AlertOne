@@ -3,16 +3,18 @@
 
 @inject NavigationManager Navigation
 
-<div class="container-fluid mt-4">
-    <div class="mb-3">
-        <button class="btn btn-secondary" @onclick="@HandleBack">
-            ← Back to Alert Types
-        </button>
-    </div>
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4">
+    <MudButton Variant="Variant.Text"
+               Color="Color.Default"
+               StartIcon="@Icons.Material.Filled.ArrowBack"
+               OnClick="@HandleBack"
+               Class="mb-4">
+        Back to Alert Types
+    </MudButton>
 
     <AlertTypeForm OnSaveSuccess="@HandleSaveSuccess"
                    OnCancelClicked="@HandleBack" />
-</div>
+</MudContainer>
 
 @code {
     private void HandleSaveSuccess()

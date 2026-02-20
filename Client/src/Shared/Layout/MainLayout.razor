@@ -1,118 +1,84 @@
+@using Microsoft.AspNetCore.Components.Routing
 @inherits LayoutComponentBase
 @inject AppState AppState
 @inject IAuthenticationService AuthService
+@inject NavigationManager NavigationManager
 
-<div class="page">
+<MudLayout>
     <AuthorizeView>
         <Authorized Context="state">
-            <div class="sidebar @(_sidebarVisible ? "show" : "")">
-                <div class="sidebar-header">
-                    <h4>Alert One</h4>
-                </div>
-                <nav class="nav flex-column">
-                    <div class="user-info px-3 py-2 mb-3">
-                        <div class="text-white">
-                            <strong>@AppState.CurrentUser.FullName</strong>
-                        </div>
-                        <div class="text-white-50 small">@state.User.GetEmail()</div>
-                        <div class="mt-1">
+            <MudAppBar Elevation="1" Dense="true">
+                <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" Class="d-sm-none" />
+                <MudText Typo="Typo.h6" Class="ml-2">AlertOne</MudText>
+                <MudSpacer />
+                <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+                    <ActivatorContent>
+                        <MudAvatar Color="Color.Secondary" Size="Size.Small" Class="cursor-pointer">
+                            @GetInitials()
+                        </MudAvatar>
+                    </ActivatorContent>
+                    <ChildContent>
+                        <MudMenuItem Disabled="true">
+                            <div class="d-flex flex-column">
+                                <MudText Typo="Typo.subtitle2">@AppState.CurrentUser?.FullName</MudText>
+                                <MudText Typo="Typo.caption" Class="mud-text-secondary">@AppState.CurrentUser?.Email</MudText>
+                            </div>
+                        </MudMenuItem>
+                        <MudDivider />
+                        <MudMenuItem Icon="@Icons.Material.Filled.Person" Href="/profile">Profile</MudMenuItem>
+                        <MudDivider />
+                        <MudMenuItem Icon="@Icons.Material.Filled.Logout" OnClick="@HandleLogoutAsync" IconColor="Color.Error">
+                            <MudText Color="Color.Error">Logout</MudText>
+                        </MudMenuItem>
+                    </ChildContent>
+                </MudMenu>
+            </MudAppBar>
 
-                            @foreach (var role in AppState.CurrentUser.Roles)
-                            {
-                                <span class="badge bg-light text-dark me-1">@role</span>
-                            }
+            <MudDrawer @bind-Open="_drawerOpen" Elevation="1" Variant="@DrawerVariant.Responsive" Breakpoint="Breakpoint.Sm">
+                <MudDrawerHeader>
+                    <MudText Typo="Typo.h6">Alert One</MudText>
+                </MudDrawerHeader>
 
-                        </div>
-                    </div>
+                <MudNavMenu>
+                    <MudText Typo="Typo.overline" Class="px-4 mt-2 mud-text-secondary">User Management</MudText>
+                    <MudNavLink Href="/users" Icon="@Icons.Material.Filled.People" Match="NavLinkMatch.Prefix">Users</MudNavLink>
+                    <MudNavLink Href="/roles" Icon="@Icons.Material.Filled.AdminPanelSettings" Match="NavLinkMatch.Prefix">Roles</MudNavLink>
 
-                    <div class="nav-section px-3 mb-1">
-                        <span class="nav-section-label">User Management</span>
-                    </div>
-                    <a href="/users" class="nav-link">
-                        <span>Users</span>
-                    </a>
-                    <a href="/roles" class="nav-link">
-                        <span>Roles</span>
-                    </a>
+                    <MudText Typo="Typo.overline" Class="px-4 mt-4 mud-text-secondary">Alerts</MudText>
+                    <MudNavLink Href="/alerts" Icon="@Icons.Material.Filled.NotificationsActive" Match="NavLinkMatch.All">Alerts</MudNavLink>
+                    <MudNavLink Href="/alerts/types" Icon="@Icons.Material.Filled.Category" Match="NavLinkMatch.Prefix">Alert Types</MudNavLink>
+                    <MudNavLink Href="/alerts/status-levels" Icon="@Icons.Material.Filled.Flag" Match="NavLinkMatch.Prefix">Status Levels</MudNavLink>
+                </MudNavMenu>
 
-                    <div class="nav-section px-3 mt-3 mb-1">
-                        <span class="nav-section-label">Alerts</span>
-                    </div>
-                    <a href="/alerts" class="nav-link">
-                        <span>Alerts</span>
-                    </a>
-                    <a href="/alerts/types" class="nav-link">
-                        <span>Alert Types</span>
-                    </a>
-                    <a href="/alerts/status-levels" class="nav-link">
-                        <span>Status Levels</span>
-                    </a>
-                </nav>
-                <div class="sidebar-footer">
-                    <button class="btn btn-outline-light w-100" @onclick="@HandleLogoutAsync">
+                <MudSpacer />
+
+                <div class="pa-4">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Inherit" FullWidth="true" OnClick="@HandleLogoutAsync" StartIcon="@Icons.Material.Filled.Logout">
                         Logout
-                    </button>
+                    </MudButton>
                 </div>
-            </div>
+            </MudDrawer>
         </Authorized>
     </AuthorizeView>
 
-    @if (_sidebarVisible)
-    {
-        <div class="sidebar-backdrop d-md-none" @onclick="@ToggleSidebar"></div>
-    }
-
-    <main class="main">
-        <header class="top-header">
-            <div class="d-flex align-items-center">
-                <button class="btn btn-link d-md-none me-2 text-dark" @onclick="@ToggleSidebar">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z" />
-                    </svg>
-                </button>
-            </div>
-            <div class="d-flex align-items-center gap-3">
-                <AuthorizeView>
-                    <Authorized>
-                        <div class="dropdown">
-                            <button class="btn btn-link p-0 text-decoration-none dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <div class="profile-icon">
-                                    @GetInitials()
-                                </div>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                <li class="px-3 py-2 border-bottom">
-                                    <div class="fw-semibold">@AppState.CurrentUser.FullName</div>
-                                    <div class="text-muted small">@AppState.CurrentUser.Email</div>
-                                </li>
-                                <li><a class="dropdown-item" href="/profile">Profile</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><button class="dropdown-item text-danger" @onclick="@HandleLogoutAsync">Logout</button></li>
-                            </ul>
-                        </div>
-                    </Authorized>
-                </AuthorizeView>
-            </div>
-        </header>
-        <div class="main-content">
-            <div class="container-fluid py-4">
-                @Body
-            </div>
-        </div>
-    </main>
-</div>
+    <MudMainContent Class="pt-16">
+        <MudContainer MaxWidth="MaxWidth.False" Class="pa-4">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
 
 @code {
-    private bool _sidebarVisible = false;
+    private bool _drawerOpen = true;
 
     private async Task HandleLogoutAsync()
     {
         await AuthService.LogoutAsync();
     }
 
-    private void ToggleSidebar()
+    private void ToggleDrawer()
     {
-        _sidebarVisible = !_sidebarVisible;
+        _drawerOpen = !_drawerOpen;
     }
 
     private string GetInitials()

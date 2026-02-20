@@ -2,94 +2,81 @@
 
 @inject IAlertStatusLevelService AlertStatusLevelService
 
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h3 class="mb-0">Alert Status Levels</h3>
-        <button class="btn btn-outline-secondary btn-sm" @onclick="@LoadAsync">
-            Refresh
-        </button>
-    </div>
-    <div class="card-body">
-        @if (_isLoading)
-        {
-            <div class="text-center py-5">
-                <div class="spinner-border" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p class="mt-2">Loading status levels...</p>
-            </div>
-        }
-        else if (!string.IsNullOrEmpty(_errorMessage))
-        {
-            <div class="alert alert-danger" role="alert">@_errorMessage</div>
-        }
-        else if (!_levels.Any())
-        {
-            <div class="alert alert-info" role="alert">No alert status levels defined.</div>
-        }
-        else
-        {
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Color</th>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th>Notifications</th>
-                            <th>Type</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var level in _levels)
-                        {
-                            <tr>
-                                <td>
-                                    <span class="d-inline-block rounded"
-                                          style="width:28px;height:28px;background-color:@level.Color;"
-                                          title="@level.Color"></span>
-                                </td>
-                                <td class="fw-semibold">@level.Name</td>
-                                <td class="text-muted">@level.Description</td>
-                                <td>
-                                    @if (level.SendNotifications)
-                                    {
-                                        <span class="badge bg-success">Enabled</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-secondary">Disabled</span>
-                                    }
-                                </td>
-                                <td>
-                                    @if (level.IsDefault)
-                                    {
-                                        <span class="badge bg-primary">Default</span>
-                                    }
-                                    @if (level.IsCanceled)
-                                    {
-                                        <span class="badge bg-warning text-dark">Canceled</span>
-                                    }
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-primary me-1"
-                                            @onclick="@(() => OnEdit.InvokeAsync(level))">
-                                        Edit
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger"
-                                            @onclick="@(() => OnDelete.InvokeAsync(level))">
-                                        Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
-    </div>
-</div>
+<MudPaper Elevation="1">
+    <MudToolBar>
+        <MudText Typo="Typo.h6">Alert Status Levels</MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.Refresh" OnClick="@LoadAsync" />
+    </MudToolBar>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+    }
+
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <MudAlert Severity="Severity.Error" Class="ma-4">@_errorMessage</MudAlert>
+    }
+    else if (!_levels.Any() && !_isLoading)
+    {
+        <MudAlert Severity="Severity.Info" Class="ma-4">No alert status levels defined.</MudAlert>
+    }
+    else
+    {
+        <MudTable Items="@_levels" Hover="true" Striped="true" Dense="true">
+            <HeaderContent>
+                <MudTh>Color</MudTh>
+                <MudTh>Name</MudTh>
+                <MudTh>Description</MudTh>
+                <MudTh>Notifications</MudTh>
+                <MudTh>Type</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>
+                    <MudAvatar Size="Size.Small" Style="@($"background-color: {context.Color}")"> </MudAvatar>
+                </MudTd>
+                <MudTd DataLabel="Name">
+                    <MudText Typo="Typo.body2" Class="font-weight-bold">@context.Name</MudText>
+                </MudTd>
+                <MudTd DataLabel="Description">
+                    <MudText Typo="Typo.body2" Class="mud-text-secondary">@context.Description</MudText>
+                </MudTd>
+                <MudTd DataLabel="Notifications">
+                    @if (context.SendNotifications)
+                    {
+                        <MudChip T="string" Color="Color.Success" Size="Size.Small">Enabled</MudChip>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Color="Color.Default" Size="Size.Small">Disabled</MudChip>
+                    }
+                </MudTd>
+                <MudTd DataLabel="Type">
+                    @if (context.IsDefault)
+                    {
+                        <MudChip T="string" Color="Color.Primary" Size="Size.Small">Default</MudChip>
+                    }
+                    @if (context.IsCanceled)
+                    {
+                        <MudChip T="string" Color="Color.Warning" Size="Size.Small">Canceled</MudChip>
+                    }
+                </MudTd>
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                   Size="Size.Small"
+                                   Color="Color.Primary"
+                                   OnClick="@(() => OnEdit.InvokeAsync(context))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                   Size="Size.Small"
+                                   Color="Color.Error"
+                                   OnClick="@(() => OnDelete.InvokeAsync(context))" />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+</MudPaper>
 
 @code {
     [Parameter]

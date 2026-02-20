@@ -1,101 +1,109 @@
-﻿@page "/"
+@page "/"
 @attribute [Authorize]
 
 <PageTitle>AlertOne - Home</PageTitle>
 
 @inject AppState AppState
 
-<div class="container mt-5">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-center py-4">
-                    <h2>Welcome, @AppState.CurrentUser.FullName!</h2>
-                    <p class="text-muted mb-3">@AppState.CurrentUser.Email</p>
-                    <div>
-
-                        @foreach (var role in AppState.CurrentUser.Roles)
-                        {
-                            <span class="badge bg-primary me-1">@role</span>
-                        }
-
-                    </div>
-                </div>
+<MudGrid>
+    <MudItem xs="12">
+        <MudPaper Class="pa-6 text-center" Elevation="1">
+            <MudText Typo="Typo.h4">Welcome, @AppState.CurrentUser?.FullName!</MudText>
+            <MudText Typo="Typo.body1" Class="mud-text-secondary mt-2">@AppState.CurrentUser?.Email</MudText>
+            <div class="mt-3">
+                @if (AppState.CurrentUser?.Roles != null)
+                {
+                    @foreach (var role in AppState.CurrentUser.Roles)
+                    {
+                        <MudChip T="string" Color="Color.Primary" Size="Size.Small" Class="mx-1">@role</MudChip>
+                    }
+                }
             </div>
-        </div>
-    </div>
+        </MudPaper>
+    </MudItem>
 
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <h4 class="card-title mb-3">About AlertOne</h4>
-                    <p class="lead text-muted">
-                        AlertOne is a centralized alert management system designed to help organizations
-                        coordinate emergency communications and keep teams informed during critical situations.
-                    </p>
-                    <div class="row g-4 mt-2">
-                        <div class="col-md-4">
-                            <div class="d-flex align-items-start">
-                                <span class="fs-4 me-3">🚨</span>
-                                <div>
-                                    <h6 class="mb-1">Alert Management</h6>
-                                    <p class="text-muted small mb-0">
-                                        Activate, monitor, and rescind alerts with configurable alert types and status levels.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="d-flex align-items-start">
-                                <span class="fs-4 me-3">🔔</span>
-                                <div>
-                                    <h6 class="mb-1">Notifications</h6>
-                                    <p class="text-muted small mb-0">
-                                        Automatically notify designated personnel when alerts are activated or updated.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="d-flex align-items-start">
-                                <span class="fs-4 me-3">👥</span>
-                                <div>
-                                    <h6 class="mb-1">User Management</h6>
-                                    <p class="text-muted small mb-0">
-                                        Manage users, roles, and permissions to control who can activate and respond to alerts.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <MudItem xs="12">
+        <MudPaper Class="pa-6" Elevation="1">
+            <MudText Typo="Typo.h5" Class="mb-4">About AlertOne</MudText>
+            <MudText Typo="Typo.body1" Class="mud-text-secondary mb-4">
+                AlertOne is a centralized alert management system designed to help organizations
+                coordinate emergency communications and keep teams informed during critical situations.
+            </MudText>
 
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <a href="/alerts" class="card border-0 shadow-sm text-decoration-none h-100">
-                <div class="card-body d-flex align-items-center">
-                    <span class="fs-2 me-3">📋</span>
-                    <div>
-                        <h5 class="card-title mb-1 text-dark">Alert Dashboard</h5>
-                        <p class="card-text text-muted small mb-0">View and manage active alerts</p>
+            <MudGrid>
+                <MudItem xs="12" md="4">
+                    <div class="d-flex align-start">
+                        <MudIcon Icon="@Icons.Material.Filled.NotificationsActive" Color="Color.Error" Size="Size.Large" Class="mr-3" />
+                        <div>
+                            <MudText Typo="Typo.subtitle1">Alert Management</MudText>
+                            <MudText Typo="Typo.body2" Class="mud-text-secondary">
+                                Activate, monitor, and rescind alerts with configurable alert types and status levels.
+                            </MudText>
+                        </div>
                     </div>
-                </div>
-            </a>
-        </div>
-        <div class="col-md-6 mb-3">
-            <a href="/users" class="card border-0 shadow-sm text-decoration-none h-100">
-                <div class="card-body d-flex align-items-center">
-                    <span class="fs-2 me-3">⚙️</span>
-                    <div>
-                        <h5 class="card-title mb-1 text-dark">User Management</h5>
-                        <p class="card-text text-muted small mb-0">Manage users and permissions</p>
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <div class="d-flex align-start">
+                        <MudIcon Icon="@Icons.Material.Filled.Notifications" Color="Color.Warning" Size="Size.Large" Class="mr-3" />
+                        <div>
+                            <MudText Typo="Typo.subtitle1">Notifications</MudText>
+                            <MudText Typo="Typo.body2" Class="mud-text-secondary">
+                                Automatically notify designated personnel when alerts are activated or updated.
+                            </MudText>
+                        </div>
                     </div>
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <div class="d-flex align-start">
+                        <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Info" Size="Size.Large" Class="mr-3" />
+                        <div>
+                            <MudText Typo="Typo.subtitle1">User Management</MudText>
+                            <MudText Typo="Typo.body2" Class="mud-text-secondary">
+                                Manage users, roles, and permissions to control who can activate and respond to alerts.
+                            </MudText>
+                        </div>
+                    </div>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" md="6">
+        <MudCard Elevation="1" Class="cursor-pointer" @onclick="@(() => NavigateToAlerts())">
+            <MudCardContent Class="d-flex align-center">
+                <MudIcon Icon="@Icons.Material.Filled.Dashboard" Size="Size.Large" Color="Color.Primary" Class="mr-4" />
+                <div>
+                    <MudText Typo="Typo.h6">Alert Dashboard</MudText>
+                    <MudText Typo="Typo.body2" Class="mud-text-secondary">View and manage active alerts</MudText>
                 </div>
-            </a>
-        </div>
-    </div>
-</div>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <MudItem xs="12" md="6">
+        <MudCard Elevation="1" Class="cursor-pointer" @onclick="@(() => NavigateToUsers())">
+            <MudCardContent Class="d-flex align-center">
+                <MudIcon Icon="@Icons.Material.Filled.Settings" Size="Size.Large" Color="Color.Secondary" Class="mr-4" />
+                <div>
+                    <MudText Typo="Typo.h6">User Management</MudText>
+                    <MudText Typo="Typo.body2" Class="mud-text-secondary">Manage users and permissions</MudText>
+                </div>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+@code {
+    [Inject]
+    private NavigationManager NavigationManager { get; set; } = null!;
+
+    private void NavigateToAlerts()
+    {
+        NavigationManager.NavigateTo("/alerts");
+    }
+
+    private void NavigateToUsers()
+    {
+        NavigationManager.NavigateTo("/users");
+    }
+}

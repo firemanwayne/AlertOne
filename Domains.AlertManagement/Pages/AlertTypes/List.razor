@@ -3,28 +3,27 @@
 
 @inject IAlertTypeService AlertTypeService
 @inject NavigationManager Navigation
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
-<div class="container-fluid mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">Alert Types</h2>
-        <button class="btn btn-primary" @onclick="@HandleCreate">
-            + New Alert Type
-        </button>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <div class="d-flex justify-space-between align-center mb-4">
+        <MudText Typo="Typo.h4">Alert Types</MudText>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="@HandleCreate">
+            New Alert Type
+        </MudButton>
     </div>
-
-    @if (!string.IsNullOrEmpty(_statusMessage))
-    {
-        <div class="alert alert-info" role="alert">@_statusMessage</div>
-    }
 
     <AlertTypeList @ref="_listRef"
                    OnEdit="@HandleEdit"
                    OnDelete="@HandleDelete" />
-</div>
+</MudContainer>
 
 @code {
     private AlertTypeList? _listRef;
-    private string? _statusMessage;
 
     private void HandleCreate()
     {
@@ -38,24 +37,33 @@
 
     private async Task HandleDelete(AlertTypeViewModel alertType)
     {
-        _statusMessage = $"Deleting '{alertType.Name}'...";
-
-        StateHasChanged();
-
-        var result = await AlertTypeService.DeleteAsync(alertType.Id);
-
-        if (result.IsSuccess)
+        var parameters = new DialogParameters<ConfirmDialog>
         {
-            _statusMessage = $"'{alertType.Name}' deleted successfully.";
+            { x => x.ContentText, $"Are you sure you want to delete '{alertType.Name}'?" },
+            { x => x.ButtonText, "Delete" },
+            { x => x.Color, Color.Error }
+        };
 
-            if (_listRef != null)
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Delete Alert Type", parameters);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            var deleteResult = await AlertTypeService.DeleteAsync(alertType.Id);
+
+            if (deleteResult.IsSuccess)
             {
-                await _listRef.RefreshAsync();
+                Snackbar.Add($"'{alertType.Name}' deleted successfully", Severity.Success);
+
+                if (_listRef != null)
+                {
+                    await _listRef.RefreshAsync();
+                }
             }
-        }
-        else
-        {
-            _statusMessage = $"Failed to delete: {result.Error?.Message}";
+            else
+            {
+                Snackbar.Add($"Failed to delete: {deleteResult.Error?.Message}", Severity.Error);
+            }
         }
     }
 }

@@ -2,135 +2,117 @@
 
 @inject IAlertTypeService AlertTypeService
 @inject IUserManagementService UserService
+@inject ISnackbar Snackbar
 
-<div class="card">
-    <div class="card-header">
-        <h5 class="mb-0">@(AlertType == null ? "Create Alert Type" : "Edit Alert Type")</h5>
-    </div>
-    <div class="card-body">
-        @if (!string.IsNullOrEmpty(_errorMessage))
-        {
-            <div class="alert alert-danger" role="alert">@_errorMessage</div>
-        }
-        @if (!string.IsNullOrEmpty(_successMessage))
-        {
-            <div class="alert alert-success" role="alert">@_successMessage</div>
-        }
+<MudCard Elevation="2">
+    <MudCardHeader>
+        <MudText Typo="Typo.h6">@(AlertType == null ? "Create Alert Type" : "Edit Alert Type")</MudText>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudForm @ref="_form" @bind-IsValid="@_formIsValid">
+            <MudTextField T="string"
+                          @bind-Value="_model.Name"
+                          Label="Name"
+                          Variant="Variant.Outlined"
+                          Required="true"
+                          RequiredError="Name is required"
+                          MaxLength="100"
+                          HelperText="e.g. Fire, Medical, Security"
+                          Class="mb-4" />
 
-        <EditForm Model="@_model" OnValidSubmit="@HandleSubmitAsync">
-            <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" />
+            <MudTextField T="string"
+                          @bind-Value="_model.Description"
+                          Label="Description"
+                          Variant="Variant.Outlined"
+                          Lines="3"
+                          Required="true"
+                          RequiredError="Description is required"
+                          MaxLength="500"
+                          HelperText="Describe what this alert type represents..."
+                          Class="mb-4" />
 
-            <div class="mb-3">
-                <label for="atName" class="form-label">Name</label>
+            <div class="d-flex align-center gap-4 mb-4">
+                <MudColorPicker @bind-Text="_model.Color"
+                                Label="Color"
+                                Variant="Variant.Outlined"
+                                DisableToolbar="false"
+                                DisableAlpha="true"
+                                Style="max-width: 200px;" />
 
-                <InputText id="atName" 
-                    @bind-Value="_model.Name" 
-                    class="form-control"
-                    placeholder="e.g. Fire, Medical, Security" />
-
-                <ValidationMessage For="@(() => _model.Name)" />
+                <MudChip T="string"
+                         Style="@($"background-color: {_model.Color}; color: #fff;")"
+                         Size="Size.Large">
+                    Preview
+                </MudChip>
             </div>
 
-            <div class="mb-3">
-                <label for="atDescription" class="form-label">Description</label>
+            <MudText Typo="Typo.subtitle2" Class="mb-2">Notify Users</MudText>
+            <MudText Typo="Typo.caption" Class="mud-text-secondary mb-2">
+                Select the users who will receive notifications when this alert type is activated.
+            </MudText>
 
-                <InputTextArea id="atDescription"
-                    @bind-Value="_model.Description"                    
-                    class="form-control" rows="3"
-                    placeholder="Describe what this alert type represents..." />
+            @if (_isLoadingUsers)
+            {
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+            }
+            else if (!_allUsers.Any())
+            {
+                <MudAlert Severity="Severity.Info" Class="mb-4">No users available.</MudAlert>
+            }
+            else
+            {
+                <MudPaper Elevation="0" Class="pa-3 mb-4" Style="max-height: 220px; overflow-y: auto; border: 1px solid var(--mud-palette-lines-default);">
+                    <MudTextField T="string"
+                                  @bind-Value="_userSearch"
+                                  Placeholder="Search users..."
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Search"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Immediate="true"
+                                  Class="mb-2" />
 
-                <ValidationMessage For="@(() => _model.Description)" />
-            </div>
-
-            <div class="mb-3">
-                <label for="atColor" class="form-label">Color</label>
-                <div class="d-flex align-items-center gap-3">
-
-                    <input type="color" id="atColor" 
-                        class="form-control form-control-color"
-                        @bind="_model.Color" style="width:60px;height:38px;" />
-
-                    <InputText @bind-Value="_model.Color" 
-                    class="form-control"
-                    placeholder="#FF0000"
-                    style="max-width:140px;" />
-
-                    <span class="badge fs-6 px-3 py-2"
-                          style="background-color:@_model.Color;color:#fff;">
-                        Preview
-                    </span>
-
-                </div>
-                <ValidationMessage For="@(() => _model.Color)" />
-            </div>
-
-            <div class="mb-4">
-                <label class="form-label">Notify Users</label>
-                <p class="text-muted small mb-2">
-                    Select the users who will receive notifications when this alert type is activated.
-                </p>
-                @if (_isLoadingUsers)
-                {
-                    <div class="d-flex align-items-center gap-2 text-muted small">
-                        <div class="spinner-border spinner-border-sm" role="status"></div>
-                        <span>Loading users...</span>
-                    </div>
-                }
-                else if (!_allUsers.Any())
-                {
-                    <div class="alert alert-info py-2 small">No users available.</div>
-                }
-                else
-                {
-                    <div class="border rounded p-3" style="max-height:220px;overflow-y:auto;">
-                        <div class="mb-2">
-                            <input type="text" class="form-control form-control-sm"
-                                   placeholder="Search users..."
-                                   @bind="_userSearch" @bind:event="oninput" />
-                        </div>
-                        @foreach (var user in FilteredUsers)
-                        {
-                            var isChecked = _model.NotifyUserIds.Contains(user.Id.ToString());
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox"
-                                       id="user-@user.Id"
-                                       checked="@isChecked"
-                                       @onchange="@(e => ToggleUser(user.Id.ToString(), (bool)e.Value!))" />
-
-                                <label class="form-check-label" for="user-@user.Id">
-                                    @user.FirstName @user.LastName
-                                    <span class="text-muted small ms-1">(@user.Email)</span>
-                                </label>
-                            </div>
-                        }
-                    </div>
-                    <div class="mt-1 small text-muted">
-                        @_model.NotifyUserIds.Count user(s) selected
-                    </div>
-                }
-            </div>
-
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary" disabled="@_isLoading">
-                    @if (_isLoading)
+                    @foreach (var user in FilteredUsers)
                     {
-                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                        <span>Saving...</span>
+                        var isChecked = _model.NotifyUserIds.Contains(user.Id.ToString());
+                        <MudCheckBox T="bool"
+                                     Value="@isChecked"
+                                     ValueChanged="@(val => ToggleUser(user.Id.ToString(), val))"
+                                     Label="@($"{user.FirstName} {user.LastName} ({user.Email})")"
+                                     Color="Color.Primary"
+                                     Dense="true" />
                     }
-                    else
-                    {
-                        <span>@(AlertType == null ? "Create" : "Save Changes")</span>
-                    }
-                </button>
-                <button type="button" class="btn btn-secondary"
-                        @onclick="@OnCancelClicked" disabled="@_isLoading">
-                    Cancel
-                </button>
-            </div>
-        </EditForm>
-    </div>
-</div>
+                </MudPaper>
+                <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                    @_model.NotifyUserIds.Count user(s) selected
+                </MudText>
+            }
+        </MudForm>
+    </MudCardContent>
+    <MudCardActions Class="pa-4">
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Disabled="@(!_formIsValid || _isLoading)"
+                   OnClick="@HandleSubmitAsync">
+            @if (_isLoading)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                <span>Saving...</span>
+            }
+            else
+            {
+                <span>@(AlertType == null ? "Create" : "Save Changes")</span>
+            }
+        </MudButton>
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Default"
+                   OnClick="@OnCancelClicked"
+                   Disabled="@_isLoading"
+                   Class="ml-2">
+            Cancel
+        </MudButton>
+    </MudCardActions>
+</MudCard>
 
 @code {
     [Parameter]
@@ -142,12 +124,12 @@
     [Parameter]
     public EventCallback OnCancelClicked { get; set; }
 
+    private MudForm _form = null!;
     private FormModel _model = new();
     private List<UserResponse> _allUsers = new();
     private bool _isLoading = false;
     private bool _isLoadingUsers = false;
-    private string? _errorMessage;
-    private string? _successMessage;
+    private bool _formIsValid = false;
     private string _userSearch = string.Empty;
 
     private IEnumerable<UserResponse> FilteredUsers
@@ -230,9 +212,14 @@
 
     private async Task HandleSubmitAsync()
     {
+        await _form.Validate();
+
+        if (!_form.IsValid)
+        {
+            return;
+        }
+
         _isLoading = true;
-        _errorMessage = null;
-        _successMessage = null;
 
         try
         {
@@ -248,13 +235,12 @@
 
                 if (result.IsSuccess)
                 {
-                    _successMessage = "Alert type created successfully.";
-                    await Task.Delay(800);
+                    Snackbar.Add("Alert type created successfully", Severity.Success);
                     await OnSaveSuccess.InvokeAsync();
                 }
                 else
                 {
-                    _errorMessage = result.Error?.Message ?? "Failed to create alert type.";
+                    Snackbar.Add(result.Error?.Message ?? "Failed to create alert type", Severity.Error);
                 }
             }
             else
@@ -269,19 +255,18 @@
 
                 if (result.IsSuccess)
                 {
-                    _successMessage = "Alert type updated successfully.";
-                    await Task.Delay(800);
+                    Snackbar.Add("Alert type updated successfully", Severity.Success);
                     await OnSaveSuccess.InvokeAsync();
                 }
                 else
                 {
-                    _errorMessage = result.Error?.Message ?? "Failed to update alert type.";
+                    Snackbar.Add(result.Error?.Message ?? "Failed to update alert type", Severity.Error);
                 }
             }
         }
         catch (Exception ex)
         {
-            _errorMessage = $"An error occurred: {ex.Message}";
+            Snackbar.Add($"An error occurred: {ex.Message}", Severity.Error);
         }
         finally
         {
@@ -291,19 +276,9 @@
 
     private sealed class FormModel
     {
-        [Required(ErrorMessage = "Name is required.")]
-        [MaxLength(100, ErrorMessage = "Name cannot exceed 100 characters.")]
         public string Name { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Description is required.")]
-        [MaxLength(500, ErrorMessage = "Description cannot exceed 500 characters.")]
         public string Description { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Color is required.")]
-        [RegularExpression(@"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$",
-            ErrorMessage = "Color must be a valid hex value (e.g. #FF0000).")]
         public string Color { get; set; } = "#0d6efd";
-
         public List<string> NotifyUserIds { get; set; } = new();
     }
 }

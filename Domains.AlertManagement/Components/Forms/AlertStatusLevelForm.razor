@@ -1,105 +1,85 @@
 @namespace Domains.AlertManagement.Forms
 
 @inject IAlertStatusLevelService AlertStatusLevelService
+@inject ISnackbar Snackbar
 
-<div class="card">
-    <div class="card-header">
-        <h5 class="mb-0">@(StatusLevel == null ? "Create Alert Status Level" : "Edit Alert Status Level")</h5>
-    </div>
-    <div class="card-body">
-        @if (!string.IsNullOrEmpty(_errorMessage))
-        {
-            <div class="alert alert-danger" role="alert">@_errorMessage</div>
-        }
-        @if (!string.IsNullOrEmpty(_successMessage))
-        {
-            <div class="alert alert-success" role="alert">@_successMessage</div>
-        }
+<MudCard Elevation="2">
+    <MudCardHeader>
+        <MudText Typo="Typo.h6">@(StatusLevel == null ? "Create Alert Status Level" : "Edit Alert Status Level")</MudText>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudForm @ref="_form" @bind-IsValid="@_formIsValid">
+            <MudTextField T="string"
+                          @bind-Value="_model.Name"
+                          Label="Name"
+                          Variant="Variant.Outlined"
+                          Required="true"
+                          RequiredError="Name is required"
+                          MaxLength="100"
+                          HelperText="e.g. Critical, Warning, Info"
+                          Class="mb-4" />
 
-        <EditForm Model="@_model" OnValidSubmit="@HandleSubmitAsync">
-            <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" />
+            <MudTextField T="string"
+                          @bind-Value="_model.Description"
+                          Label="Description"
+                          Variant="Variant.Outlined"
+                          Lines="3"
+                          Required="true"
+                          RequiredError="Description is required"
+                          MaxLength="500"
+                          HelperText="Describe when this status level is used"
+                          Class="mb-4" />
 
-            <div class="mb-3">
-                <label for="slName" class="form-label">Name</label>
-                <InputText id="slName" @bind-Value="_model.Name" class="form-control"
-                           placeholder="e.g. Critical, Warning, Info" />
-                <ValidationMessage For="@(() => _model.Name)" />
-            </div>
+            <MudColorPicker @bind-Text="_model.Color"
+                            Label="Color"
+                            Variant="Variant.Outlined"
+                            DisableToolbar="false"
+                            DisableAlpha="true"
+                            Class="mb-4" />
 
-            <div class="mb-3">
-                <label for="slDescription" class="form-label">Description</label>
-                <InputTextArea id="slDescription" @bind-Value="_model.Description"
-                               class="form-control" rows="3"
-                               placeholder="Describe when this status level is used..." />
-                <ValidationMessage For="@(() => _model.Description)" />
-            </div>
+            <MudSwitch T="bool"
+                       @bind-Value="_model.SendNotifications"
+                       Label="Send notifications when this status level is applied"
+                       Color="Color.Primary"
+                       Class="mb-4" />
 
-            <div class="mb-3">
-                <label for="slColor" class="form-label">Color</label>
-                <div class="d-flex align-items-center gap-3">
-                    <input type="color" id="slColor" class="form-control form-control-color"
-                           @bind="_model.Color" style="width:60px;height:38px;" />
-                    <InputText @bind-Value="_model.Color" class="form-control"
-                               placeholder="#FF0000" style="max-width:140px;" />
-                    <span class="badge fs-6 px-3 py-2"
-                          style="background-color:@_model.Color;color:#fff;">
-                        Preview
-                    </span>
-                </div>
-                <ValidationMessage For="@(() => _model.Color)" />
-            </div>
+            <MudSwitch T="bool"
+                       @bind-Value="_model.IsDefault"
+                       Label="Default status (automatically assigned when alerts are created)"
+                       Color="Color.Info"
+                       Class="mb-4" />
 
-            <div class="mb-3">
-                <div class="form-check form-switch">
-                    <InputCheckbox id="slSendNotifications" class="form-check-input"
-                                   @bind-Value="_model.SendNotifications" />
-                    <label class="form-check-label" for="slSendNotifications">
-                        Send notifications when this status level is applied
-                    </label>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <div class="form-check form-switch">
-                    <InputCheckbox id="slIsDefault" class="form-check-input"
-                                   @bind-Value="_model.IsDefault" />
-                    <label class="form-check-label" for="slIsDefault">
-                        Default status (automatically assigned when alerts are created)
-                    </label>
-                </div>
-            </div>
-
-            <div class="mb-4">
-                <div class="form-check form-switch">
-                    <InputCheckbox id="slIsCanceled" class="form-check-input"
-                                   @bind-Value="_model.IsCanceled" />
-                    <label class="form-check-label" for="slIsCanceled">
-                        Canceled status (automatically assigned when alerts are rescinded)
-                    </label>
-                </div>
-            </div>
-
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary" disabled="@_isLoading">
-                    @if (_isLoading)
-                    {
-                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                        <span>Saving...</span>
-                    }
-                    else
-                    {
-                        <span>@(StatusLevel == null ? "Create" : "Save Changes")</span>
-                    }
-                </button>
-                <button type="button" class="btn btn-secondary"
-                        @onclick="@OnCancelClicked" disabled="@_isLoading">
-                    Cancel
-                </button>
-            </div>
-        </EditForm>
-    </div>
-</div>
+            <MudSwitch T="bool"
+                       @bind-Value="_model.IsCanceled"
+                       Label="Canceled status (automatically assigned when alerts are rescinded)"
+                       Color="Color.Warning"
+                       Class="mb-4" />
+        </MudForm>
+    </MudCardContent>
+    <MudCardActions Class="pa-4">
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Disabled="@(!_formIsValid || _isLoading)"
+                   OnClick="@HandleSubmitAsync">
+            @if (_isLoading)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                <span>Saving...</span>
+            }
+            else
+            {
+                <span>@(StatusLevel == null ? "Create" : "Save Changes")</span>
+            }
+        </MudButton>
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Default"
+                   OnClick="@OnCancelClicked"
+                   Disabled="@_isLoading"
+                   Class="ml-2">
+            Cancel
+        </MudButton>
+    </MudCardActions>
+</MudCard>
 
 @code {
     [Parameter]
@@ -111,10 +91,10 @@
     [Parameter]
     public EventCallback OnCancelClicked { get; set; }
 
+    private MudForm _form = null!;
     private FormModel _model = new();
     private bool _isLoading = false;
-    private string? _errorMessage;
-    private string? _successMessage;
+    private bool _formIsValid = false;
 
     protected override void OnParametersSet()
     {
@@ -138,9 +118,14 @@
 
     private async Task HandleSubmitAsync()
     {
+        await _form.Validate();
+
+        if (!_form.IsValid)
+        {
+            return;
+        }
+
         _isLoading = true;
-        _errorMessage = null;
-        _successMessage = null;
 
         try
         {
@@ -158,13 +143,12 @@
 
                 if (result.IsSuccess)
                 {
-                    _successMessage = "Status level created successfully.";
-                    await Task.Delay(800);
+                    Snackbar.Add("Status level created successfully", Severity.Success);
                     await OnSaveSuccess.InvokeAsync();
                 }
                 else
                 {
-                    _errorMessage = result.Error?.Message ?? "Failed to create status level.";
+                    Snackbar.Add(result.Error?.Message ?? "Failed to create status level", Severity.Error);
                 }
             }
             else
@@ -181,19 +165,18 @@
 
                 if (result.IsSuccess)
                 {
-                    _successMessage = "Status level updated successfully.";
-                    await Task.Delay(800);
+                    Snackbar.Add("Status level updated successfully", Severity.Success);
                     await OnSaveSuccess.InvokeAsync();
                 }
                 else
                 {
-                    _errorMessage = result.Error?.Message ?? "Failed to update status level.";
+                    Snackbar.Add(result.Error?.Message ?? "Failed to update status level", Severity.Error);
                 }
             }
         }
         catch (Exception ex)
         {
-            _errorMessage = $"An error occurred: {ex.Message}";
+            Snackbar.Add($"An error occurred: {ex.Message}", Severity.Error);
         }
         finally
         {
@@ -203,23 +186,11 @@
 
     private sealed class FormModel
     {
-        [Required(ErrorMessage = "Name is required.")]
-        [MaxLength(100, ErrorMessage = "Name cannot exceed 100 characters.")]
         public string Name { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Description is required.")]
-        [MaxLength(500, ErrorMessage = "Description cannot exceed 500 characters.")]
         public string Description { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Color is required.")]
-        [RegularExpression(@"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$",
-            ErrorMessage = "Color must be a valid hex value (e.g. #FF0000).")]
         public string Color { get; set; } = "#6c757d";
-
         public bool SendNotifications { get; set; } = true;
-
         public bool IsDefault { get; set; }
-
         public bool IsCanceled { get; set; }
     }
 }
