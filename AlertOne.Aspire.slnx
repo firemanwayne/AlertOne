@@ -48,9 +48,9 @@
     <Project Path="Client/src/Web/AlertOne.Web.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
+    <File Path=".github/workflows/azure-static-web-apps-icy-stone-0670cb10f.yml" />
     <File Path=".github/workflows/deploy-alertmanagement-api.yml" />
     <File Path=".github/workflows/deploy-usermanagement-api.yml" />
-    <File Path=".github/workflows/deploy-web-client.yml" />
     <File Path="Directory.Packages.props" />
   </Folder>
 </Solution>

@@ -8,7 +8,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 
-namespace AlertOne.Web.Auth;
+namespace AlertOne.Shared.Auth;
 
 public sealed class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisposable
 {

@@ -1,8 +1,8 @@
 using AlertOne.Core.Interfaces;
+using AlertOne.Shared.Auth;
 using AlertOne.Shared.Handlers;
 using AlertOne.Shared.States;
 using AlertOne.Web;
-using AlertOne.Web.Auth;
 using AlertOne.Web.Services;
 using Blazored.LocalStorage;
 using Domains.AlertManagement;
