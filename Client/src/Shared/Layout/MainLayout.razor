@@ -7,9 +7,8 @@
 <MudLayout>
     <AuthorizeView>
         <Authorized Context="state">
-            <MudAppBar Elevation="1" Dense="true">
-                <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" Class="d-sm-none" />
-                <MudText Typo="Typo.h6" Class="ml-2">AlertOne</MudText>
+            <MudAppBar Elevation="1" Dense="true" Style="@($"color:{Colors.BlueGray.Lighten3}; background:{Colors.BlueGray.Darken4};")">
+                <MudIconButton Icon="@Icons.Material.Filled.Menu" Edge="Edge.Start" OnClick="@ToggleDrawer" Class="d-sm-none" />
                 <MudSpacer />
                 <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
                     <ActivatorContent>
@@ -20,8 +19,8 @@
                     <ChildContent>
                         <MudMenuItem Disabled="true">
                             <div class="d-flex flex-column">
-                                <MudText Typo="Typo.subtitle2">@AppState.CurrentUser?.FullName</MudText>
-                                <MudText Typo="Typo.caption" Class="mud-text-secondary">@AppState.CurrentUser?.Email</MudText>
+                                <MudText Typo="Typo.subtitle2">@AppState.CurrentUser.FullName</MudText>
+                                <MudText Typo="Typo.caption" Class="mud-text-secondary">@AppState.CurrentUser.Email</MudText>
                             </div>
                         </MudMenuItem>
                         <MudDivider />
@@ -34,17 +33,21 @@
                 </MudMenu>
             </MudAppBar>
 
-            <MudDrawer @bind-Open="_drawerOpen" Elevation="1" Variant="@DrawerVariant.Responsive" Breakpoint="Breakpoint.Sm">
+            <MudDrawer @bind-Open="_drawerOpen"
+                       Elevation="1"
+                       Variant="@DrawerVariant.Responsive"
+                       Breakpoint="Breakpoint.Sm"
+                       Style="@($"color:{Colors.BlueGray.Lighten3}; background:{Colors.BlueGray.Darken4};")">
                 <MudDrawerHeader>
                     <MudText Typo="Typo.h6">Alert One</MudText>
                 </MudDrawerHeader>
 
                 <MudNavMenu>
-                    <MudText Typo="Typo.overline" Class="px-4 mt-2 mud-text-secondary">User Management</MudText>
+                    <MudText Typo="Typo.overline" Class="px-4 mt-2">User Management</MudText>
                     <MudNavLink Href="/users" Icon="@Icons.Material.Filled.People" Match="NavLinkMatch.Prefix">Users</MudNavLink>
                     <MudNavLink Href="/roles" Icon="@Icons.Material.Filled.AdminPanelSettings" Match="NavLinkMatch.Prefix">Roles</MudNavLink>
 
-                    <MudText Typo="Typo.overline" Class="px-4 mt-4 mud-text-secondary">Alerts</MudText>
+                    <MudText Typo="Typo.overline" Class="px-4 mt-4">Alerts</MudText>
                     <MudNavLink Href="/alerts" Icon="@Icons.Material.Filled.NotificationsActive" Match="NavLinkMatch.All">Alerts</MudNavLink>
                     <MudNavLink Href="/alerts/types" Icon="@Icons.Material.Filled.Category" Match="NavLinkMatch.Prefix">Alert Types</MudNavLink>
                     <MudNavLink Href="/alerts/status-levels" Icon="@Icons.Material.Filled.Flag" Match="NavLinkMatch.Prefix">Status Levels</MudNavLink>
@@ -83,7 +86,7 @@
 
     private string GetInitials()
     {
-        var fullName = AppState.CurrentUser?.FullName;
+        var fullName = AppState.CurrentUser.FullName;
 
         if (string.IsNullOrWhiteSpace(fullName))
         {
