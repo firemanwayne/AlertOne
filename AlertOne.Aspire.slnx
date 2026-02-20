@@ -48,8 +48,8 @@
     <Project Path="Client/src/Web/AlertOne.Web.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
-    <File Path=".github/workflows/master_alertone-alrtmg-dev-eastus2-001.yml" />
-    <File Path=".github/workflows/master_alertone-usrm-dev-eastus2-001.yml" />
+    <File Path=".github/workflows/deploy-alertmanagement-api.yml" />
+    <File Path=".github/workflows/deploy-usermanagement-api.yml" />
     <File Path="Directory.Packages.props" />
   </Folder>
 </Solution>
