@@ -4,8 +4,8 @@
 
 <div class="page">
     <AuthorizeView>
-        <Authorized>
-            <div class="sidebar">
+        <Authorized Context="state">
+            <div class="sidebar @(_sidebarVisible ? "show" : "")">
                 <div class="sidebar-header">
                     <h4>Alert One</h4>
                 </div>
@@ -14,7 +14,7 @@
                         <div class="text-white">
                             <strong>@AppState.CurrentUser?.FullName</strong>
                         </div>
-                        <div class="text-white-50 small">@AppState.CurrentUser?.Email</div>
+                        <div class="text-white-50 small">@state.User.GetEmail()</div>
                         <div class="mt-1">
                             @if (AppState.CurrentUser?.Roles != null)
                             {
@@ -28,10 +28,7 @@
 
                     <div class="nav-section px-3 mb-1">
                         <span class="nav-section-label">User Management</span>
-                    </div>
-                    <a href="/" class="nav-link">
-                        <span>Home</span>
-                    </a>
+                    </div>                    
                     <a href="/users" class="nav-link">
                         <span>Users</span>
                     </a>
@@ -61,101 +58,80 @@
         </Authorized>
     </AuthorizeView>
 
+    @if (_sidebarVisible)
+    {
+        <div class="sidebar-backdrop d-md-none" @onclick="@ToggleSidebar"></div>
+    }
+
     <main class="main">
-        <div class="container-fluid py-4">
-            @Body
+        <header class="top-header">
+            <div class="d-flex align-items-center">
+                <button class="btn btn-link d-md-none me-2 text-dark" @onclick="@ToggleSidebar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
+                    </svg>
+                </button>              
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <AuthorizeView>
+                    <Authorized>
+                        <div class="dropdown">
+                            <button class="btn btn-link p-0 text-decoration-none dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <div class="profile-icon">
+                                    @GetInitials()
+                                </div>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                <li class="px-3 py-2 border-bottom">
+                                    <div class="fw-semibold">@AppState.CurrentUser?.FullName</div>
+                                    <div class="text-muted small">@AppState.CurrentUser?.Email</div>
+                                </li>
+                                <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><button class="dropdown-item text-danger" @onclick="@HandleLogoutAsync">Logout</button></li>
+                            </ul>
+                        </div>
+                    </Authorized>
+                </AuthorizeView>
+            </div>
+        </header>
+        <div class="main-content">
+            <div class="container-fluid py-4">
+                @Body
+            </div>
         </div>
     </main>
 </div>
 
-<style>
-    .page {
-        display: flex;
-        height: 100vh;
-        overflow: hidden;
-    }
-
-    .sidebar {
-        width: 280px;
-        background: linear-gradient(180deg, #1a2c4e 0%, #8b2332 70%);
-        color: white;
-        display: flex;
-        flex-direction: column;
-        box-shadow: 2px 0 8px rgba(0,0,0,0.1);
-    }
-
-    .sidebar-header {
-        padding: 1.5rem 1rem;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .sidebar-header h4 {
-        margin: 0;
-        font-weight: 600;
-    }
-
-    .sidebar nav {
-        flex: 1;
-        padding: 1rem 0;
-    }
-
-    .sidebar-footer {
-        padding: 1rem;
-        border-top: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .user-info {
-        background: rgba(255,255,255,0.1);
-        border-radius: 0.5rem;
-    }
-
-    .nav-section-label {
-        font-size: 0.7rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: rgba(255,255,255,0.5);
-    }
-
-    .sidebar .nav-link {
-        color: rgba(255,255,255,0.85);
-        padding: 0.5rem 1rem;
-        border-radius: 0.375rem;
-        margin: 0 0.5rem;
-        font-size: 0.9rem;
-        transition: background 0.15s;
-    }
-
-    .sidebar .nav-link:hover,
-    .sidebar .nav-link.active {
-        background: rgba(255,255,255,0.15);
-        color: white;
-    }
-
-    .main {
-        flex: 1;
-        overflow-y: auto;
-        background: #f8f9fa;
-    }
-
-    @@media (max-width: 768px) {
-        .sidebar {
-            width: 100%;
-            position: absolute;
-            z-index: 1000;
-            transform: translateX(-100%);
-            transition: transform 0.3s;
-        }
-
-        .sidebar.show {
-            transform: translateX(0);
-        }
-    }
-</style>
-
 @code {
+    private bool _sidebarVisible = false;
+
     private async Task HandleLogoutAsync()
     {
         await AuthService.LogoutAsync();
+    }
+
+    private void ToggleSidebar()
+    {
+        _sidebarVisible = !_sidebarVisible;
+    }
+
+    private string GetInitials()
+    {
+        var fullName = AppState.CurrentUser?.FullName;
+
+        if (string.IsNullOrWhiteSpace(fullName))
+        {
+            return "?";
+        }
+
+        var parts = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        if (parts.Length >= 2)
+        {
+            return $"{parts[0][0]}{parts[^1][0]}".ToUpperInvariant();
+        }
+
+        return parts[0][0].ToString().ToUpperInvariant();
     }
 }

@@ -1,4 +1,6 @@
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Domains.AlertManagement.AlertStatusLevelAggregate.Dtos;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
 /// Response model for an alert status level
@@ -13,7 +15,7 @@ public sealed class AlertStatusLevelResponse : DataModelBase
 
     public bool SendNotifications { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public bool IsDefault { get; set; }
 
-    public DateTime LastModifiedAt { get; set; }
+    public bool IsCanceled { get; set; }
 }

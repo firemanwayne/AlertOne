@@ -50,12 +50,32 @@
                 <ValidationMessage For="@(() => _model.Color)" />
             </div>
 
-            <div class="mb-4">
+            <div class="mb-3">
                 <div class="form-check form-switch">
                     <InputCheckbox id="slSendNotifications" class="form-check-input"
                                    @bind-Value="_model.SendNotifications" />
                     <label class="form-check-label" for="slSendNotifications">
                         Send notifications when this status level is applied
+                    </label>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div class="form-check form-switch">
+                    <InputCheckbox id="slIsDefault" class="form-check-input"
+                                   @bind-Value="_model.IsDefault" />
+                    <label class="form-check-label" for="slIsDefault">
+                        Default status (automatically assigned when alerts are created)
+                    </label>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <div class="form-check form-switch">
+                    <InputCheckbox id="slIsCanceled" class="form-check-input"
+                                   @bind-Value="_model.IsCanceled" />
+                    <label class="form-check-label" for="slIsCanceled">
+                        Canceled status (automatically assigned when alerts are rescinded)
                     </label>
                 </div>
             </div>
@@ -105,7 +125,9 @@
                 Name = StatusLevel.Name,
                 Description = StatusLevel.Description,
                 Color = StatusLevel.Color,
-                SendNotifications = StatusLevel.SendNotifications
+                SendNotifications = StatusLevel.SendNotifications,
+                IsDefault = StatusLevel.IsDefault,
+                IsCanceled = StatusLevel.IsCanceled
             };
         }
         else
@@ -128,7 +150,9 @@
                     _model.Name,
                     _model.Description,
                     _model.Color,
-                    _model.SendNotifications);
+                    _model.SendNotifications,
+                    _model.IsDefault,
+                    _model.IsCanceled);
 
                 var result = await AlertStatusLevelService.CreateAsync(request);
 
@@ -149,7 +173,9 @@
                     _model.Name,
                     _model.Description,
                     _model.Color,
-                    _model.SendNotifications);
+                    _model.SendNotifications,
+                    _model.IsDefault,
+                    _model.IsCanceled);
 
                 var result = await AlertStatusLevelService.UpdateAsync(StatusLevel.Id, request);
 
@@ -191,5 +217,9 @@
         public string Color { get; set; } = "#6c757d";
 
         public bool SendNotifications { get; set; } = true;
+
+        public bool IsDefault { get; set; }
+
+        public bool IsCanceled { get; set; }
     }
 }

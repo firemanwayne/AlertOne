@@ -81,8 +81,8 @@
                                     </span>
                                 </td>
                                 <td style="text-align:center">@alert.CreatedBy</td>
-                                <td style="text-align:center">@alert.CreatedAt.ToString("MMM d, yyyy h:mm tt")</td>
-                                <td style="text-align:center">@alert.LastModifiedAt.ToString("MMM d, yyyy h:mm tt")</td>
+                                <td style="text-align:center">@alert.CreatedDate.ToString("MMM d, yyyy h:mm tt")</td>
+                                <td style="text-align:center">@alert.UpdatedDate.ToString("MMM d, yyyy h:mm tt")</td>
                                 <td style="text-align:center">@(alert.RescindedBy ?? "—")</td>
                                 <td style="text-align:center">@(alert.RescindedBy ?? "—")</td>
                                 <td style="text-align:center">
@@ -130,7 +130,7 @@
             if (result.IsSuccess)
             {
                 _alerts = result.Value
-                    .OrderByDescending(a => a.CreatedAt)
+                    .OrderByDescending(a => a.CreatedDate)
                     .Select(AlertViewModel.FromResponse)
                     .ToList();
             }

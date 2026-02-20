@@ -7,5 +7,4 @@ namespace Domains.AlertManagement.AlertAggregate.Requests;
 /// </summary>
 public sealed record CreateAlertRequest(
     string AlertTypeId,
-    string AlertStatusLevelId,
     string CreatedBy);

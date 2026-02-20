@@ -5,6 +5,9 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\..\..\core\AlertOne.Api.Core\AlertOne.Api.Core.csproj" />
+	</ItemGroup>
 
 	<!-- No external dependencies - pure domain layer -->
 </Project>

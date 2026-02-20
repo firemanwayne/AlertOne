@@ -1,9 +1,19 @@
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Domains.AlertManagement.AlertAggregate.ViewModels;
+
+using System.Security.Claims;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 
 public sealed class AlertHistoryViewModel : ViewModelBase
 {
+    public AlertHistoryViewModel(ClaimsPrincipal user) : base(user)
+    {
+    }
+
+    public AlertHistoryViewModel(string id, ClaimsPrincipal user) : base(id, user)
+    {
+    }
+
     private string _alertId = string.Empty;
 
     [Display(Name = "Alert ID")]
@@ -22,25 +32,9 @@ public sealed class AlertHistoryViewModel : ViewModelBase
         set => SetProperty(ref _eventType, value);
     }
 
-    private string _changedBy = string.Empty;
-
-    [Display(Name = "Changed By")]
-    public string ChangedBy
-    {
-        get => _changedBy;
-        set => SetProperty(ref _changedBy, value);
-    }
-
-    private DateTime _changedAt;
-
-    [Display(Name = "Changed At")]
-    public DateTime ChangedAt
-    {
-        get => _changedAt;
-        set => SetProperty(ref _changedAt, value);
-    }
-
     private string? _notes;
+
+
 
     [Display(Name = "Notes")]
     public string? Notes
@@ -49,13 +43,15 @@ public sealed class AlertHistoryViewModel : ViewModelBase
         set => SetProperty(ref _notes, value);
     }
 
-    public static AlertHistoryViewModel FromResponse(AlertHistoryResponse response) => new()
+    public static AlertHistoryViewModel FromResponse(AlertHistoryResponse response) => new(response.Id, new ClaimsPrincipal())
     {
         Id = response.Id,
         AlertId = response.AlertId,
         EventType = response.EventType,
-        ChangedBy = response.ChangedBy,
-        ChangedAt = response.ChangedAt,
+        CreatedBy = response.CreatedBy,
+        UpdatedBy = response.UpdatedBy,
+        CreatedDate = response.CreatedDate,
+        UpdatedDate = response.UpdatedDate,
         Notes = response.Notes
     };
 }

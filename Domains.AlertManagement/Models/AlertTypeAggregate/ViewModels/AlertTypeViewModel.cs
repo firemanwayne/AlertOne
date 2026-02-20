@@ -1,7 +1,17 @@
 namespace Domains.AlertManagement.AlertTypeAggregate.ViewModels;
 
+using System.Security.Claims;
+
 public sealed class AlertTypeViewModel : ViewModelBase
 {
+    public AlertTypeViewModel(ClaimsPrincipal user) : base(user)
+    {
+    }
+
+    public AlertTypeViewModel(string id, ClaimsPrincipal user) : base(id, user)
+    {
+    }
+
     private string _name = string.Empty;
 
     [Display(Name = "Name")]
@@ -38,32 +48,15 @@ public sealed class AlertTypeViewModel : ViewModelBase
         set => SetProperty(ref _notifyUserIds, value);
     }
 
-    private DateTime _createdAt;
-
-    [Display(Name = "Created At")]
-    public DateTime CreatedAt
+    public static AlertTypeViewModel FromResponse(AlertTypeResponse response) => new(response.Id, new ClaimsPrincipal())
     {
-        get => _createdAt;
-        set => SetProperty(ref _createdAt, value);
-    }
-
-    private DateTime _lastModifiedAt;
-
-    [Display(Name = "Last Modified At")]
-    public DateTime LastModifiedAt
-    {
-        get => _lastModifiedAt;
-        set => SetProperty(ref _lastModifiedAt, value);
-    }
-
-    public static AlertTypeViewModel FromResponse(AlertTypeResponse response) => new()
-    {
-        Id = response.Id,
         Name = response.Name,
         Description = response.Description,
         Color = response.Color,
         NotifyUserIds = response.NotifyUserIds,
-        CreatedAt = response.CreatedAt,
-        LastModifiedAt = response.LastModifiedAt
+        CreatedDate = response.CreatedDate,
+        UpdatedDate = response.UpdatedDate,
+        CreatedBy = response.CreatedBy,
+        UpdatedBy = response.UpdatedBy,
     };
 }

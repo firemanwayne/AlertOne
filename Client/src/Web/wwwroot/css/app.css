@@ -112,3 +112,137 @@ code {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+/* Layout Styles */
+.page {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.sidebar {
+    width: 280px;
+    background: linear-gradient(180deg, #1a2c4e 0%, #8b2332 70%);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+}
+
+.sidebar-header {
+    padding: 1.5rem 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.sidebar-header h4 {
+    margin: 0;
+    font-weight: 600;
+}
+
+.sidebar nav {
+    flex: 1;
+    padding: 1rem 0;
+}
+
+.sidebar-footer {
+    padding: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.user-info {
+    background: rgba(255,255,255,0.1);
+    border-radius: 0.5rem;
+}
+
+.nav-section-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255,255,255,0.5);
+}
+
+.sidebar .nav-link {
+    color: rgba(255,255,255,0.85);
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    margin: 0 0.5rem;
+    font-size: 0.9rem;
+    transition: background 0.15s;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+    background: rgba(255,255,255,0.15);
+    color: white;
+}
+
+.main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #f8f9fa;
+}
+
+.top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    background: #ffffff;
+    border-bottom: 1px solid #e9ecef;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.main-content {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.profile-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a2c4e 0%, #8b2332 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.profile-icon:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.sidebar-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+}
+
+@media (max-width: 767.98px) {
+    .sidebar {
+        width: 280px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 1000;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .sidebar.show {
+        transform: translateX(0);
+    }
+}

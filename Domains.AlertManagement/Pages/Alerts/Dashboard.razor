@@ -81,7 +81,7 @@
                     </div>
                     <div class="col-md-3">
                         <h6 class="text-muted mb-1">Last Modified At</h6>
-                        <p class="mb-0">@_alert.CreatedAt.ToString("MMM d, yyyy h:mm tt")</p>
+                        <p class="mb-0">@_alert.CreatedDate.ToString("MMM d, yyyy h:mm tt")</p>
                     </div>
                     @if (!_alert.IsActive)
                     {
@@ -130,10 +130,10 @@
                                             @entry.EventType
                                         </span>
                                         <span class="small text-muted">
-                                            @entry.ChangedAt.ToString("MMM d, yyyy h:mm tt")
+                                            @entry.UpdatedDate.ToString("MMM d, yyyy h:mm tt")
                                         </span>
                                     </div>
-                                    <p class="mb-1 small">by <strong>@entry.ChangedBy</strong></p>
+                                    <p class="mb-1 small">by <strong>@entry.UpdatedBy</strong></p>
                                     @if (!string.IsNullOrWhiteSpace(entry.Notes))
                                     {
                                         <p class="mb-0 small text-muted fst-italic">@entry.Notes</p>

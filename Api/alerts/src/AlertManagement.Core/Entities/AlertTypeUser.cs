@@ -1,6 +1,8 @@
+using AlertOne.Api.Core.Abstractions;
+
 namespace AlertManagement.Core.Entities;
 
-public class AlertTypeUser
+public class AlertTypeUser : DataModelBase
 {
     public string AlertTypeId { get; set; } = string.Empty;
     public string UserId { get; set; } = string.Empty;

@@ -5,9 +5,9 @@ public sealed record AlertResponse(
     AlertTypeResponse Type,
     AlertStatusLevelResponse StatusLevel,
     string CreatedBy,
-    string? LastModifiedBy,
-    DateTime CreatedAt,
-    DateTime LastModifiedAt,
+    string? UpdatedBy,
+    DateTime CreatedDate,
+    DateTime UpdatedDate,
     bool IsActive,
     DateTime? RescindedAt,
     string? RescindedBy);

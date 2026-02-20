@@ -1,15 +1,17 @@
 <Solution>
   <Folder Name="/Api/" />
-  <Folder Name="/Api/src/" />
+  <Folder Name="/Api/src/">
+    <Project Path="Api/core/AlertOne.Api.Core/AlertOne.Api.Core.csproj" Id="ce4c1aa6-4124-4479-9330-89da063035b0" />
+  </Folder>
   <Folder Name="/Api/src/alerts/">
     <Project Path="Api/alerts/src/AlertManagement.Client/AlertManagement.Client.csproj" />
     <Project Path="Api/alerts/src/AlertManagement.Core/AlertManagement.Core.csproj" />
     <Project Path="Api/alerts/src/AlertManagement.Infrastructure/AlertManagement.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/Api/src/usrm/">
-    <Project Path="Api/src/UserManagement.Client/UserManagement.Client.csproj" />
-    <Project Path="Api/src/UserManagement.Core/UserManagement.Core.csproj" />
-    <Project Path="Api/src/UserManagement.Infrastructure/UserManagement.Infrastructure.csproj" />
+    <Project Path="Api/usrm/src/UserManagement.Client/UserManagement.Client.csproj" />
+    <Project Path="Api/usrm/src/UserManagement.Core/UserManagement.Core.csproj" />
+    <Project Path="Api/usrm/src/UserManagement.Infrastructure/UserManagement.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/Api/tests/" />
   <Folder Name="/Api/tests/IntegrationTests/">

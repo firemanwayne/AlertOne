@@ -6,5 +6,5 @@ public sealed record AlertTypeResponse(
     string Description,
     string Color,
     IReadOnlyList<string> NotifyUserIds,
-    DateTime CreatedAt,
-    DateTime LastModifiedAt);
+    DateTime CreatedDate,
+    DateTime UpdatedDate);

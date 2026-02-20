@@ -35,23 +35,16 @@ namespace AlertManagement.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("CreatedBy")
                         .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("LastModifiedAt")
+                    b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("LastModifiedBy")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("RescindedAt")
                         .HasColumnType("datetime2");
@@ -59,6 +52,14 @@ namespace AlertManagement.Infrastructure.Migrations
                     b.Property<string>("RescindedBy")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -78,13 +79,12 @@ namespace AlertManagement.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateTime>("ChangedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ChangedBy")
+                    b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("EventType")
                         .IsRequired()
@@ -94,6 +94,14 @@ namespace AlertManagement.Infrastructure.Migrations
                     b.Property<string>("Notes")
                         .HasMaxLength(1024)
                         .HasColumnType("nvarchar(1024)");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -112,7 +120,11 @@ namespace AlertManagement.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
@@ -120,8 +132,11 @@ namespace AlertManagement.Infrastructure.Migrations
                         .HasMaxLength(1024)
                         .HasColumnType("nvarchar(1024)");
 
-                    b.Property<DateTime>("LastModifiedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<bool>("IsCanceled")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -130,6 +145,13 @@ namespace AlertManagement.Infrastructure.Migrations
 
                     b.Property<bool>("SendNotifications")
                         .HasColumnType("bit");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -149,7 +171,11 @@ namespace AlertManagement.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
@@ -157,13 +183,17 @@ namespace AlertManagement.Infrastructure.Migrations
                         .HasMaxLength(1024)
                         .HasColumnType("nvarchar(1024)");
 
-                    b.Property<DateTime>("LastModifiedAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -180,6 +210,23 @@ namespace AlertManagement.Infrastructure.Migrations
 
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("AlertTypeId", "UserId");
 

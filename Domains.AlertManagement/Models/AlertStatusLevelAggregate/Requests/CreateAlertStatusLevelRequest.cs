@@ -7,4 +7,6 @@ public sealed record CreateAlertStatusLevelRequest(
     string Name,
     string Description,
     string Color,
-    bool SendNotifications);
+    bool SendNotifications,
+    bool IsDefault,
+    bool IsCanceled);

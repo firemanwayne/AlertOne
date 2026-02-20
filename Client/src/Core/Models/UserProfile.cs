@@ -28,7 +28,7 @@ public sealed class UserProfile
     /// <summary>
     /// Gets or sets the user's roles
     /// </summary>
-    public List<string> Roles { get; set; } = new();
+    public List<string> Roles { get; set; } = [];
 
     /// <summary>
     /// Gets the user's full name

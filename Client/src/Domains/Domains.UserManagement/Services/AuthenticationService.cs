@@ -33,7 +33,7 @@ internal sealed class AuthenticationService(
                 Email = authResponse.User.Email,
                 FirstName = authResponse.User.FirstName,
                 LastName = authResponse.User.LastName,
-                Roles = authResponse.User.Roles.ToList()
+                Roles = [.. authResponse.User.Roles]
             };
             appState.IsAuthenticated = true;
         }
@@ -53,7 +53,8 @@ internal sealed class AuthenticationService(
             var authResponse = result.Value;
 
             // Store tokens
-            await tokenStorage.SaveTokensAsync(
+            await tokenStorage
+                .SaveTokensAsync(
                 authResponse.AccessToken,
                 authResponse.RefreshToken,
                 authResponse.ExpiresAt);
@@ -76,7 +77,8 @@ internal sealed class AuthenticationService(
 
     public async Task<IApiResult<AuthenticationResponse>> RefreshTokenAsync(RefreshTokenRequest request, CancellationToken cancellationToken = default)
     {
-        var result = await apiClient.PostAsync<RefreshTokenRequest, AuthenticationResponse>(
+        var result = await apiClient
+            .PostAsync<RefreshTokenRequest, AuthenticationResponse>(
             "/api/auth/refresh",
             request,
             cancellationToken);

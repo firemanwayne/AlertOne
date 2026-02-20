@@ -9,14 +9,6 @@ public sealed class AlertResponse : DataModelBase
 
     public AlertStatusLevelResponse StatusLevel { get; set; } = new();
 
-    public string CreatedBy { get; set; } = string.Empty;
-
-    public string? LastModifiedBy { get; set; }
-
-    public DateTime CreatedAt { get; set; }
-
-    public DateTime LastModifiedAt { get; set; }
-
     public bool IsActive { get; set; }
 
     public DateTime? RescindedAt { get; set; }

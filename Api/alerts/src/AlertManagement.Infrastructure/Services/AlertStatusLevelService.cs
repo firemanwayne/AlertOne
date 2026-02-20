@@ -64,6 +64,32 @@ internal sealed class AlertStatusLevelService(AlertDbContext context, ILogger<Al
                 Error.Conflict("AlertStatusLevel.AlreadyExists", $"Alert status level '{request.Name}' already exists"));
         }
 
+        // If this is being set as default, clear any existing default
+        if (request.IsDefault)
+        {
+            var existingDefault = await context.AlertStatusLevels
+                .FirstOrDefaultAsync(s => s.IsDefault, cancellationToken);
+
+            if (existingDefault is not null)
+            {
+                existingDefault.IsDefault = false;
+                existingDefault.UpdatedDate = DateTime.UtcNow;
+            }
+        }
+
+        // If this is being set as canceled, clear any existing canceled
+        if (request.IsCanceled)
+        {
+            var existingCanceled = await context.AlertStatusLevels
+                .FirstOrDefaultAsync(s => s.IsCanceled, cancellationToken);
+
+            if (existingCanceled is not null)
+            {
+                existingCanceled.IsCanceled = false;
+                existingCanceled.UpdatedDate = DateTime.UtcNow;
+            }
+        }
+
         var statusLevel = new AlertStatusLevel
         {
             Id = Guid.NewGuid().ToString(),
@@ -71,8 +97,10 @@ internal sealed class AlertStatusLevelService(AlertDbContext context, ILogger<Al
             Description = request.Description,
             Color = request.Color,
             SendNotifications = request.SendNotifications,
-            CreatedAt = DateTime.UtcNow,
-            LastModifiedAt = DateTime.UtcNow
+            IsDefault = request.IsDefault,
+            IsCanceled = request.IsCanceled,
+            CreatedDate = DateTime.UtcNow,
+            UpdatedDate = DateTime.UtcNow
         };
 
         context.AlertStatusLevels.Add(statusLevel);
@@ -114,11 +142,39 @@ internal sealed class AlertStatusLevelService(AlertDbContext context, ILogger<Al
                 Error.Conflict("AlertStatusLevel.NameTaken", $"Alert status level '{request.Name}' already exists"));
         }
 
+        // If this is being set as default, clear any existing default
+        if (request.IsDefault && !statusLevel.IsDefault)
+        {
+            var existingDefault = await context.AlertStatusLevels
+                .FirstOrDefaultAsync(s => s.IsDefault && s.Id != id, cancellationToken);
+
+            if (existingDefault is not null)
+            {
+                existingDefault.IsDefault = false;
+                existingDefault.UpdatedDate = DateTime.UtcNow;
+            }
+        }
+
+        // If this is being set as canceled, clear any existing canceled
+        if (request.IsCanceled && !statusLevel.IsCanceled)
+        {
+            var existingCanceled = await context.AlertStatusLevels
+                .FirstOrDefaultAsync(s => s.IsCanceled && s.Id != id, cancellationToken);
+
+            if (existingCanceled is not null)
+            {
+                existingCanceled.IsCanceled = false;
+                existingCanceled.UpdatedDate = DateTime.UtcNow;
+            }
+        }
+
         statusLevel.Name = request.Name;
         statusLevel.Description = request.Description;
         statusLevel.Color = request.Color;
         statusLevel.SendNotifications = request.SendNotifications;
-        statusLevel.LastModifiedAt = DateTime.UtcNow;
+        statusLevel.IsDefault = request.IsDefault;
+        statusLevel.IsCanceled = request.IsCanceled;
+        statusLevel.UpdatedDate = DateTime.UtcNow;
 
         await context.SaveChangesAsync(cancellationToken);
 
@@ -168,7 +224,9 @@ internal sealed class AlertStatusLevelService(AlertDbContext context, ILogger<Al
             statusLevel.Description,
             statusLevel.Color,
             statusLevel.SendNotifications,
-            statusLevel.CreatedAt,
-            statusLevel.LastModifiedAt);
+            statusLevel.IsDefault,
+            statusLevel.IsCanceled,
+            statusLevel.CreatedDate,
+            statusLevel.UpdatedDate);
     }
 }

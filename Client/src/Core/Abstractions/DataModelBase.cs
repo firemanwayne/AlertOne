@@ -1,5 +1,3 @@
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
 
 namespace AlertOne.Core.Abstractions;
@@ -8,21 +6,43 @@ namespace AlertOne.Core.Abstractions;
 /// Base class for all client-side entities and data models.
 /// Provides INotifyPropertyChanged infrastructure and a string Id.
 /// </summary>
-public abstract class DataModelBase : INotifyPropertyChanged
+public abstract class DataModelBase
 {
-    public event PropertyChangedEventHandler? PropertyChanged;
+    private string _id = Guid.NewGuid().ToString();
+    private string _createdBy = string.Empty;
+    private string _updatedBy = string.Empty;
+    private DateTime _createdDate = DateTime.UtcNow;
+    private DateTime _updatedDate = DateTime.UtcNow;
 
-    private string _id = string.Empty;
-
-    [Display(Name = "Id")]
     public string Id
     {
         get => _id;
         set => SetProperty(ref _id, value);
     }
 
-    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    public DateTime CreatedDate
+    {
+        get => _createdDate;
+        set => SetProperty(ref _createdDate, value);
+    }
+
+    public string CreatedBy
+    {
+        get => _createdBy;
+        set => SetProperty(ref _createdBy, value);
+    }
+
+    public DateTime UpdatedDate
+    {
+        get => _updatedDate;
+        set => SetProperty(ref _updatedDate, value);
+    }
+
+    public string UpdatedBy
+    {
+        get => _updatedBy;
+        set => SetProperty(ref _updatedBy, value);
+    }
 
     protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
@@ -32,7 +52,6 @@ public abstract class DataModelBase : INotifyPropertyChanged
         }
 
         field = value;
-        OnPropertyChanged(propertyName);
 
         return true;
     }

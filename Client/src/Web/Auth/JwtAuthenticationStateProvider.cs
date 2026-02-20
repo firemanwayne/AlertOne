@@ -1,7 +1,9 @@
 using AlertOne.Core.Interfaces;
 using AlertOne.Core.Models;
 using AlertOne.Shared.States;
+
 using Microsoft.AspNetCore.Components.Authorization;
+
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -42,10 +44,23 @@ public sealed class JwtAuthenticationStateProvider : AuthenticationStateProvider
         // Hydrate AppState.CurrentUser from JWT claims when missing (e.g. page refresh)
         if (_appState.CurrentUser is null)
         {
-            var userId = claims.FirstOrDefault(c => c.Type == "sub")?.Value;
-            var email = claims.FirstOrDefault(c => c.Type == "email")?.Value ?? string.Empty;
-            var firstName = claims.FirstOrDefault(c => c.Type == "firstName")?.Value ?? string.Empty;
-            var lastName = claims.FirstOrDefault(c => c.Type == "lastName")?.Value ?? string.Empty;
+            var userId = claims
+                .FirstOrDefault(c => c.Type == "sub")?.Value ?? throw new ArgumentNullException();
+
+            if (!Guid.TryParse(userId, out var userIdResult))
+            {
+                throw new InvalidCastException();
+            }
+
+            var email = claims
+                .FirstOrDefault(c => c.Type == "email")?.Value ?? string.Empty;
+
+            var firstName = claims
+                .FirstOrDefault(c => c.Type == "firstName")?.Value ?? string.Empty;
+
+            var lastName = claims
+                .FirstOrDefault(c => c.Type == "lastName")?.Value ?? string.Empty;
+
             var roles = claims
                 .Where(c => c.Type == ClaimTypes.Role)
                 .Select(c => c.Value)
@@ -55,7 +70,7 @@ public sealed class JwtAuthenticationStateProvider : AuthenticationStateProvider
 
             _appState.CurrentUser = new UserProfile
             {
-                Id = Guid.TryParse(userId, out var id) ? id : Guid.Empty,
+                Id = userIdResult,
                 Email = email,
                 FirstName = firstName,
                 LastName = lastName,
@@ -70,7 +85,7 @@ public sealed class JwtAuthenticationStateProvider : AuthenticationStateProvider
         return new AuthenticationState(new ClaimsPrincipal(identity));
     }
 
-    private static IEnumerable<Claim> ParseClaimsFromJwt(string jwt)
+    private static List<Claim> ParseClaimsFromJwt(string jwt)
     {
         var parts = jwt.Split('.');
         if (parts.Length != 3)
@@ -110,6 +125,7 @@ public sealed class JwtAuthenticationStateProvider : AuthenticationStateProvider
         }
 
         var claims = new List<Claim>();
+
         foreach (var kvp in keyValuePairs)
         {
             if (kvp.Value.ValueKind == JsonValueKind.Array)

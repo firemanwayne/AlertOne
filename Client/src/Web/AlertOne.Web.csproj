@@ -18,6 +18,7 @@
 		<ProjectReference Include="..\Core\AlertOne.Core.csproj" />
 		<ProjectReference Include="..\Domains\Domains.UserManagement\Domains.UserManagement.csproj" />
 		<ProjectReference Include="..\..\..\Domains.AlertManagement\Domains.AlertManagement.csproj" />
+		<ProjectReference Include="..\Shared\AlertOne.Shared.csproj" />
 	</ItemGroup>
 
 </Project>

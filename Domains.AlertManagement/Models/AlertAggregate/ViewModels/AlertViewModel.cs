@@ -1,10 +1,26 @@
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Domains.AlertManagement.AlertAggregate.ViewModels;
+
+using System.Security.Claims;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 
 public sealed class AlertViewModel : ViewModelBase
 {
-    private AlertTypeViewModel _type = new();
+    public AlertViewModel(ClaimsPrincipal user) : base(user)
+    {
+        IsNew = true;
+        _type = new(user);
+        _statusLevel = new(user);
+    }
+
+    public AlertViewModel(string id, ClaimsPrincipal user) : base(id, user)
+    {
+        IsNew = false;
+        _type = new(user);
+        _statusLevel = new(user);
+    }
+
+    private AlertTypeViewModel _type;
 
     [Display(Name = "Alert Type")]
     public AlertTypeViewModel Type
@@ -13,49 +29,13 @@ public sealed class AlertViewModel : ViewModelBase
         set => SetProperty(ref _type, value);
     }
 
-    private AlertStatusLevelViewModel _statusLevel = new();
+    private AlertStatusLevelViewModel _statusLevel;
 
     [Display(Name = "Status Level")]
     public AlertStatusLevelViewModel StatusLevel
     {
         get => _statusLevel;
         set => SetProperty(ref _statusLevel, value);
-    }
-
-    private string _createdBy = string.Empty;
-
-    [Display(Name = "Created By")]
-    public string CreatedBy
-    {
-        get => _createdBy;
-        set => SetProperty(ref _createdBy, value);
-    }
-
-    private string? _lastModifiedBy;
-
-    [Display(Name = "Last Modified By")]
-    public string? LastModifiedBy
-    {
-        get => _lastModifiedBy;
-        set => SetProperty(ref _lastModifiedBy, value);
-    }
-
-    private DateTime _createdAt;
-
-    [Display(Name = "Created At")]
-    public DateTime CreatedAt
-    {
-        get => _createdAt;
-        set => SetProperty(ref _createdAt, value);
-    }
-
-    private DateTime _lastModifiedAt;
-
-    [Display(Name = "Last Modified At")]
-    public DateTime LastModifiedAt
-    {
-        get => _lastModifiedAt;
-        set => SetProperty(ref _lastModifiedAt, value);
     }
 
     private bool _isActive;
@@ -85,15 +65,14 @@ public sealed class AlertViewModel : ViewModelBase
         set => SetProperty(ref _rescindedBy, value);
     }
 
-    public static AlertViewModel FromResponse(AlertResponse response) => new()
+    public static AlertViewModel FromResponse(AlertResponse response) => new(response.Id, new ClaimsPrincipal())
     {
-        Id = response.Id,
         Type = AlertTypeViewModel.FromResponse(response.Type),
         StatusLevel = AlertStatusLevelViewModel.FromResponse(response.StatusLevel),
         CreatedBy = response.CreatedBy,
-        LastModifiedBy = response.LastModifiedBy,
-        CreatedAt = response.CreatedAt,
-        LastModifiedAt = response.LastModifiedAt,
+        UpdatedDate = response.UpdatedDate,
+        CreatedDate = response.CreatedDate,
+        UpdatedBy = response.UpdatedBy,
         IsActive = response.IsActive,
         RescindedAt = response.RescindedAt,
         RescindedBy = response.RescindedBy

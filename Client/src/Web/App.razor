@@ -1,6 +1,7 @@
 <CascadingAuthenticationState>
     <Router AppAssembly="@typeof(App).Assembly" 
-    AdditionalAssemblies="@(new[] { 
+    AdditionalAssemblies="@(new[] {
+typeof(AlertOne.Shared._Imports).Assembly,
 typeof(Domains.UserManagement._Imports).Assembly, 
 typeof(Domains.AlertManagement._Imports).Assembly })">
         <Found Context="routeData">

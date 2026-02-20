@@ -3,7 +3,6 @@
 
 @inject IAlertService AlertService
 @inject IAlertTypeService AlertTypeService
-@inject IAlertStatusLevelService AlertStatusLevelService
 @inject AppState AppState
 
 <div class="alert-panel">
@@ -52,7 +51,7 @@
                             Activated by <strong>@_activeAlert.CreatedBy</strong>
                         </p>
                         <p class="mb-0 small text-muted">
-                            @_activeAlert.CreatedAt.ToString("MMM d, yyyy h:mm tt")
+                            @_activeAlert.CreatedDate.ToString("MMM d, yyyy h:mm tt")
                         </p>
                     </div>
                 </div>
@@ -106,19 +105,6 @@
                         }
                     </div>
 
-                    <div class="mb-3">
-                        <label for="statusLevel" class="form-label fw-semibold">Status Level</label>
-                        <InputSelect id="statusLevel" @bind-Value="_activateModel.StatusLevelId" class="form-select">
-                            <option value="@string.Empty">— Select a status level —</option>
-
-                            @foreach (var level in _statusLevels)
-                            {
-                                <option value="@level.Id">@level.Name</option>
-                            }
-                        </InputSelect>
-                        <ValidationMessage For="@(() => _activateModel.StatusLevelId)" />
-                    </div>
-
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-danger fw-semibold"
                                 disabled="@_isSubmitting">
@@ -169,7 +155,6 @@
 
     private AlertViewModel? _activeAlert;
     private List<AlertTypeViewModel> _alertTypes = new();
-    private List<AlertStatusLevelViewModel> _statusLevels = new();
     private bool _isLoading = true;
     private bool _isSubmitting = false;
     private bool _showActivateForm = false;
@@ -194,15 +179,14 @@
         {
             var alertsTask = AlertService.GetAllAsync();
             var typesTask = AlertTypeService.GetAllAsync();
-            var levelsTask = AlertStatusLevelService.GetAllAsync();
 
-            await Task.WhenAll(alertsTask, typesTask, levelsTask);
+            await Task.WhenAll(alertsTask, typesTask);
 
             if (alertsTask.Result.IsSuccess)
             {
                 _activeAlert = alertsTask.Result.Value
                     .Where(a => a.IsActive)
-                    .OrderByDescending(a => a.CreatedAt)
+                    .OrderByDescending(a => a.CreatedDate)
                     .Select(AlertViewModel.FromResponse)
                     .FirstOrDefault();
             }
@@ -211,13 +195,6 @@
             {
                 _alertTypes = typesTask.Result.Value
                     .Select(AlertTypeViewModel.FromResponse)
-                    .ToList();
-            }
-
-            if (levelsTask.Result.IsSuccess)
-            {
-                _statusLevels = levelsTask.Result.Value
-                    .Select(AlertStatusLevelViewModel.FromResponse)
                     .ToList();
             }
         }
@@ -250,7 +227,6 @@
         {
             var request = new CreateAlertRequest(
                 _activateModel.TypeId,
-                _activateModel.StatusLevelId,
                 AppState.CurrentUser?.Email ?? string.Empty);
 
             var result = await AlertService.CreateAsync(request);
@@ -323,8 +299,5 @@
     {
         [Required(ErrorMessage = "Please select an alert type.")]
         public string TypeId { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Please select a status level.")]
-        public string StatusLevelId { get; set; } = string.Empty;
-    }   
+    }
 }

@@ -37,6 +37,7 @@
                             <th>Name</th>
                             <th>Description</th>
                             <th>Notifications</th>
+                            <th>Type</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -59,6 +60,16 @@
                                     else
                                     {
                                         <span class="badge bg-secondary">Disabled</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (level.IsDefault)
+                                    {
+                                        <span class="badge bg-primary">Default</span>
+                                    }
+                                    @if (level.IsCanceled)
+                                    {
+                                        <span class="badge bg-warning text-dark">Canceled</span>
                                     }
                                 </td>
                                 <td>

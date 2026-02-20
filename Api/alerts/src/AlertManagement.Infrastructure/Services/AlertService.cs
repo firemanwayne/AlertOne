@@ -26,7 +26,7 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
             .Include(a => a.AlertType)
             .ThenInclude(t => t.AlertTypeUsers)
             .Include(a => a.AlertStatusLevel)
-            .OrderByDescending(a => a.CreatedAt)
+            .OrderByDescending(a => a.CreatedDate)
             .ToListAsync(cancellationToken);
 
         var responses = alerts.Select(MapToResponse);
@@ -72,13 +72,14 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
                 Error.NotFound("AlertType.NotFound", $"Alert type with ID {request.AlertTypeId} not found"));
         }
 
+        // Automatically use the default status level
         var statusLevel = await context.AlertStatusLevels
-            .FirstOrDefaultAsync(s => s.Id == request.AlertStatusLevelId, cancellationToken);
+            .FirstOrDefaultAsync(s => s.IsDefault, cancellationToken);
 
         if (statusLevel is null)
         {
             return Result.Failure<AlertResponse>(
-                Error.NotFound("AlertStatusLevel.NotFound", $"Alert status level with ID {request.AlertStatusLevelId} not found"));
+                Error.NotFound("AlertStatusLevel.DefaultNotFound", "No default alert status level has been configured"));
         }
 
         // Deactivate any currently active alert
@@ -88,8 +89,8 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
         if (activeAlert is not null)
         {
             activeAlert.IsActive = false;
-            activeAlert.LastModifiedAt = DateTime.UtcNow;
-            activeAlert.LastModifiedBy = request.CreatedBy;
+            activeAlert.UpdatedDate = DateTime.UtcNow;
+            activeAlert.UpdatedBy = request.CreatedBy;
         }
 
         var now = DateTime.UtcNow;
@@ -98,10 +99,10 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
         {
             Id = Guid.NewGuid().ToString(),
             AlertTypeId = request.AlertTypeId,
-            AlertStatusLevelId = request.AlertStatusLevelId,
+            AlertStatusLevelId = statusLevel.Id,
             CreatedBy = request.CreatedBy,
-            CreatedAt = now,
-            LastModifiedAt = now,
+            CreatedDate = now,
+            UpdatedDate = now,
             IsActive = true
         };
 
@@ -112,8 +113,8 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
             Id = Guid.NewGuid().ToString(),
             AlertId = alert.Id,
             EventType = EventTypeCreated,
-            ChangedBy = request.CreatedBy,
-            ChangedAt = now,
+            CreatedBy = request.CreatedBy,
+            CreatedDate = now,
             Notes = null
         };
 
@@ -155,21 +156,31 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
                 Error.Validation("Alert.NotActive", "Alert is not currently active and cannot be rescinded"));
         }
 
+        // Find the canceled status level if one exists
+        var canceledStatusLevel = await context.AlertStatusLevels
+            .FirstOrDefaultAsync(s => s.IsCanceled, cancellationToken);
+
         var now = DateTime.UtcNow;
 
         alert.IsActive = false;
         alert.RescindedAt = now;
         alert.RescindedBy = request.RescindedBy;
-        alert.LastModifiedAt = now;
-        alert.LastModifiedBy = request.RescindedBy;
+        alert.UpdatedDate = now;
+        alert.UpdatedBy = request.RescindedBy;
+
+        // Update to canceled status level if one is configured
+        if (canceledStatusLevel is not null)
+        {
+            alert.AlertStatusLevelId = canceledStatusLevel.Id;
+        }
 
         var historyEntry = new AlertHistory
         {
             Id = Guid.NewGuid().ToString(),
             AlertId = alert.Id,
             EventType = EventTypeRescinded,
-            ChangedBy = request.RescindedBy,
-            ChangedAt = now,
+            CreatedBy = request.RescindedBy,
+            CreatedDate = now,
             Notes = null
         };
 
@@ -220,16 +231,16 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
         var now = DateTime.UtcNow;
 
         alert.AlertStatusLevelId = request.AlertStatusLevelId;
-        alert.LastModifiedAt = now;
-        alert.LastModifiedBy = request.UpdatedBy;
+        alert.UpdatedDate = now;
+        alert.UpdatedBy = request.UpdatedBy;
 
         var historyEntry = new AlertHistory
         {
             Id = Guid.NewGuid().ToString(),
             AlertId = alert.Id,
             EventType = EventTypeStatusUpdated,
-            ChangedBy = request.UpdatedBy,
-            ChangedAt = now,
+            UpdatedBy = request.UpdatedBy,
+            UpdatedDate = now,
             Notes = null
         };
 
@@ -284,7 +295,7 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
 
         var history = await context.AlertHistories
             .Where(h => h.AlertId == alertId)
-            .OrderByDescending(h => h.ChangedAt)
+            .OrderByDescending(h => h.UpdatedDate)
             .ToListAsync(cancellationToken);
 
         var responses = history.Select(MapHistoryToResponse);
@@ -293,7 +304,7 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
     }
 
     private static AlertHistoryResponse MapHistoryToResponse(AlertHistory history) =>
-        new(history.Id, history.AlertId, history.EventType, history.ChangedBy, history.ChangedAt, history.Notes);
+        new(history.Id, history.AlertId, history.EventType, history.UpdatedBy, history.UpdatedDate, history.Notes);
 
     private static AlertResponse MapToResponse(Alert alert)
     {
@@ -308,8 +319,8 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
             alertType.Description,
             alertType.Color,
             notifyUserIds,
-            alertType.CreatedAt,
-            alertType.LastModifiedAt);
+            alertType.CreatedDate,
+            alertType.UpdatedDate);
 
         var statusLevel = alert.AlertStatusLevel;
         var statusLevelResponse = new AlertStatusLevelResponse(
@@ -318,17 +329,19 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
             statusLevel.Description,
             statusLevel.Color,
             statusLevel.SendNotifications,
-            statusLevel.CreatedAt,
-            statusLevel.LastModifiedAt);
+            statusLevel.IsDefault,
+            statusLevel.IsCanceled,
+            statusLevel.CreatedDate,
+            statusLevel.UpdatedDate);
 
         return new AlertResponse(
             alert.Id,
             typeResponse,
             statusLevelResponse,
             alert.CreatedBy,
-            alert.LastModifiedBy,
-            alert.CreatedAt,
-            alert.LastModifiedAt,
+            alert.UpdatedBy,
+            alert.CreatedDate,
+            alert.UpdatedDate,
             alert.IsActive,
             alert.RescindedAt,
             alert.RescindedBy);

@@ -39,8 +39,9 @@ internal sealed class AlertTypeService(AlertDbContext context, ILogger<AlertType
         if (alertType is null)
         {
             logger.LogWarning("Alert type not found: {AlertTypeId}", id);
-            return Result.Failure<AlertTypeResponse>(
-                Error.NotFound("AlertType.NotFound", $"Alert type with ID {id} not found"));
+
+            return Result
+                .Failure<AlertTypeResponse>(Error.NotFound("AlertType.NotFound", $"Alert type with ID {id} not found"));
         }
 
         return Result.Success(MapToResponse(alertType));
@@ -62,8 +63,9 @@ internal sealed class AlertTypeService(AlertDbContext context, ILogger<AlertType
         if (existingType is not null)
         {
             logger.LogWarning("Alert type already exists: {AlertTypeName}", request.Name);
-            return Result.Failure<AlertTypeResponse>(
-                Error.Conflict("AlertType.AlreadyExists", $"Alert type '{request.Name}' already exists"));
+
+            return Result
+                .Failure<AlertTypeResponse>(Error.Conflict("AlertType.AlreadyExists", $"Alert type '{request.Name}' already exists"));
         }
 
         var alertType = new AlertType
@@ -72,8 +74,8 @@ internal sealed class AlertTypeService(AlertDbContext context, ILogger<AlertType
             Name = request.Name,
             Description = request.Description,
             Color = request.Color,
-            CreatedAt = DateTime.UtcNow,
-            LastModifiedAt = DateTime.UtcNow
+            CreatedDate = DateTime.UtcNow,
+            UpdatedDate = DateTime.UtcNow
         };
 
         context.AlertTypes.Add(alertType);
@@ -103,8 +105,8 @@ internal sealed class AlertTypeService(AlertDbContext context, ILogger<AlertType
 
         if (string.IsNullOrWhiteSpace(request.Name))
         {
-            return Result.Failure<AlertTypeResponse>(
-                Error.Validation("AlertType.NameRequired", "Alert type name is required"));
+            return Result
+                .Failure<AlertTypeResponse>(Error.Validation("AlertType.NameRequired", "Alert type name is required"));
         }
 
         var alertType = await context.AlertTypes
@@ -114,8 +116,8 @@ internal sealed class AlertTypeService(AlertDbContext context, ILogger<AlertType
         if (alertType is null)
         {
             logger.LogWarning("Alert type not found: {AlertTypeId}", id);
-            return Result.Failure<AlertTypeResponse>(
-                Error.NotFound("AlertType.NotFound", $"Alert type with ID {id} not found"));
+            return Result
+                .Failure<AlertTypeResponse>(Error.NotFound("AlertType.NotFound", $"Alert type with ID {id} not found"));
         }
 
         var existingType = await context.AlertTypes
@@ -131,7 +133,7 @@ internal sealed class AlertTypeService(AlertDbContext context, ILogger<AlertType
         alertType.Name = request.Name;
         alertType.Description = request.Description;
         alertType.Color = request.Color;
-        alertType.LastModifiedAt = DateTime.UtcNow;
+        alertType.UpdatedDate = DateTime.UtcNow;
 
         // Replace notify user list
         context.AlertTypeUsers.RemoveRange(alertType.AlertTypeUsers);
@@ -200,7 +202,7 @@ internal sealed class AlertTypeService(AlertDbContext context, ILogger<AlertType
             alertType.Description,
             alertType.Color,
             notifyUserIds,
-            alertType.CreatedAt,
-            alertType.LastModifiedAt);
+            alertType.CreatedDate,
+            alertType.UpdatedDate);
     }
 }

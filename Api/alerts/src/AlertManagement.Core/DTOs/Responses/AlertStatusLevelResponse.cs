@@ -6,5 +6,7 @@ public sealed record AlertStatusLevelResponse(
     string Description,
     string Color,
     bool SendNotifications,
-    DateTime CreatedAt,
-    DateTime LastModifiedAt);
+    bool IsDefault,
+    bool IsCanceled,
+    DateTime CreatedDate,
+    DateTime UpdatedDate);
