@@ -12,7 +12,10 @@
       "Bash(findstr:*)",
       "Bash(powershell -NoProfile -Command \"Get-ChildItem ''C:\\\\Users\\\\wayne.davis\\\\.nuget\\\\packages\\\\aspire4wasm.apphost'' -Recurse -File | Select-Object FullName\")",
       "Bash(dir:*)",
-      "Bash(dotnet ef migrations:*)"
+      "Bash(dotnet ef migrations:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push)"
     ]
   }
 }

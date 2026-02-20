@@ -91,16 +91,6 @@ public sealed class JwtAuthHeaderHandler(
         }
 
         // Send the request
-        var httpResponse = await base.SendAsync(request, cancellationToken);
-
-        // Handle 401 Unauthorized responses
-        if (httpResponse.StatusCode == HttpStatusCode.Unauthorized)
-        {
-            await tokenStorage.ClearTokensAsync();
-
-            appState.Clear();
-        }
-
-        return httpResponse;
+        return await base.SendAsync(request, cancellationToken);
     }
 }
