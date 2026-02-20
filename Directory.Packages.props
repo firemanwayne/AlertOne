@@ -30,6 +30,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.13" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.13" />
     <!-- JWT (independent versioning) -->
+    <PackageVersion Include="MudBlazor" Version="9.0.0" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.2.1" />
     <!-- Configuration & Hosting -->
     <PackageVersion Include="Microsoft.ApplicationInsights.WorkerService" Version="2.23.0" />

@@ -1,4 +1,5 @@
 using AlertOne.Core.Models;
+
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -10,8 +11,8 @@ namespace AlertOne.Shared.States;
 public sealed class AppState : INotifyPropertyChanged
 {
     private string _apiBaseUrl = "https://localhost:7071";
-    private string? _accessToken;
-    private UserProfile? _currentUser;
+    private string _accessToken = string.Empty;
+    private UserProfile _currentUser = new();
     private bool _isAuthenticated;
     private bool _isLoading;
 
@@ -27,7 +28,7 @@ public sealed class AppState : INotifyPropertyChanged
     /// <summary>
     /// Gets or sets the current access token
     /// </summary>
-    public string? AccessToken
+    public string AccessToken
     {
         get => _accessToken;
         set => SetProperty(ref _accessToken, value);
@@ -36,7 +37,7 @@ public sealed class AppState : INotifyPropertyChanged
     /// <summary>
     /// Gets or sets the current user profile
     /// </summary>
-    public UserProfile? CurrentUser
+    public UserProfile CurrentUser
     {
         get => _currentUser;
         set
@@ -71,8 +72,8 @@ public sealed class AppState : INotifyPropertyChanged
     /// </summary>
     public void Clear()
     {
-        AccessToken = null;
-        CurrentUser = null;
+        AccessToken = string.Empty;
+        CurrentUser = new();
         IsAuthenticated = false;
     }
 

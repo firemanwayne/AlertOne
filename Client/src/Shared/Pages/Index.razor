@@ -10,16 +10,15 @@
         <div class="col-12">
             <div class="card border-0 shadow-sm">
                 <div class="card-body text-center py-4">
-                    <h2>Welcome, @AppState.CurrentUser?.FullName!</h2>
-                    <p class="text-muted mb-3">@AppState.CurrentUser?.Email</p>
+                    <h2>Welcome, @AppState.CurrentUser.FullName!</h2>
+                    <p class="text-muted mb-3">@AppState.CurrentUser.Email</p>
                     <div>
-                        @if (AppState.CurrentUser?.Roles != null)
+
+                        @foreach (var role in AppState.CurrentUser.Roles)
                         {
-                            @foreach (var role in AppState.CurrentUser.Roles)
-                            {
-                                <span class="badge bg-primary me-1">@role</span>
-                            }
+                            <span class="badge bg-primary me-1">@role</span>
                         }
+
                     </div>
                 </div>
             </div>

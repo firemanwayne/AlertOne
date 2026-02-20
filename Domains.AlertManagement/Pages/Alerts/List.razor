@@ -19,7 +19,7 @@
 
     private async Task HandleAlertChanged()
     {
-        if (_alertListRef != null)
+        if (_alertListRef is not null)
         {
             await _alertListRef.RefreshAsync();
         }
