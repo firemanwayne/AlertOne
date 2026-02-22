@@ -58,6 +58,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IDeviceService, DeviceService>();
+        services.AddScoped<IInvitationService, InvitationService>();
 
         return services;
     }

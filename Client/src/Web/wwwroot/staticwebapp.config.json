@@ -1,8 +1,22 @@
 {
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/_framework/*", "/css/*", "/lib/*", "*.{css,ico,js,json,png,svg,woff,woff2}"]
+    "exclude": ["/_framework/*", "/css/*", "/lib/*", "/.well-known/*", "*.{css,ico,js,json,png,svg,woff,woff2}"]
   },
+  "routes": [
+    {
+      "route": "/.well-known/apple-app-site-association",
+      "headers": {
+        "Content-Type": "application/json"
+      }
+    },
+    {
+      "route": "/.well-known/assetlinks.json",
+      "headers": {
+        "Content-Type": "application/json"
+      }
+    }
+  ],
   "mimeTypes": {
     ".dll": "application/octet-stream",
     ".dat": "application/octet-stream",

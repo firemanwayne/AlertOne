@@ -9,6 +9,11 @@
         <!-- When App Sandbox is enabled, this value is required to open outgoing network connections. -->
         <key>com.apple.security.network.client</key>
         <true/>
+        <!-- Associated Domains for Universal Links -->
+        <key>com.apple.developer.associated-domains</key>
+        <array>
+            <string>applinks:app.alertone.com</string>
+        </array>
     </dict>
 </plist>
 

@@ -1,0 +1,176 @@
+@namespace Domains.UserManagement.Lists
+
+@inject IInvitationService InvitationService
+@inject ISnackbar Snackbar
+
+<MudPaper Elevation="1">
+    <MudToolBar>
+        <MudText Typo="Typo.h6">User Invitations</MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.Refresh" OnClick="@LoadInvitationsAsync" />
+    </MudToolBar>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+    }
+
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <MudAlert Severity="Severity.Error" Class="ma-4">@_errorMessage</MudAlert>
+    }
+    else if (_invitations == null || !_invitations.Any())
+    {
+        @if (!_isLoading)
+        {
+            <MudAlert Severity="Severity.Info" Class="ma-4">No invitations found.</MudAlert>
+        }
+    }
+    else
+    {
+        <MudTextField T="string"
+                      @bind-Value="_searchTerm"
+                      Placeholder="Search by email..."
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Class="ma-4"
+                      Immediate="true" />
+
+        <MudTable Items="@FilteredInvitations" Hover="true" Striped="true" Dense="true">
+            <HeaderContent>
+                <MudTh>Email</MudTh>
+                <MudTh>Status</MudTh>
+                <MudTh>Invited By</MudTh>
+                <MudTh>Invited At</MudTh>
+                <MudTh>Expires At</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Email">@context.Email</MudTd>
+                <MudTd DataLabel="Status">
+                    <MudChip T="string"
+                             Color="@GetStatusColor(context.Status)"
+                             Size="Size.Small">
+                        @context.Status
+                    </MudChip>
+                </MudTd>
+                <MudTd DataLabel="Invited By">@context.InvitedBy</MudTd>
+                <MudTd DataLabel="Invited At">@context.InvitedAt.ToString("yyyy-MM-dd HH:mm")</MudTd>
+                <MudTd DataLabel="Expires At">@context.ExpiresAt.ToString("yyyy-MM-dd HH:mm")</MudTd>
+                <MudTd>
+                    @if (!context.IsAccepted && !context.IsExpired)
+                    {
+                        <MudTooltip Text="Resend Invitation">
+                            <MudIconButton Icon="@Icons.Material.Filled.Send"
+                                           Size="Size.Small"
+                                           Color="Color.Primary"
+                                           OnClick="@(() => OnResendInvitation(context))" />
+                        </MudTooltip>
+                    }
+                    <MudTooltip Text="Delete">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Size="Size.Small"
+                                       Color="Color.Error"
+                                       OnClick="@(() => OnDeleteInvitation(context))" />
+                    </MudTooltip>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+
+        <MudText Typo="Typo.caption" Class="pa-4 mud-text-secondary">
+            Showing @FilteredInvitations.Count() of @_invitations.Count() invitations
+        </MudText>
+    }
+</MudPaper>
+
+@code {
+    [Parameter]
+    public EventCallback<InvitationResponse> OnResend { get; set; }
+
+    [Parameter]
+    public EventCallback<InvitationResponse> OnDelete { get; set; }
+
+    private List<InvitationResponse>? _invitations;
+    private bool _isLoading = false;
+    private string? _errorMessage;
+    private string _searchTerm = string.Empty;
+
+    private IEnumerable<InvitationResponse> FilteredInvitations
+    {
+        get
+        {
+            if (_invitations == null)
+            {
+                return Enumerable.Empty<InvitationResponse>();
+            }
+
+            if (string.IsNullOrWhiteSpace(_searchTerm))
+            {
+                return _invitations;
+            }
+
+            var searchLower = _searchTerm.ToLowerInvariant();
+            return _invitations.Where(i =>
+                i.Email.ToLowerInvariant().Contains(searchLower) ||
+                i.InvitedBy.ToLowerInvariant().Contains(searchLower));
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadInvitationsAsync();
+    }
+
+    private async Task LoadInvitationsAsync()
+    {
+        _isLoading = true;
+        _errorMessage = null;
+
+        try
+        {
+            var result = await InvitationService.GetAllAsync();
+
+            if (result.IsSuccess)
+            {
+                _invitations = result.Value.ToList();
+            }
+            else
+            {
+                _errorMessage = result.Error?.Message ?? "Failed to load invitations";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task OnResendInvitation(InvitationResponse invitation)
+    {
+        await OnResend.InvokeAsync(invitation);
+    }
+
+    private async Task OnDeleteInvitation(InvitationResponse invitation)
+    {
+        await OnDelete.InvokeAsync(invitation);
+    }
+
+    public async Task RefreshAsync()
+    {
+        await LoadInvitationsAsync();
+    }
+
+    private static Color GetStatusColor(string status) => status switch
+    {
+        "Pending" => Color.Warning,
+        "Accepted" => Color.Success,
+        "Expired" => Color.Error,
+        _ => Color.Default
+    };
+}

@@ -1,6 +1,8 @@
+using Azure.Communications;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -22,6 +24,21 @@ builder
 builder
     .UseMiddleware<ExceptionHandlingMiddleware>()
     .UseMiddleware<AuthenticationMiddleware>();
+
+builder
+    .Services
+    .AddAzureCommunications(sp =>
+    {
+        IConfiguration config = sp.GetRequiredService<IConfiguration>();
+
+        return new()
+        {
+            ConnectionString = config["AzureCommunications:ConnectionString"] ?? throw new InvalidCastException(),
+            WebAppBaseUrl = config["AzureCommunications:WebAppBaseUrl"] ?? throw new InvalidCastException(),
+            SenderAddress = config["AzureCommunications:SenderAddress"] ?? throw new InvalidCastException(),
+            MobileAppScheme = config["AzureCommunications:MobileAppScheme"] ?? throw new InvalidCastException()
+        };
+    });
 
 var host = builder.Build();
 

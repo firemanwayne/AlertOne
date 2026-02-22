@@ -1,0 +1,112 @@
+@page "/invitations/create"
+@attribute [Authorize]
+
+@inject IInvitationService InvitationService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject AppState AppState
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-4">
+    <MudButton Variant="Variant.Text"
+               Color="Color.Default"
+               StartIcon="@Icons.Material.Filled.ArrowBack"
+               OnClick="@(() => Navigation.NavigateTo("/invitations"))"
+               Class="mb-4">
+        Back to Invitations
+    </MudButton>
+
+    <MudCard Elevation="2">
+        <MudCardHeader>
+            <MudText Typo="Typo.h6">Invite New User</MudText>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudText Typo="Typo.body2" Class="mb-4 mud-text-secondary">
+                Enter the email address of the person you want to invite. They will receive an email with an activation code to complete their registration.
+            </MudText>
+
+            <MudForm @ref="_form" @bind-IsValid="@_formIsValid">
+                <MudTextField T="string"
+                              @bind-Value="_editModel.Email"
+                              Label="Email Address"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              RequiredError="Email is required"
+                              InputType="InputType.Email"
+                              Validation="@(new EmailAddressAttribute() { ErrorMessage = "Please enter a valid email address" })"
+                              Class="mb-4" />
+            </MudForm>
+        </MudCardContent>
+        <MudCardActions Class="pa-4">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Disabled="@(!_formIsValid || _isLoading)"
+                       OnClick="@HandleSubmitAsync">
+                @if (_isLoading)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                    <span>Sending...</span>
+                }
+                else
+                {
+                    <span>Send Invitation</span>
+                }
+            </MudButton>
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Default"
+                       OnClick="@(() => Navigation.NavigateTo("/invitations"))"
+                       Disabled="@_isLoading"
+                       Class="ml-2">
+                Cancel
+            </MudButton>
+        </MudCardActions>
+    </MudCard>
+</MudContainer>
+
+@code {
+    private MudForm _form = null!;
+    private EditModel _editModel = new();
+    private bool _isLoading = false;
+    private bool _formIsValid = false;
+
+    private async Task HandleSubmitAsync()
+    {
+        await _form.Validate();
+
+        if (!_form.IsValid)
+        {
+            return;
+        }
+
+        _isLoading = true;
+
+        try
+        {
+            var currentUserName = AppState.CurrentUser?.FirstName ?? "Admin";
+            var request = new CreateInvitationRequest(_editModel.Email, currentUserName);
+            var result = await InvitationService.CreateAsync(request);
+
+            if (result.IsSuccess)
+            {
+                Snackbar.Add($"Invitation sent to {_editModel.Email}", Severity.Success);
+                Navigation.NavigateTo("/invitations");
+            }
+            else
+            {
+                Snackbar.Add(result.Error?.Message ?? "Failed to send invitation", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"An error occurred: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private class EditModel
+    {
+        public string Email { get; set; } = string.Empty;
+    }
+}

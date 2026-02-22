@@ -1,0 +1,167 @@
+name: Deploy Android to Google Play Store
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      track:
+        description: 'Play Store track to deploy to'
+        required: true
+        default: 'internal'
+        type: choice
+        options:
+          - internal
+          - alpha
+          - beta
+          - production
+      release_status:
+        description: 'Release status'
+        required: true
+        default: 'draft'
+        type: choice
+        options:
+          - draft
+          - inProgress
+          - halted
+          - completed
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  MAUI_PROJECT_PATH: 'Client/src/Maui/AlertOne.Maui.csproj'
+  ANDROID_PACKAGE_NAME: 'com.companyname.alertone.maui'
+
+jobs:
+  build-and-deploy:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft'
+          java-version: '17'
+
+      - name: Install MAUI workloads
+        run: dotnet workload install maui-android
+
+      - name: Extract version from tag
+        id: version
+        shell: pwsh
+        run: |
+          if ("${{ github.ref_type }}" -eq "tag") {
+            $version = "${{ github.ref_name }}" -replace '^v', ''
+          } else {
+            $version = "1.0.${{ github.run_number }}"
+          }
+
+          # Parse version components
+          $versionParts = $version -split '\.'
+          $major = if ($versionParts.Length -gt 0) { $versionParts[0] } else { "1" }
+          $minor = if ($versionParts.Length -gt 1) { $versionParts[1] } else { "0" }
+          $patch = if ($versionParts.Length -gt 2) { $versionParts[2] } else { "0" }
+
+          $displayVersion = "$major.$minor.$patch"
+          $versionCode = [int]$major * 10000 + [int]$minor * 100 + [int]$patch
+
+          Write-Output "Display Version: $displayVersion"
+          Write-Output "Version Code: $versionCode"
+
+          echo "DISPLAY_VERSION=$displayVersion" >> $env:GITHUB_OUTPUT
+          echo "VERSION_CODE=$versionCode" >> $env:GITHUB_OUTPUT
+
+      - name: Decode keystore
+        shell: pwsh
+        run: |
+          $keystoreBytes = [Convert]::FromBase64String("${{ secrets.ANDROID_KEYSTORE_BASE64 }}")
+          [IO.File]::WriteAllBytes("${{ github.workspace }}/alertone.keystore", $keystoreBytes)
+
+      - name: Build Android App Bundle (AAB)
+        run: |
+          dotnet publish ${{ env.MAUI_PROJECT_PATH }} `
+            -c Release `
+            -f net9.0-android `
+            -p:AndroidPackageFormat=aab `
+            -p:AndroidKeyStore=true `
+            -p:AndroidSigningKeyStore="${{ github.workspace }}/alertone.keystore" `
+            -p:AndroidSigningKeyAlias="${{ secrets.ANDROID_KEY_ALIAS }}" `
+            -p:AndroidSigningKeyPass="${{ secrets.ANDROID_KEY_PASSWORD }}" `
+            -p:AndroidSigningStorePass="${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" `
+            -p:ApplicationDisplayVersion="${{ steps.version.outputs.DISPLAY_VERSION }}" `
+            -p:ApplicationVersion="${{ steps.version.outputs.VERSION_CODE }}"
+
+      - name: Find AAB file
+        id: find-aab
+        shell: pwsh
+        run: |
+          $aabPath = Get-ChildItem -Path "Client/src/Maui/bin/Release/net9.0-android" -Filter "*.aab" -Recurse | Select-Object -First 1 -ExpandProperty FullName
+          if (-not $aabPath) {
+            Write-Error "AAB file not found!"
+            exit 1
+          }
+          Write-Output "Found AAB: $aabPath"
+          echo "AAB_PATH=$aabPath" >> $env:GITHUB_OUTPUT
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-aab-${{ steps.version.outputs.DISPLAY_VERSION }}
+          path: ${{ steps.find-aab.outputs.AAB_PATH }}
+          retention-days: 30
+
+      - name: Create service account JSON file
+        shell: pwsh
+        run: |
+          $json = "${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}"
+          Set-Content -Path "${{ github.workspace }}/service-account.json" -Value $json
+
+      - name: Deploy to Google Play Store
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJson: ${{ github.workspace }}/service-account.json
+          packageName: ${{ env.ANDROID_PACKAGE_NAME }}
+          releaseFiles: ${{ steps.find-aab.outputs.AAB_PATH }}
+          track: ${{ inputs.track || 'internal' }}
+          status: ${{ inputs.release_status || 'draft' }}
+          whatsNewDirectory: .github/whatsnew
+
+      - name: Cleanup sensitive files
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path "${{ github.workspace }}/alertone.keystore") {
+            Remove-Item "${{ github.workspace }}/alertone.keystore" -Force
+          }
+          if (Test-Path "${{ github.workspace }}/service-account.json") {
+            Remove-Item "${{ github.workspace }}/service-account.json" -Force
+          }
+
+  notify:
+    needs: build-and-deploy
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Notify on success
+        if: needs.build-and-deploy.result == 'success'
+        run: |
+          echo "Android app successfully deployed to Google Play Store!"
+          echo "Track: ${{ inputs.track || 'internal' }}"
+          echo "Version: ${{ needs.build-and-deploy.outputs.DISPLAY_VERSION }}"
+
+      - name: Notify on failure
+        if: needs.build-and-deploy.result == 'failure'
+        run: |
+          echo "Android deployment failed!"
+          exit 1

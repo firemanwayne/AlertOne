@@ -4,11 +4,15 @@ using AlertOne.Shared.Auth;
 using AlertOne.Shared.Handlers;
 using AlertOne.Shared.States;
 
+using Blazored.LocalStorage;
+
 using Domains.AlertManagement;
 using Domains.UserManagement;
 
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Logging;
+
+using MudBlazor.Services;
 
 namespace AlertOne.Maui;
 
@@ -25,10 +29,25 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
             });
 
+        // MudBlazor
+        builder
+            .Services
+            .AddMudServices();
+
+        // Blazored LocalStorage
+        builder
+            .Services
+            .AddBlazoredLocalStorage();
+
         // Global state
         builder
             .Services
             .AddSingleton<AppState>();
+
+        // Deep link service
+        builder
+            .Services
+            .AddSingleton<DeepLinkService>();
 
         // Blazor WebView
         builder

@@ -4,12 +4,7 @@
 @inject IAuthenticationService AuthService
 @inject NavigationManager NavigationManager
 
-<style>
-    .mud-drawer .mud-nav-link.active {
-        background-color: rgba(255, 255, 255, 0.15);
-        color: #fff;
-        border-left: 3px solid @Colors.BlueGray.Lighten2;
-    }
+<style>    
     .mud-drawer .mud-nav-link.active .mud-nav-link-icon {
         color: #fff;
     }
@@ -19,7 +14,7 @@
     <AuthorizeView>
         <Authorized Context="state">
             <MudAppBar Elevation="1" Dense="true" Style="@($"color:{Colors.BlueGray.Lighten3}; background:{Colors.BlueGray.Darken4};")">
-                <MudIconButton Icon="@Icons.Material.Filled.Menu" Edge="Edge.Start" OnClick="@ToggleDrawer" Class="d-sm-none" />
+                <MudIconButton Icon="@Icons.Material.Filled.Menu" Edge="Edge.Start" OnClick="@ToggleDrawer" Class="d-sm-none hamburger" />
                 <MudSpacer />
                 <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
                     <ActivatorContent>
@@ -55,7 +50,7 @@
 
                 <MudNavMenu>
                     <MudText Typo="Typo.overline" Class="px-4 mt-2">User Management</MudText>
-                    <MudNavLink Href="/users" Icon="@Icons.Material.Filled.People" Match="NavLinkMatch.Prefix">Users</MudNavLink>
+                    <MudNavLink Href="/users"ActiveClass="active" Icon="@Icons.Material.Filled.People" Match="NavLinkMatch.Prefix">Users</MudNavLink>
                     <MudNavLink Href="/roles" Icon="@Icons.Material.Filled.AdminPanelSettings" Match="NavLinkMatch.Prefix">Roles</MudNavLink>
 
                     <MudText Typo="Typo.overline" Class="px-4 mt-4">Alerts</MudText>

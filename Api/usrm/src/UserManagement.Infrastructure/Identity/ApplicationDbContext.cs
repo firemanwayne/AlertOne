@@ -10,6 +10,7 @@ namespace UserManagement.Infrastructure.Identity;
 public sealed class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
 {
     public DbSet<UserDevice> UserDevices => Set<UserDevice>();
+    public DbSet<UserInvitationEntity> UserInvitations => Set<UserInvitationEntity>();
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -80,6 +81,20 @@ public sealed class ApplicationDbContext : IdentityDbContext<ApplicationUser, Id
             entity.HasIndex(e => e.DeviceId);
             entity.HasIndex(e => e.RefreshToken).IsUnique();
             entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configure UserInvitation
+        builder.Entity<UserInvitationEntity>(entity =>
+        {
+            entity.ToTable("UserInvitations");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Email).HasMaxLength(256).IsRequired();
+            entity.Property(e => e.ActivationCode).HasMaxLength(10).IsRequired();
+            entity.Property(e => e.InvitedBy).HasMaxLength(256).IsRequired();
+            entity.Property(e => e.InvitedAt).IsRequired();
+            entity.Property(e => e.ExpiresAt).IsRequired();
+            entity.HasIndex(e => e.Email);
+            entity.HasIndex(e => e.ActivationCode).IsUnique();
         });
 
         // Seed initial roles

@@ -27,7 +27,7 @@
         <ApplicationTitle>AlertOne.Maui</ApplicationTitle>
 
         <!-- App Identifier -->
-        <ApplicationId>com.companyname.alertone.maui</ApplicationId>
+        <ApplicationId>com.phoenixemergencysolutions.alertone.maui</ApplicationId>
 
         <!-- Versions -->
         <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
@@ -44,13 +44,45 @@
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-android|AnyCPU'">
+      <ApplicationId>com.phoenixemergencysolutions.alertone.maui</ApplicationId>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-ios|AnyCPU'">
+      <ApplicationId>com.phoenixemergencysolutions.alertone.maui</ApplicationId>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-maccatalyst|AnyCPU'">
+      <ApplicationId>com.phoenixemergencysolutions.alertone.maui</ApplicationId>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-windows10.0.19041.0|AnyCPU'">
+      <ApplicationId>com.phoenixemergencysolutions.alertone.maui</ApplicationId>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-android|AnyCPU'">
+      <ApplicationId>com.phoenixemergencysolutions.alertone.maui</ApplicationId>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-ios|AnyCPU'">
+      <ApplicationId>com.phoenixemergencysolutions.alertone.maui</ApplicationId>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-maccatalyst|AnyCPU'">
+      <ApplicationId>com.phoenixemergencysolutions.alertone.maui</ApplicationId>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-windows10.0.19041.0|AnyCPU'">
+      <ApplicationId>com.phoenixemergencysolutions.alertone.maui</ApplicationId>
+    </PropertyGroup>
+
     <!-- MAUI-specific resources are skipped for the plain net10.0 slice (used by Aspire AppHost) -->
     <ItemGroup Condition="'$(TargetPlatformIdentifier)' != ''">
-        <!-- App Icon -->
-        <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+        <!-- App Icon - only for non-Android platforms (Android uses custom mipmap resources) -->
+        <MauiIcon Condition="'$(TargetPlatformIdentifier)' != 'android'" Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
 
         <!-- Splash Screen -->
-        <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
+        <MauiSplashScreen Include="Resources\Splash\pes_splash.webp" Color="#AD3636" BaseSize="512,512" />
 
         <!-- Images -->
         <MauiImage Include="Resources\Images\*" />
@@ -61,6 +93,16 @@
 
         <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
         <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+
+    <!-- Android-specific icon resources -->
+    <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'android'">
+        <AndroidResource Include="Platforms\Android\Resources\mipmap-mdpi\*.webp" />
+        <AndroidResource Include="Platforms\Android\Resources\mipmap-hdpi\*.webp" />
+        <AndroidResource Include="Platforms\Android\Resources\mipmap-xhdpi\*.webp" />
+        <AndroidResource Include="Platforms\Android\Resources\mipmap-xxhdpi\*.webp" />
+        <AndroidResource Include="Platforms\Android\Resources\mipmap-xxxhdpi\*.webp" />
+        <AndroidResource Include="Platforms\Android\Resources\mipmap-anydpi-v26\*.xml" />
     </ItemGroup>
 
     <ItemGroup>

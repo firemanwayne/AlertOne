@@ -18,6 +18,7 @@ public static class ServiceRegistryExtensions
         services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddScoped<IUserManagementService, UserManagementService>();
         services.AddScoped<IRoleManagementService, RoleManagementService>();
+        services.AddScoped<IInvitationService, InvitationService>();
 
         // Register domain-specific ViewModels, handlers, or other services here
         // Example:
@@ -29,7 +30,7 @@ public static class ServiceRegistryExtensions
             .AddHttpClient<UserManagementApiClient>(client =>
             {
                 client.BaseAddress = new Uri("https://alertone-usrm-dev-eastus2-001-hxhjhwdbethbgtgt.eastus2-01.azurewebsites.net");
-                client.Timeout = TimeSpan.FromSeconds(30);
+                client.Timeout = TimeSpan.FromSeconds(60);
             })
             .AddHttpMessageHandler<JwtAuthHeaderHandler>();
 

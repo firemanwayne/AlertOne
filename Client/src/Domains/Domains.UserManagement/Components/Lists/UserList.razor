@@ -69,11 +69,12 @@
                                    Size="Size.Small"
                                    Color="Color.Error"
                                    OnClick="@(() => OnDeleteUser(context))" />
-                    <MudIconButton Icon="@Icons.Material.Filled.Badge"
-                                   Size="Size.Small"
-                                   Color="Color.Secondary"
-                                   OnClick="@(() => OpenRolesDialogAsync(context))"
-                                   Title="Manage Roles" />
+                    <MudTooltip Text="Manage Roles">
+                        <MudIconButton Icon="@Icons.Material.Filled.Badge"
+                                       Size="Size.Small"
+                                       Color="Color.Secondary"
+                                       OnClick="@(() => OpenRolesDialogAsync(context))" />
+                    </MudTooltip>
                 </MudTd>
             </RowTemplate>
         </MudTable>

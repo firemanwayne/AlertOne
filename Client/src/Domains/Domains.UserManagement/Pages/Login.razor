@@ -12,22 +12,14 @@
             <MudText>You are already logged in as @AppState.CurrentUser?.Email</MudText>
             <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/" Class="mt-2">Go to Home</MudButton>
         </MudAlert>
-    }
-    else
-    {
-        <LoginForm OnLoginSuccess="@HandleLoginSuccess" OnRegisterClicked="@HandleRegisterClicked" />
-    }
+    }    
 </MudContainer>
 
 @code {
     private async Task HandleLoginSuccess()
     {
         Navigation.NavigateTo("/");
-        await InvokeAsync(StateHasChanged);
-    }
 
-    private void HandleRegisterClicked()
-    {
-        Navigation.NavigateTo("/register");
-    }
+        await InvokeAsync(StateHasChanged);
+    }    
 }

@@ -1,12 +1,16 @@
 <Solution>
   <Folder Name="/Api/" />
-  <Folder Name="/Api/src/">
-    <Project Path="Api/core/AlertOne.Api.Core/AlertOne.Api.Core.csproj" Id="ce4c1aa6-4124-4479-9330-89da063035b0" />
-  </Folder>
+  <Folder Name="/Api/src/" />
   <Folder Name="/Api/src/alerts/">
     <Project Path="Api/alerts/src/AlertManagement.Client/AlertManagement.Client.csproj" />
     <Project Path="Api/alerts/src/AlertManagement.Core/AlertManagement.Core.csproj" />
     <Project Path="Api/alerts/src/AlertManagement.Infrastructure/AlertManagement.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/Api/src/core/">
+    <Project Path="Api/core/AlertOne.Api.Core/AlertOne.Api.Core.csproj" Id="ce4c1aa6-4124-4479-9330-89da063035b0" />
+  </Folder>
+  <Folder Name="/Api/src/infrastructure/">
+    <Project Path="Api/infrastructure/Azure.Communications/Azure.Communications.csproj" Id="0920877d-7cc3-4200-bb61-7fe0820d044d" />
   </Folder>
   <Folder Name="/Api/src/usrm/">
     <Project Path="Api/usrm/src/UserManagement.Client/UserManagement.Client.csproj" />

@@ -10,6 +10,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\..\core\AlertOne.Api.Core\AlertOne.Api.Core.csproj" />
 		<ProjectReference Include="..\UserManagement.Core\UserManagement.Core.csproj" />
 	</ItemGroup>
 

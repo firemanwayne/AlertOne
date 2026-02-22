@@ -1,12 +1,84 @@
-﻿<Router AppAssembly="@typeof(MauiProgram).Assembly"
-        AdditionalAssemblies="@(new[] { typeof(Domains.UserManagement._Imports).Assembly })">
-    <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-    </Found>
-    <NotFound>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <p role="alert">Sorry, there's nothing at this address.</p>
-        </LayoutView>
-    </NotFound>
-</Router>
+﻿@inject NavigationManager NavigationManager
+@inject AlertOne.Maui.Services.DeepLinkService DeepLinkService
+@implements IDisposable
+
+<MudThemeProvider @bind-IsDarkMode="_isDarkMode" Theme="_theme" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly"
+    AdditionalAssemblies="@(new[] {
+typeof(AlertOne.Shared._Imports).Assembly,
+typeof(Domains.UserManagement._Imports).Assembly,
+typeof(Domains.AlertManagement._Imports).Assembly })">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    <RedirectToLogin />
+                </NotAuthorized>
+                <Authorizing>
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                </Authorizing>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>Not found</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <MudText Typo="Typo.h6" Color="Color.Warning">Sorry, there's nothing at this address.</MudText>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>
+
+@code {
+    private bool _isDarkMode = false;
+
+    private MudTheme _theme = new()
+    {
+        PaletteLight = new PaletteLight
+        {
+            Primary = "#1a2c4e",
+            Secondary = "#8b2332",
+            AppbarBackground = "#1a2c4e",
+            DrawerBackground = "#1a2c4e",
+            DrawerText = "rgba(255,255,255,0.85)",
+            DrawerIcon = "rgba(255,255,255,0.85)"
+        },
+        PaletteDark = new PaletteDark
+        {
+            Primary = "#4a6fa5",
+            Secondary = "#c45c6a"
+        }
+    };
+
+    protected override void OnInitialized()
+    {
+        // Subscribe to deep link events
+        DeepLinkService.DeepLinkReceived += OnDeepLinkReceived;
+
+        // Handle any pending deep link from app launch
+        var pendingLink = DeepLinkService.ConsumePendingDeepLink();
+
+        if (!string.IsNullOrEmpty(pendingLink))
+        {
+            NavigationManager.NavigateTo(pendingLink);
+        }
+    }
+
+    private void OnDeepLinkReceived(object? sender, string path)
+    {
+        InvokeAsync(() =>
+        {
+            NavigationManager.NavigateTo(path);
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        DeepLinkService.DeepLinkReceived -= OnDeepLinkReceived;
+    }
+}

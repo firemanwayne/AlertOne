@@ -1,0 +1,94 @@
+@page "/invitations"
+@attribute [Authorize]
+
+@inject IInvitationService InvitationService
+@inject NavigationManager Navigation
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject AppState AppState
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+        <MudText Typo="Typo.h4">Invitations</MudText>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="@(() => Navigation.NavigateTo("/invitations/create"))">
+            Invite User
+        </MudButton>
+    </MudStack>
+
+    <InvitationList @ref="_invitationListRef"
+                    OnResend="@HandleResendInvitation"
+                    OnDelete="@HandleDeleteInvitation" />
+</MudContainer>
+
+@code {
+    private InvitationList? _invitationListRef;
+
+    private async Task HandleResendInvitation(InvitationResponse invitation)
+    {
+        var parameters = new DialogParameters<ConfirmDialog>
+        {
+            { x => x.ContentText, $"Are you sure you want to resend the invitation to '{invitation.Email}'?" },
+            { x => x.ButtonText, "Resend" },
+            { x => x.Color, Color.Primary }
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Resend Invitation", parameters);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            var currentUserName = AppState.CurrentUser?.FirstName ?? "Admin";
+            var resendRequest = new ResendInvitationRequest(currentUserName);
+            var resendResult = await InvitationService.ResendAsync(invitation.Id, resendRequest);
+
+            if (resendResult.IsSuccess)
+            {
+                Snackbar.Add($"Invitation resent to '{invitation.Email}'", Severity.Success);
+
+                if (_invitationListRef != null)
+                {
+                    await _invitationListRef.RefreshAsync();
+                }
+            }
+            else
+            {
+                Snackbar.Add($"Failed to resend invitation: {resendResult.Error?.Message}", Severity.Error);
+            }
+        }
+    }
+
+    private async Task HandleDeleteInvitation(InvitationResponse invitation)
+    {
+        var parameters = new DialogParameters<ConfirmDialog>
+        {
+            { x => x.ContentText, $"Are you sure you want to delete the invitation for '{invitation.Email}'?" },
+            { x => x.ButtonText, "Delete" },
+            { x => x.Color, Color.Error }
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Delete Invitation", parameters);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            var deleteResult = await InvitationService.DeleteAsync(invitation.Id);
+
+            if (deleteResult.IsSuccess)
+            {
+                Snackbar.Add($"Invitation for '{invitation.Email}' deleted", Severity.Success);
+
+                if (_invitationListRef != null)
+                {
+                    await _invitationListRef.RefreshAsync();
+                }
+            }
+            else
+            {
+                Snackbar.Add($"Failed to delete invitation: {deleteResult.Error?.Message}", Severity.Error);
+            }
+        }
+    }
+}

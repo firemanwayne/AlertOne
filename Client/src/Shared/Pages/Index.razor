@@ -9,17 +9,7 @@
         <MudGrid>
             <MudItem xs="12">
                 <MudPaper Class="pa-6 text-center" Elevation="1">
-                    <MudText Typo="Typo.h4">Welcome, @AppState.CurrentUser?.FullName!</MudText>
-                    <MudText Typo="Typo.body1" Class="mud-text-secondary mt-2">@AppState.CurrentUser?.Email</MudText>
-                    <div class="mt-3">
-                        @if (AppState.CurrentUser is not null)
-                        {
-                            @foreach (var role in AppState.CurrentUser.Roles)
-                            {
-                                <MudChip T="string" Color="Color.Primary" Size="Size.Small" Class="mx-1">@role</MudChip>
-                            }
-                        }
-                    </div>
+                    <MudText Typo="Typo.h5">Welcome, @AppState.CurrentUser?.FullName!</MudText>
                 </MudPaper>
             </MudItem>
 

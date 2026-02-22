@@ -5,6 +5,7 @@
 @inject IAlertTypeService AlertTypeService
 @inject AppState AppState
 @inject ISnackbar Snackbar
+@inject NavigationManager Nav
 
 <div class="alert-panel">
     @if (_isLoading)
@@ -16,35 +17,37 @@
     }
     else if (_activeAlert != null)
     {
-        <MudCard Elevation="2" Style="@($"border: 2px solid {_activeAlert.Type.Color};")">
+        <MudCard Elevation="2" Style="@($"border: 2px solid {_activeAlert.Type.Color};")" @onclick="@(() => NavigateToDashboard(_activeAlert.Id))">
             <MudCardHeader Style="@($"background-color: {_activeAlert.Type.Color}; color: #fff;")">
                 <CardHeaderContent>
-                    <div class="d-flex align-center gap-2">
-                        <MudIcon Icon="@Icons.Material.Filled.Warning" />
-                        <MudText Typo="Typo.h6" Class="font-weight-bold">ACTIVE ALERT</MudText>
-                        <MudChip T="string"
-                                 Style="@($"background-color: {_activeAlert.StatusLevel.Color}; color: #fff;")"
-                                 Size="Size.Small">
-                            @_activeAlert.StatusLevel.Name
-                        </MudChip>
+                    <div class="d-flex flex-column flex-sm-row align-center gap-2 w-100">
+                        <div class="d-flex align-center gap-2 flex-wrap">
+                            <MudIcon Icon="@Icons.Material.Filled.Warning" />
+                            <MudText Typo="Typo.h6" Class="font-weight-bold">ACTIVE ALERT</MudText>
+                            <MudChip T="string"
+                                     Style="@($"background-color: {_activeAlert.StatusLevel.Color}; color: #fff;")"
+                                     Size="Size.Small">
+                                @_activeAlert.StatusLevel.Name
+                            </MudChip>
+                        </div>
+                        @if (_isManager)
+                        {
+                            <div class="mt-2 mt-sm-0 ml-sm-auto">
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Warning"
+                                           Size="Size.Small"
+                                           OnClick="@HandleRescindAsync"
+                                           Disabled="@_isSubmitting">
+                                    @if (_isSubmitting)
+                                    {
+                                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-1" />
+                                    }
+                                    Rescind Alert
+                                </MudButton>
+                            </div>
+                        }
                     </div>
                 </CardHeaderContent>
-                <CardHeaderActions>
-                    @if (_isManager)
-                    {
-                        <MudButton Variant="Variant.Filled"
-                                   Color="Color.Default"
-                                   Size="Size.Small"
-                                   OnClick="@HandleRescindAsync"
-                                   Disabled="@_isSubmitting">
-                            @if (_isSubmitting)
-                            {
-                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-1" />
-                            }
-                            Rescind Alert
-                        </MudButton>
-                    }
-                </CardHeaderActions>
             </MudCardHeader>
             <MudCardContent>
                 <MudGrid>
@@ -52,7 +55,7 @@
                         <MudText Typo="Typo.subtitle1" Class="font-weight-bold">@_activeAlert.Type.Name</MudText>
                         <MudText Typo="Typo.body2" Class="mud-text-secondary">@_activeAlert.Type.Description</MudText>
                     </MudItem>
-                    <MudItem xs="12" md="6" Class="text-right">
+                    <MudItem xs="12" md="6" Class="d-flex flex-column text-center">
                         <MudText Typo="Typo.caption" Class="mud-text-secondary">
                             Activated by <strong>@_activeAlert.CreatedBy</strong>
                         </MudText>
@@ -81,6 +84,7 @@
                 </CardHeaderContent>
                 <CardHeaderActions>
                     <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                    Color="Color.Warning"
                                    OnClick="@CancelActivate" />
                 </CardHeaderActions>
             </MudCardHeader>
@@ -305,6 +309,8 @@
     {
         await LoadAsync();
     }
+
+    private void NavigateToDashboard(string id) => Nav.NavigateTo($"/alerts/{id}");
 
     private sealed class ActivateModel
     {

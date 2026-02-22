@@ -1,0 +1,19 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "TODO_TEAM_ID.com.companyname.alertone.maui",
+        "paths": [
+          "/accept-invitation",
+          "/accept-invitation/*"
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "TODO_TEAM_ID.com.companyname.alertone.maui"
+    ]
+  }
+}

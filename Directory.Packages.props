@@ -3,6 +3,8 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <!-- Azure Communication Services -->
+    <PackageVersion Include="Azure.Communication.Email" Version="1.0.1" />
     <!-- Azure Functions (independent versioning) -->
     <PackageVersion Include="Aspire.Hosting.Azure.Functions" Version="13.1.1" />
     <PackageVersion Include="Aspire4Wasm.AppHost" Version="6.0.0" />
