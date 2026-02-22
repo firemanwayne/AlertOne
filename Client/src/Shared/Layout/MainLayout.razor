@@ -49,11 +49,15 @@
                 </MudDrawerHeader>
 
                 <MudNavMenu>
-                    <MudText Typo="Typo.overline" Class="px-4 mt-2">User Management</MudText>
-                    <MudNavLink Href="/users"ActiveClass="active" Icon="@Icons.Material.Filled.People" Match="NavLinkMatch.Prefix">Users</MudNavLink>
-                    <MudNavLink Href="/roles" Icon="@Icons.Material.Filled.AdminPanelSettings" Match="NavLinkMatch.Prefix">Roles</MudNavLink>
+                    @if (CanManageUsers)
+                    {
+                        <MudText Typo="Typo.overline" Class="px-4 mt-2">User Management</MudText>
+                        <MudNavLink Href="/users" ActiveClass="active" Icon="@Icons.Material.Filled.People" Match="NavLinkMatch.Prefix">Users</MudNavLink>
+                        <MudNavLink Href="/roles" Icon="@Icons.Material.Filled.AdminPanelSettings" Match="NavLinkMatch.Prefix">Roles</MudNavLink>
+                        <MudNavLink Href="/invitations" Icon="@Icons.Material.Filled.Mail" Match="NavLinkMatch.Prefix">Invitations</MudNavLink>
+                    }
 
-                    <MudText Typo="Typo.overline" Class="px-4 mt-4">Alerts</MudText>
+                    <MudText Typo="Typo.overline" Class="@(CanManageUsers ? "px-4 mt-4" : "px-4 mt-2")">Alerts</MudText>
                     <MudNavLink Href="/alerts" Icon="@Icons.Material.Filled.NotificationsActive" Match="NavLinkMatch.All">Alerts</MudNavLink>
                     <MudNavLink Href="/alerts/types" Icon="@Icons.Material.Filled.Category" Match="NavLinkMatch.Prefix">Alert Types</MudNavLink>
                     <MudNavLink Href="/alerts/status-levels" Icon="@Icons.Material.Filled.Flag" Match="NavLinkMatch.Prefix">Status Levels</MudNavLink>
@@ -79,6 +83,8 @@
 
 @code {
     private bool _drawerOpen = true;
+
+    private bool CanManageUsers => AppState.CurrentUser?.CanManageUsers ?? false;
 
     private async Task HandleLogoutAsync()
     {

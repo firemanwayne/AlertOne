@@ -2,7 +2,6 @@ using Azure.Communications;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -22,23 +21,20 @@ builder
     .AddInfrastructure(builder.Configuration);
 
 builder
-    .UseMiddleware<ExceptionHandlingMiddleware>()
-    .UseMiddleware<AuthenticationMiddleware>();
+    .Services
+    .AddAzureCommunications(opts =>
+    {
+        opts.ConnectionString = builder.Configuration["AzureCommunications:ConnectionString"] ?? throw new InvalidCastException();
+        opts.WebAppBaseUrl = builder.Configuration["AzureCommunications:WebAppBaseUrl"] ?? throw new InvalidCastException();
+        opts.SenderAddress = builder.Configuration["AzureCommunications:SenderAddress"] ?? throw new InvalidCastException();
+        opts.MobileAppScheme = builder.Configuration["AzureCommunications:MobileAppScheme"] ?? throw new InvalidCastException();
+
+
+    });
 
 builder
-    .Services
-    .AddAzureCommunications(sp =>
-    {
-        IConfiguration config = sp.GetRequiredService<IConfiguration>();
-
-        return new()
-        {
-            ConnectionString = config["AzureCommunications:ConnectionString"] ?? throw new InvalidCastException(),
-            WebAppBaseUrl = config["AzureCommunications:WebAppBaseUrl"] ?? throw new InvalidCastException(),
-            SenderAddress = config["AzureCommunications:SenderAddress"] ?? throw new InvalidCastException(),
-            MobileAppScheme = config["AzureCommunications:MobileAppScheme"] ?? throw new InvalidCastException()
-        };
-    });
+    .UseMiddleware<ExceptionHandlingMiddleware>()
+    .UseMiddleware<AuthenticationMiddleware>();
 
 var host = builder.Build();
 

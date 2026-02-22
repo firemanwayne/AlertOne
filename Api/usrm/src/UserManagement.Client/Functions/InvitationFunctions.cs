@@ -12,7 +12,9 @@ namespace UserManagement.Client.Functions;
 /// <summary>
 /// Azure Functions for user invitation operations
 /// </summary>
-public sealed class InvitationFunctions(IInvitationService invitationService, ILogger<InvitationFunctions> logger)
+public sealed class InvitationFunctions(
+    IInvitationService invitationService,
+    ILogger<InvitationFunctions> logger)
 {
     // Route constants
     public const string GET = "invitations";

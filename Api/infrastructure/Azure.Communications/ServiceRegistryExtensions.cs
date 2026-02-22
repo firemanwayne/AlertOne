@@ -16,12 +16,9 @@ public static class ServiceRegistryExtensions
     /// <param name="services">The service collection.</param>
     /// <param name="config">The configuration delegate.</param>
     /// <returns>The service collection for chaining.</returns>
-    public static IServiceCollection AddAzureCommunications(this IServiceCollection services, Func<IServiceProvider, AzureCommunicationsOptions> config)
+    public static IServiceCollection AddAzureCommunications(this IServiceCollection services, Action<AzureCommunicationsOptions> config)
     {
-        services.Add(
-            new ServiceDescriptor(typeof(AzureCommunicationsOptions),
-            config.Invoke,
-            ServiceLifetime.Singleton));
+        services.Configure(config);
 
         services.AddSingleton<IEmailService, AzureEmailService>();
 

@@ -29,7 +29,8 @@ public static class ServiceRegistryExtensions
         services
             .AddHttpClient<UserManagementApiClient>(client =>
             {
-                client.BaseAddress = new Uri("https://alertone-usrm-dev-eastus2-001-hxhjhwdbethbgtgt.eastus2-01.azurewebsites.net");
+                //client.BaseAddress = new Uri("https://alertone-usrm-dev-eastus2-001-hxhjhwdbethbgtgt.eastus2-01.azurewebsites.net");
+                client.BaseAddress = new Uri("http://localhost:7071");
                 client.Timeout = TimeSpan.FromSeconds(60);
             })
             .AddHttpMessageHandler<JwtAuthHeaderHandler>();
