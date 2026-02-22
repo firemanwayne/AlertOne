@@ -30,7 +30,7 @@ on:
 env:
   DOTNET_VERSION: '9.0.x'
   MAUI_PROJECT_PATH: 'Client/src/Maui/AlertOne.Maui.csproj'
-  ANDROID_PACKAGE_NAME: 'com.companyname.alertone.maui'
+  ANDROID_PACKAGE_NAME: 'com.phoenixemergencysolutions.alertone.maui'
 
 jobs:
   build-and-deploy:
