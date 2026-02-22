@@ -42,7 +42,7 @@
   </Folder>
   <Folder Name="/Client/src/Maui/">
     <Project Path="Client/src/Maui/AlertOne.Maui.csproj">
-      <Deploy Solution="Debug|*" />
+      <Deploy />
     </Project>
   </Folder>
   <Folder Name="/Client/src/Shared/">
@@ -54,6 +54,7 @@
   <Folder Name="/Solution Items/">
     <File Path=".github/workflows/azure-static-web-apps-icy-stone-0670cb10f.yml" />
     <File Path=".github/workflows/deploy-alertmanagement-api.yml" />
+    <File Path=".github/workflows/deploy-android-playstore.yml" />
     <File Path=".github/workflows/deploy-usermanagement-api.yml" />
     <File Path="Directory.Packages.props" />
   </Folder>
