@@ -34,7 +34,7 @@ env:
 
 jobs:
   build-and-deploy:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
@@ -56,66 +56,62 @@ jobs:
       - name: Install MAUI workloads
         run: dotnet workload install maui-android
 
-      - name: Restore dependencies (Android only)
-        run: dotnet restore ${{ env.MAUI_PROJECT_PATH }} /p:TargetFrameworks=net9.0-android
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.MAUI_PROJECT_PATH }}
 
       - name: Extract version from tag
         id: version
-        shell: pwsh
         run: |
-          if ("${{ github.ref_type }}" -eq "tag") {
-            $version = "${{ github.ref_name }}" -replace '^v', ''
-          } else {
-            $version = "1.0.${{ github.run_number }}"
-          }
+          if [ "${{ github.ref_type }}" == "tag" ]; then
+            VERSION="${{ github.ref_name }}"
+            VERSION="${VERSION#v}"
+          else
+            VERSION="1.0.${{ github.run_number }}"
+          fi
 
-          # Parse version components
-          $versionParts = $version -split '\.'
-          $major = if ($versionParts.Length -gt 0) { $versionParts[0] } else { "1" }
-          $minor = if ($versionParts.Length -gt 1) { $versionParts[1] } else { "0" }
-          $patch = if ($versionParts.Length -gt 2) { $versionParts[2] } else { "0" }
+          IFS='.' read -ra PARTS <<< "$VERSION"
+          MAJOR="${PARTS[0]:-1}"
+          MINOR="${PARTS[1]:-0}"
+          PATCH="${PARTS[2]:-0}"
 
-          $displayVersion = "$major.$minor.$patch"
-          $versionCode = [int]$major * 10000 + [int]$minor * 100 + [int]$patch
+          DISPLAY_VERSION="$MAJOR.$MINOR.$PATCH"
+          VERSION_CODE=$((MAJOR * 10000 + MINOR * 100 + PATCH))
 
-          Write-Output "Display Version: $displayVersion"
-          Write-Output "Version Code: $versionCode"
+          echo "Display Version: $DISPLAY_VERSION"
+          echo "Version Code: $VERSION_CODE"
 
-          echo "DISPLAY_VERSION=$displayVersion" >> $env:GITHUB_OUTPUT
-          echo "VERSION_CODE=$versionCode" >> $env:GITHUB_OUTPUT
+          echo "DISPLAY_VERSION=$DISPLAY_VERSION" >> $GITHUB_OUTPUT
+          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_OUTPUT
 
       - name: Decode keystore
-        shell: pwsh
         run: |
-          $keystoreBytes = [Convert]::FromBase64String("${{ secrets.ANDROID_KEYSTORE_BASE64 }}")
-          [IO.File]::WriteAllBytes("${{ github.workspace }}/alertone.keystore", $keystoreBytes)
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > ${{ github.workspace }}/alertone.keystore
 
       - name: Build Android App Bundle (AAB)
         run: |
-          dotnet publish ${{ env.MAUI_PROJECT_PATH }} `
-            -c Release `
-            -f net9.0-android `
-            --no-restore `
-            -p:AndroidPackageFormat=aab `
-            -p:AndroidKeyStore=true `
-            -p:AndroidSigningKeyStore="${{ github.workspace }}/alertone.keystore" `
-            -p:AndroidSigningKeyAlias="${{ secrets.ANDROID_KEY_ALIAS }}" `
-            -p:AndroidSigningKeyPass="${{ secrets.ANDROID_KEY_PASSWORD }}" `
-            -p:AndroidSigningStorePass="${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" `
-            -p:ApplicationDisplayVersion="${{ steps.version.outputs.DISPLAY_VERSION }}" `
+          dotnet publish ${{ env.MAUI_PROJECT_PATH }} \
+            -c Release \
+            -f net9.0-android \
+            --no-restore \
+            -p:AndroidPackageFormat=aab \
+            -p:AndroidKeyStore=true \
+            -p:AndroidSigningKeyStore="${{ github.workspace }}/alertone.keystore" \
+            -p:AndroidSigningKeyAlias="${{ secrets.ANDROID_KEY_ALIAS }}" \
+            -p:AndroidSigningKeyPass="${{ secrets.ANDROID_KEY_PASSWORD }}" \
+            -p:AndroidSigningStorePass="${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" \
+            -p:ApplicationDisplayVersion="${{ steps.version.outputs.DISPLAY_VERSION }}" \
             -p:ApplicationVersion="${{ steps.version.outputs.VERSION_CODE }}"
 
       - name: Find AAB file
         id: find-aab
-        shell: pwsh
         run: |
-          $aabPath = Get-ChildItem -Path "Client/src/Maui/bin/Release/net9.0-android" -Filter "*.aab" -Recurse | Select-Object -First 1 -ExpandProperty FullName
-          if (-not $aabPath) {
-            Write-Error "AAB file not found!"
+          AAB_PATH=$(find Client/src/Maui/bin/Release/net9.0-android -name "*.aab" -type f | head -1)
+          if [ -z "$AAB_PATH" ]; then
+            echo "AAB file not found!"
             exit 1
-          }
-          Write-Output "Found AAB: $aabPath"
-          echo "AAB_PATH=$aabPath" >> $env:GITHUB_OUTPUT
+          fi
+          echo "Found AAB: $AAB_PATH"
+          echo "AAB_PATH=$AAB_PATH" >> $GITHUB_OUTPUT
 
       - name: Upload AAB artifact
         uses: actions/upload-artifact@v4
@@ -125,10 +121,8 @@ jobs:
           retention-days: 30
 
       - name: Create service account JSON file
-        shell: pwsh
         run: |
-          $json = "${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}"
-          Set-Content -Path "${{ github.workspace }}/service-account.json" -Value $json
+          echo '${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}' > ${{ github.workspace }}/service-account.json
 
       - name: Deploy to Google Play Store
         uses: r0adkll/upload-google-play@v1
@@ -142,14 +136,9 @@ jobs:
 
       - name: Cleanup sensitive files
         if: always()
-        shell: pwsh
         run: |
-          if (Test-Path "${{ github.workspace }}/alertone.keystore") {
-            Remove-Item "${{ github.workspace }}/alertone.keystore" -Force
-          }
-          if (Test-Path "${{ github.workspace }}/service-account.json") {
-            Remove-Item "${{ github.workspace }}/service-account.json" -Force
-          }
+          rm -f ${{ github.workspace }}/alertone.keystore
+          rm -f ${{ github.workspace }}/service-account.json
 
   notify:
     needs: build-and-deploy
@@ -162,7 +151,6 @@ jobs:
         run: |
           echo "Android app successfully deployed to Google Play Store!"
           echo "Track: ${{ inputs.track || 'internal' }}"
-          echo "Version: ${{ needs.build-and-deploy.outputs.DISPLAY_VERSION }}"
 
       - name: Notify on failure
         if: needs.build-and-deploy.result == 'failure'
