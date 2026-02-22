@@ -12,7 +12,9 @@ namespace AlertManagement.Infrastructure.Services;
 /// <summary>
 /// Service for alert type management operations
 /// </summary>
-internal sealed class AlertTypeService(AlertDbContext context, ILogger<AlertTypeService> logger) : IAlertTypeService
+internal sealed class AlertTypeService(
+    AlertDbContext context,
+    ILogger<AlertTypeService> logger) : IAlertTypeService
 {
     public async Task<Result<IEnumerable<AlertTypeResponse>>> GetAllAsync(CancellationToken cancellationToken = default)
     {

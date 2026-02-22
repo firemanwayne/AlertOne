@@ -19,9 +19,10 @@ public static class ServiceCollectionExtensions
     {
         services.AddDatabase(configuration);
 
-        services.AddScoped<IAlertService, AlertService>();
-        services.AddScoped<IAlertTypeService, AlertTypeService>();
-        services.AddScoped<IAlertStatusLevelService, AlertStatusLevelService>();
+        services
+            .AddScoped<IAlertService, AlertService>()
+            .AddScoped<IAlertTypeService, AlertTypeService>()
+            .AddScoped<IAlertStatusLevelService, AlertStatusLevelService>();
 
         return services;
     }

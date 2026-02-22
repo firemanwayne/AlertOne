@@ -28,8 +28,6 @@ builder
         opts.WebAppBaseUrl = builder.Configuration["AzureCommunications:WebAppBaseUrl"] ?? throw new InvalidCastException();
         opts.SenderAddress = builder.Configuration["AzureCommunications:SenderAddress"] ?? throw new InvalidCastException();
         opts.MobileAppScheme = builder.Configuration["AzureCommunications:MobileAppScheme"] ?? throw new InvalidCastException();
-
-
     });
 
 builder
