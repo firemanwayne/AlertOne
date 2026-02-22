@@ -1,8 +1,8 @@
 @namespace Domains.UserManagement.Forms
 
-@inject IAuthenticationService AuthService
 @inject AppState AppState
 @inject ILocalStorageService LocalStorage
+@inject IAuthenticationService AuthService
 
 <MudCard Elevation="2">
     <MudCardHeader>
@@ -55,26 +55,14 @@
                 }
             </MudButton>
         </MudForm>
-
-        @if (ShowRegisterLink)
-        {
-            <MudText Align="Align.Center" Class="mt-4">
-                Don't have an account?
-                <MudLink Href="#" @onclick="@OnRegisterClicked">Register</MudLink>
-            </MudText>
-        }
+        
     </MudCardContent>
 </MudCard>
 
 @code {
-    [Parameter]
-    public EventCallback OnLoginSuccess { get; set; }
+    [Parameter] public EventCallback OnLoginSuccess { get; set; }    
 
-    [Parameter]
-    public EventCallback OnRegisterClicked { get; set; }
-
-    [Parameter]
-    public bool ShowRegisterLink { get; set; } = true;
+    [Parameter] public bool ShowRegisterLink { get; set; } = true;
 
     private MudForm _form = null!;
     private LoginModel _loginModel = new();

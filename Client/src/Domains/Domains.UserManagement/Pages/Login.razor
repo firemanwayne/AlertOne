@@ -13,6 +13,10 @@
             <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/" Class="mt-2">Go to Home</MudButton>
         </MudAlert>
     }    
+    else
+    {
+        <LoginForm OnLoginSuccess="@HandleLoginSuccess" />
+    }
 </MudContainer>
 
 @code {
