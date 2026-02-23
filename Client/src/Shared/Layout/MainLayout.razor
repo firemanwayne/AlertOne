@@ -1,4 +1,5 @@
 @using Microsoft.AspNetCore.Components.Routing
+@using AlertOne.Shared.Components
 @inherits LayoutComponentBase
 @inject AppState AppState
 @inject IAuthenticationService AuthService
@@ -13,6 +14,7 @@
 <MudLayout>
     <AuthorizeView>
         <Authorized Context="state">
+            <PushNotificationHandler />
             <MudAppBar Elevation="1" Dense="true" Style="@($"color:{Colors.BlueGray.Lighten3}; background:{Colors.BlueGray.Darken4};")">
                 <MudIconButton Icon="@Icons.Material.Filled.Menu" Edge="Edge.Start" OnClick="@ToggleDrawer" Class="d-sm-none hamburger" />
                 <MudSpacer />

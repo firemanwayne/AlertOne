@@ -38,6 +38,9 @@ builder.Services.AddBlazoredLocalStorage();
 // Browser-specific token storage
 builder.Services.AddScoped<ITokenStorageService, BrowserTokenStorageService>();
 
+// Push notifications (stub for WASM - not supported in browser)
+builder.Services.AddSingleton<IPushNotificationRegistrationService, WebPushNotificationService>();
+
 // Blazor authentication — require auth on every route by default
 builder.Services.AddAuthorizationCore(options =>
 {

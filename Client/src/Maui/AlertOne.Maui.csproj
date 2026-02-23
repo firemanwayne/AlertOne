@@ -24,7 +24,7 @@
         <Nullable>enable</Nullable>
 
         <!-- Display name -->
-        <ApplicationTitle>AlertOne.Maui</ApplicationTitle>
+        <ApplicationTitle>Alert One</ApplicationTitle>
 
         <!-- App Identifier -->
         <ApplicationId>com.phoenixemergencysolutions.alertone.maui</ApplicationId>

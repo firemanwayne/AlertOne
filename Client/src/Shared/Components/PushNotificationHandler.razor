@@ -1,0 +1,154 @@
+@implements IDisposable
+
+@inject IPushNotificationRegistrationService PushNotificationService
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+
+@code {
+    protected override void OnInitialized()
+    {
+        PushNotificationService.NotificationReceived += OnNotificationReceived;
+    }
+
+    private void OnNotificationReceived(object? sender, PushNotificationReceivedEventArgs e)
+    {
+        // Use InvokeAsync to ensure we're on the UI thread
+        InvokeAsync(() =>
+        {
+            var title = e.Title ?? "Notification";
+            var body = e.Body ?? string.Empty;
+
+            // Determine severity based on data payload
+            var severity = GetSeverityFromData(e.Data);
+
+            // Create custom snackbar with action if we have navigation data
+            var action = GetNavigationAction(e.Data);
+
+            if (action is not null)
+            {
+                Snackbar.Add(
+                    @<div>
+                        <MudText Typo="Typo.subtitle2" Class="mb-1">@title</MudText>
+                        <MudText Typo="Typo.body2">@body</MudText>
+                    </div>,
+                    severity,
+                    config =>
+                    {
+                        config.Action = action.Label;
+                        config.ActionColor = Color.Primary;
+                        config.OnClick = snackbar =>
+                        {
+                            NavigationManager.NavigateTo(action.Url);
+                            return Task.CompletedTask;
+                        };
+                        config.RequireInteraction = severity == Severity.Error;
+                        config.ShowCloseIcon = true;
+                        config.VisibleStateDuration = 10000;
+                    });
+            }
+            else
+            {
+                Snackbar.Add(
+                    @<div>
+                        <MudText Typo="Typo.subtitle2" Class="mb-1">@title</MudText>
+                        <MudText Typo="Typo.body2">@body</MudText>
+                    </div>,
+                    severity,
+                    config =>
+                    {
+                        config.RequireInteraction = severity == Severity.Error;
+                        config.ShowCloseIcon = true;
+                        config.VisibleStateDuration = 8000;
+                    });
+            }
+
+            StateHasChanged();
+        });
+    }
+
+    private static Severity GetSeverityFromData(IDictionary<string, string>? data)
+    {
+        if (data is null)
+        {
+            return Severity.Info;
+        }
+
+        // Check for severity or priority in the data payload
+        if (data.TryGetValue("severity", out var severity))
+        {
+            return severity.ToLowerInvariant() switch
+            {
+                "critical" or "error" => Severity.Error,
+                "warning" => Severity.Warning,
+                "success" => Severity.Success,
+                _ => Severity.Info
+            };
+        }
+
+        if (data.TryGetValue("priority", out var priority))
+        {
+            return priority.ToLowerInvariant() switch
+            {
+                "high" or "critical" => Severity.Error,
+                "medium" => Severity.Warning,
+                _ => Severity.Info
+            };
+        }
+
+        // Check for alert type indicators
+        if (data.TryGetValue("alertType", out var alertType))
+        {
+            return alertType.ToLowerInvariant() switch
+            {
+                "emergency" or "active_shooter" or "fire" => Severity.Error,
+                "warning" or "evacuation" => Severity.Warning,
+                "all_clear" or "resolved" => Severity.Success,
+                _ => Severity.Info
+            };
+        }
+
+        return Severity.Info;
+    }
+
+    private static NavigationAction? GetNavigationAction(IDictionary<string, string>? data)
+    {
+        if (data is null)
+        {
+            return null;
+        }
+
+        // Check for alert ID to navigate to
+        if (data.TryGetValue("alertId", out var alertId) && !string.IsNullOrEmpty(alertId))
+        {
+            return new NavigationAction("View Alert", $"/alerts/{alertId}");
+        }
+
+        // Check for explicit action URL
+        if (data.TryGetValue("actionUrl", out var actionUrl) && !string.IsNullOrEmpty(actionUrl))
+        {
+            var label = data.TryGetValue("actionLabel", out var actionLabel) ? actionLabel : "View";
+            return new NavigationAction(label, actionUrl);
+        }
+
+        // Check for action type
+        if (data.TryGetValue("action", out var action))
+        {
+            return action.ToLowerInvariant() switch
+            {
+                "view_alert" when data.TryGetValue("alertId", out var id) => new NavigationAction("View", $"/alerts/{id}"),
+                "view_alerts" => new NavigationAction("View Alerts", "/alerts"),
+                "respond" when data.TryGetValue("alertId", out var id) => new NavigationAction("Respond", $"/alerts/{id}"),
+                _ => null
+            };
+        }
+
+        return null;
+    }
+
+    public void Dispose()
+    {
+        PushNotificationService.NotificationReceived -= OnNotificationReceived;
+    }
+
+    private sealed record NavigationAction(string Label, string Url);
+}

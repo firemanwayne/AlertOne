@@ -4,6 +4,7 @@ using AlertManagement.Core.DTOs.Responses;
 using AlertManagement.Core.Entities;
 using AlertManagement.Core.Interfaces;
 using AlertManagement.Infrastructure.Data;
+using AlertOne.Api.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -14,7 +15,8 @@ namespace AlertManagement.Infrastructure.Services;
 /// </summary>
 internal sealed class AlertService(
     AlertDbContext context,
-    ILogger<AlertService> logger) : IAlertService
+    ILogger<AlertService> logger,
+    IPushNotificationService pushNotificationService) : IAlertService
 {
     private const string EventTypeCreated = "Created";
     private const string EventTypeRescinded = "Rescinded";
@@ -129,6 +131,9 @@ internal sealed class AlertService(
         alert.AlertType = alertType;
         alert.AlertStatusLevel = statusLevel;
 
+        // Send push notifications if the status level has SendNotifications enabled
+        await SendNotificationsAsync(alert, alertType, statusLevel, EventTypeCreated, cancellationToken);
+
         return Result.Success(MapToResponse(alert));
     }
 
@@ -143,6 +148,8 @@ internal sealed class AlertService(
         }
 
         var alert = await context.Alerts
+            .Include(a => a.AlertType)
+            .ThenInclude(t => t.AlertTypeUsers)
             .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
 
         if (alert is null)
@@ -191,6 +198,12 @@ internal sealed class AlertService(
         await context.SaveChangesAsync(cancellationToken);
 
         logger.LogInformation("Alert {AlertId} rescinded successfully by {RescindedBy}", id, request.RescindedBy);
+
+        // Send push notifications if the canceled status level has SendNotifications enabled
+        if (canceledStatusLevel is not null)
+        {
+            await SendNotificationsAsync(alert, alert.AlertType, canceledStatusLevel, EventTypeRescinded, cancellationToken);
+        }
 
         return Result.Success();
     }
@@ -257,6 +270,9 @@ internal sealed class AlertService(
             .ThenInclude(t => t.AlertTypeUsers)
             .Include(a => a.AlertStatusLevel)
             .FirstAsync(a => a.Id == id, cancellationToken);
+
+        // Send push notifications if the new status level has SendNotifications enabled
+        await SendNotificationsAsync(updatedAlert, updatedAlert.AlertType, statusLevel, EventTypeStatusUpdated, cancellationToken);
 
         return Result.Success(MapToResponse(updatedAlert));
     }
@@ -347,5 +363,78 @@ internal sealed class AlertService(
             alert.IsActive,
             alert.RescindedAt,
             alert.RescindedBy);
+    }
+
+    private async Task SendNotificationsAsync(Alert alert, AlertType alertType, AlertStatusLevel statusLevel, string eventType, CancellationToken cancellationToken)
+    {
+        if (!statusLevel.SendNotifications)
+        {
+            logger.LogInformation("Skipping notifications for alert {AlertId} - SendNotifications is false for status level {StatusLevelName}", alert.Id, statusLevel.Name);
+            return;
+        }
+
+        var userIds = alertType.AlertTypeUsers
+            .Select(u => u.UserId)
+            .ToList();
+
+        if (userIds.Count == 0)
+        {
+            logger.LogInformation("No users to notify for alert {AlertId} - AlertType {AlertTypeName} has no assigned users", alert.Id, alertType.Name);
+            return;
+        }
+
+        logger.LogInformation("Sending push notifications for alert {AlertId} to {UserCount} users", alert.Id, userIds.Count);
+
+        var title = eventType switch
+        {
+            EventTypeCreated => $"Alert: {alertType.Name}",
+            EventTypeStatusUpdated => $"Alert Update: {statusLevel.Name}",
+            EventTypeRescinded => "Alert Rescinded",
+            _ => "Alert Notification"
+        };
+
+        var body = eventType switch
+        {
+            EventTypeCreated => $"A new {alertType.Name} alert has been issued. Status: {statusLevel.Name}",
+            EventTypeStatusUpdated => $"Alert status updated to {statusLevel.Name}",
+            EventTypeRescinded => $"The {alertType.Name} alert has been rescinded",
+            _ => $"Alert update for {alertType.Name}"
+        };
+
+        var data = new Dictionary<string, string>
+        {
+            { "alertId", alert.Id },
+            { "alertTypeId", alertType.Id },
+            { "alertTypeName", alertType.Name },
+            { "statusLevelId", statusLevel.Id },
+            { "statusLevelName", statusLevel.Name },
+            { "eventType", eventType },
+            { "severity", statusLevel.IsCanceled ? "success" : "warning" },
+            { "action", "view_alert" }
+        };
+
+        // Send notification to each user
+        foreach (var userId in userIds)
+        {
+            try
+            {
+                var success = await pushNotificationService.SendToUserAsync(userId, title, body, data, cancellationToken);
+
+                if (success)
+                {
+                    logger.LogDebug("Push notification sent to user {UserId} for alert {AlertId}", userId, alert.Id);
+                }
+                else
+                {
+                    logger.LogWarning("Failed to send push notification to user {UserId} for alert {AlertId}", userId, alert.Id);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error sending push notification to user {UserId} for alert {AlertId}", userId, alert.Id);
+            }
+        }
+
+        logger.LogInformation("Push notification dispatch completed for alert {AlertId}", alert.Id);
     }
 }

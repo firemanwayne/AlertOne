@@ -5,7 +5,6 @@ using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
-using Android.Views;
 
 using Firebase;
 
@@ -32,12 +31,10 @@ public class MainActivity : MauiAppCompatActivity
     {
         base.OnCreate(savedInstanceState);
 
+#if !ANDROID24_0_OR_GREATER
         // Set status bar color to match app header
-        if (Window != null)
-        {
-            Window.SetStatusBarColor(global::Android.Graphics.Color.ParseColor("#1a2c4e"));
-        }
-
+        Window?.SetStatusBarColor(global::Android.Graphics.Color.ParseColor("#1a2c4e"));
+#endif
         // Initialize Firebase
         InitializeFirebase();
 
@@ -76,7 +73,9 @@ public class MainActivity : MauiAppCompatActivity
         HandleDeepLinkIntent(intent, isAppRunning: true);
     }
 
+#pragma warning disable CA1822 // Mark members as static
     private void HandleDeepLinkIntent(Intent? intent, bool isAppRunning)
+#pragma warning restore CA1822 // Mark members as static
     {
         if (intent?.Data is null)
         {
