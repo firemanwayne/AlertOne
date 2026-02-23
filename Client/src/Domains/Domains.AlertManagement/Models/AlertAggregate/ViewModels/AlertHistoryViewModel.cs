@@ -48,10 +48,8 @@ public sealed class AlertHistoryViewModel : ViewModelBase
         Id = response.Id,
         AlertId = response.AlertId,
         EventType = response.EventType,
-        CreatedBy = response.CreatedBy,
-        UpdatedBy = response.UpdatedBy,
-        CreatedDate = response.CreatedDate,
-        UpdatedDate = response.UpdatedDate,
+        UpdatedBy = response.ChangedBy,
+        UpdatedDate = response.ChangedAt,
         Notes = response.Notes
     };
 }

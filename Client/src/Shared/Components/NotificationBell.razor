@@ -3,24 +3,24 @@
 @inject NotificationState NotificationState
 @inject NavigationManager NavigationManager
 
-<MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" MaxHeight="400" Class="notification-menu">
-    <ActivatorContent>
-        <MudBadge Content="@NotificationState.UnreadCount"
-                  Visible="@NotificationState.HasUnread"
-                  Color="Color.Error"
-                  Overlap="true"
-                  Origin="Origin.TopRight"
-                  Bordered="true"
-                  Class="notification-badge">
-            <div class="notification-bell-icon">
-                <MudIcon Icon="@Icons.Material.Filled.Notifications"
-                         Color="Color.Inherit"
-                         Size="Size.Medium" />
-            </div>
-        </MudBadge>
-    </ActivatorContent>
-    <ChildContent>
-        <div style="width: 320px;">
+<div class="d-inline-flex align-center">
+    <MudBadge Content="@NotificationState.UnreadCount"
+              Visible="@NotificationState.HasUnread"
+              Color="Color.Error"
+              Overlap="true"
+              Origin="Origin.TopRight"
+              Bordered="true">
+        <MudIconButton Icon="@Icons.Material.Filled.Notifications"
+                       Color="Color.Inherit"
+                       Size="Size.Medium"
+                       OnClick="@ToggleMenu" />
+    </MudBadge>
+
+    <MudPopover Open="@_menuOpen"
+                AnchorOrigin="Origin.BottomRight"
+                TransformOrigin="Origin.TopRight"
+                Class="notification-popover">
+        <MudPaper Elevation="8" Class="notification-menu-content">
             <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="px-4 py-2">
                 <MudText Typo="Typo.subtitle1">Notifications</MudText>
                 @if (NotificationState.HasUnread)
@@ -87,32 +87,15 @@
                     </div>
                 }
             }
-        </div>
-    </ChildContent>
-</MudMenu>
+        </MudPaper>
+    </MudPopover>
+</div>
+
+<MudOverlay Visible="@_menuOpen" OnClick="@CloseMenu" LockScroll="false" DarkBackground="false" />
 
 <style>
-    .notification-bell-icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 8px;
-        cursor: pointer;
-        border-radius: 50%;
-        transition: background-color 0.2s;
-    }
-
-    .notification-bell-icon:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-    }
-
-    .notification-badge .mud-badge {
-        top: 2px;
-        right: 2px;
-        transform: scale(0.85);
-    }
-
-    .notification-menu .mud-popover-paper {
+    .notification-menu-content {
+        width: 320px;
         max-height: 400px;
         overflow-y: auto;
     }
@@ -131,9 +114,21 @@
 </style>
 
 @code {
+    private bool _menuOpen;
+
     protected override void OnInitialized()
     {
         NotificationState.OnChange += StateHasChanged;
+    }
+
+    private void ToggleMenu()
+    {
+        _menuOpen = !_menuOpen;
+    }
+
+    private void CloseMenu()
+    {
+        _menuOpen = false;
     }
 
     private void MarkAllAsRead()
@@ -144,6 +139,7 @@
     private void HandleNotificationClick(NotificationItem notification)
     {
         NotificationState.MarkAsRead(notification.Id);
+        CloseMenu();
 
         // Navigate to alert if alertId is present
         if (!string.IsNullOrEmpty(notification.AlertId))
@@ -154,6 +150,7 @@
 
     private void ViewAllNotifications()
     {
+        CloseMenu();
         NavigationManager.NavigateTo("/notifications");
     }
 

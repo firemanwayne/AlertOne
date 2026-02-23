@@ -19,6 +19,7 @@ public static class ServiceRegistryExtensions
         services.AddScoped<IUserManagementService, UserManagementService>();
         services.AddScoped<IRoleManagementService, RoleManagementService>();
         services.AddScoped<IInvitationService, InvitationService>();
+        services.AddScoped<IUserSettingsService, UserSettingsService>();
 
         // Register domain-specific ViewModels, handlers, or other services here
         // Example:

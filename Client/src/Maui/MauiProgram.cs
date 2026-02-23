@@ -35,42 +35,42 @@ public static class MauiProgram
         // MudBlazor
         builder
             .Services
-            .AddMudServices();
+            .AddMudServices()
+            .AddAuthorizationCore()
+            .AddMauiBlazorWebView(); // Blazor WebView 
 
         // Blazored LocalStorage
         builder
             .Services
             .AddBlazoredLocalStorage();
 
-        // Global state
+        // Singleton Services
         builder
             .Services
-            .AddSingleton<AppState>()
-            .AddSingleton<NotificationState>();
+            .AddSingleton<AppState>() // Global state
+            .AddSingleton<DeepLinkService>() // Deep link service
+            .AddSingleton<NotificationState>()
+            .AddSingleton<PushNotificationRegistrationService>()
+            .AddSingleton<ITokenStorageService, MauiTokenStorageService>() // Platform-specific token storage
+            .AddSingleton<IPushNotificationRegistrationService>(sp => sp.GetRequiredService<PushNotificationRegistrationService>()) // Push notification service
+            .AddSingleton<IAppVersionService, MauiAppVersionService>(); // App version service
 
-        // Deep link service
+        // Scoped Services
         builder
             .Services
-            .AddSingleton<DeepLinkService>();
+            .AddScoped<JwtAuthenticationStateProvider>()
+            .AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<JwtAuthenticationStateProvider>());
 
-        // Push notification service
+        // Transient Services
         builder
             .Services
-            .AddSingleton<PushNotificationRegistrationService>();
+            .AddTransient<JwtAuthHeaderHandler>();
 
+        // Domain services
         builder
             .Services
-            .AddSingleton<IPushNotificationRegistrationService>(sp => sp.GetRequiredService<PushNotificationRegistrationService>());
-
-        // Blazor WebView
-        builder
-            .Services
-            .AddMauiBlazorWebView();
-
-        // Authorization services for AuthorizeView components
-        builder
-            .Services
-            .AddAuthorizationCore();
+            .AddUserManagement()
+            .AddAlertManagement();
 
 #if DEBUG
         builder
@@ -81,30 +81,6 @@ public static class MauiProgram
             .Logging
             .AddDebug();
 #endif
-
-        // HttpClient with JWT handler
-        builder
-            .Services
-            .AddTransient<JwtAuthHeaderHandler>();
-
-        // Platform-specific token storage
-        builder
-            .Services
-            .AddSingleton<ITokenStorageService, MauiTokenStorageService>();
-
-        // Authentication state provider
-        builder
-            .Services
-            .AddScoped<JwtAuthenticationStateProvider>();
-
-        builder
-            .Services
-            .AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<JwtAuthenticationStateProvider>());
-
-        builder
-            .Services
-            .AddUserManagement()
-            .AddAlertManagement();
 
         return builder.Build();
     }

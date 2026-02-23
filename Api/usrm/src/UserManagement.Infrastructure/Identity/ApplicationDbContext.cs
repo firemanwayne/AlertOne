@@ -13,6 +13,8 @@ public sealed class ApplicationDbContext : IdentityDbContext<ApplicationUser, Id
 
     public DbSet<UserInvitationEntity> UserInvitations => Set<UserInvitationEntity>();
 
+    public DbSet<UserSettings> UserSettings => Set<UserSettings>();
+
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
     }
@@ -95,6 +97,23 @@ public sealed class ApplicationDbContext : IdentityDbContext<ApplicationUser, Id
             entity.Property(e => e.ExpiresAt).IsRequired();
             entity.HasIndex(e => e.Email);
             entity.HasIndex(e => e.ActivationCode).IsUnique();
+        });
+
+        // Configure UserSettings
+        builder.Entity<UserSettings>(entity =>
+        {
+            entity.ToTable("UserSettings");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasMaxLength(36).IsRequired();
+            entity.Property(e => e.ReceiveEmailNotifications).IsRequired();
+            entity.Property(e => e.ReceivePushNotifications).IsRequired();
+            entity.Property(e => e.PreferredTheme).HasMaxLength(50);
+            entity.Property(e => e.CreatedBy).HasMaxLength(256);
+            entity.Property(e => e.UpdatedBy).HasMaxLength(256);
+            entity.Property(e => e.CreatedDate).IsRequired();
+            entity.Property(e => e.UpdatedDate).IsRequired();
+            entity.HasIndex(e => e.UserId).IsUnique();
+            entity.HasOne(e => e.User).WithOne().HasForeignKey<UserSettings>(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
         // Seed initial roles

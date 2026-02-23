@@ -16,6 +16,7 @@ namespace UserManagement.Infrastructure.Services;
 internal sealed class AuthenticationService(
     ITokenService tokenService,
     IDeviceService deviceService,
+    IUserSettingsService userSettingsService,
     ILogger<AuthenticationService> logger,
     UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager) : IAuthenticationService
@@ -79,6 +80,10 @@ internal sealed class AuthenticationService(
         // Assign default role
         await userManager.AddToRoleAsync(user, "User");
 
+        // Create default user settings
+        var userId = UserId.From(user.Id);
+        await userSettingsService.CreateDefaultAsync(userId, cancellationToken);
+
         logger.LogInformation("User registered successfully: {UserId}", user.Id);
 
         // Verify email is set (should never be null after successful creation)
@@ -90,7 +95,6 @@ internal sealed class AuthenticationService(
         }
 
         // Register device and generate refresh token
-        var userId = UserId.From(user.Id);
         var deviceResult = await deviceService.RegisterOrUpdateDeviceAsync(userId, request.Device, null, cancellationToken);
 
         if (deviceResult.IsFailure)

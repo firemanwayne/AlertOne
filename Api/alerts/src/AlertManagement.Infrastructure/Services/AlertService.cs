@@ -340,7 +340,7 @@ internal sealed class AlertService(
     }
 
     private static AlertHistoryResponse MapHistoryToResponse(AlertHistory history) =>
-        new(history.Id, history.AlertId, history.EventType, history.UpdatedBy, history.UpdatedDate, history.Notes);
+        new(history.Id, history.AlertId, history.EventType, history.CreatedBy, history.CreatedDate, history.Notes);
 
     private static AlertResponse MapToResponse(Alert alert)
     {

@@ -1,0 +1,240 @@
+@page "/profile"
+@attribute [Authorize]
+
+@inject AppState AppState
+@inject IAuthenticationService AuthService
+@inject IUserSettingsService UserSettingsService
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+
+<PageTitle>AlertOne - Profile</PageTitle>
+
+<MudGrid>
+    <MudItem xs="12" sm="8" md="6" lg="4">
+        <MudCard Elevation="2">
+            <MudCardHeader>
+                <CardHeaderAvatar>
+                    <MudAvatar Color="Color.Secondary" Size="Size.Large">
+                        @GetInitials()
+                    </MudAvatar>
+                </CardHeaderAvatar>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">@AppState.CurrentUser?.FullName</MudText>
+                    <MudText Typo="Typo.body2" Class="mud-text-secondary">@AppState.CurrentUser?.Email</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+
+            <MudDivider />
+
+            <MudCardContent>
+                <MudList T="string" Dense="true">
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Email">
+                        <div class="d-flex flex-column">
+                            <MudText Typo="Typo.caption" Class="mud-text-secondary">Email</MudText>
+                            <MudText Typo="Typo.body1">@AppState.CurrentUser?.Email</MudText>
+                        </div>
+                    </MudListItem>
+
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Badge">
+                        <div class="d-flex flex-column">
+                            <MudText Typo="Typo.caption" Class="mud-text-secondary">Roles</MudText>
+                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                @if (AppState.CurrentUser?.Roles?.Any() == true)
+                                {
+                                    @foreach (var role in AppState.CurrentUser.Roles)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Primary">@role</MudChip>
+                                    }
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.body2" Class="mud-text-secondary">No roles assigned</MudText>
+                                }
+                            </div>
+                        </div>
+                    </MudListItem>
+                </MudList>
+            </MudCardContent>
+
+            <MudDivider />
+
+            <MudCardActions Class="pa-4">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Error"
+                           FullWidth="true"
+                           StartIcon="@Icons.Material.Filled.Logout"
+                           OnClick="@HandleLogoutAsync">
+                    Logout
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+
+    <MudItem xs="12" sm="8" md="6" lg="4">
+        <MudCard Elevation="2">
+            <MudCardHeader>
+                <CardHeaderAvatar>
+                    <MudIcon Icon="@Icons.Material.Filled.Settings" Size="Size.Large" />
+                </CardHeaderAvatar>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Notification Settings</MudText>
+                    <MudText Typo="Typo.body2" Class="mud-text-secondary">Manage your notification preferences</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+
+            <MudDivider />
+
+            <MudCardContent>
+                @if (_isLoadingSettings)
+                {
+                    <div class="d-flex justify-center pa-4">
+                        <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+                    </div>
+                }
+                else if (_settingsLoadError is not null)
+                {
+                    <MudAlert Severity="Severity.Error" Class="mb-2">@_settingsLoadError</MudAlert>
+                }
+                else
+                {
+                    <MudList T="string" Dense="true">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Email">
+                            <div class="d-flex justify-space-between align-center" style="width: 100%;">
+                                <div class="d-flex flex-column">
+                                    <MudText Typo="Typo.body1">Email Notifications</MudText>
+                                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Receive alerts via email</MudText>
+                                </div>
+                                <MudSwitch T="bool"
+                                           Value="@_receiveEmailNotifications"
+                                           ValueChanged="@OnEmailNotificationsChanged"
+                                           Color="Color.Primary"
+                                           Disabled="@_isSaving" />
+                            </div>
+                        </MudListItem>
+
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Notifications">
+                            <div class="d-flex justify-space-between align-center" style="width: 100%;">
+                                <div class="d-flex flex-column">
+                                    <MudText Typo="Typo.body1">Push Notifications</MudText>
+                                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Receive alerts on your device</MudText>
+                                </div>
+                                <MudSwitch T="bool"
+                                           Value="@_receivePushNotifications"
+                                           ValueChanged="@OnPushNotificationsChanged"
+                                           Color="Color.Primary"
+                                           Disabled="@_isSaving" />
+                            </div>
+                        </MudListItem>
+                    </MudList>
+                }
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private bool _isLoadingSettings = true;
+    private bool _isSaving;
+    private string? _settingsLoadError;
+    private bool _receiveEmailNotifications;
+    private bool _receivePushNotifications;
+    private string? _preferredTheme;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSettingsAsync();
+    }
+
+    private async Task LoadSettingsAsync()
+    {
+        var userId = AppState.CurrentUser?.Id;
+
+        if (userId is null)
+        {
+            _settingsLoadError = "User not found";
+            _isLoadingSettings = false;
+            return;
+        }
+
+        _isLoadingSettings = true;
+        _settingsLoadError = null;
+
+        var result = await UserSettingsService.GetByUserIdAsync(userId.Value);
+
+        if (result.IsSuccess && result.Value is not null)
+        {
+            _receiveEmailNotifications = result.Value.ReceiveEmailNotifications;
+            _receivePushNotifications = result.Value.ReceivePushNotifications;
+            _preferredTheme = result.Value.PreferredTheme;
+        }
+        else
+        {
+            _settingsLoadError = result.Error?.Message ?? "Failed to load settings";
+        }
+
+        _isLoadingSettings = false;
+    }
+
+    private async Task OnEmailNotificationsChanged(bool value)
+    {
+        _receiveEmailNotifications = value;
+        await SaveSettingsAsync();
+    }
+
+    private async Task OnPushNotificationsChanged(bool value)
+    {
+        _receivePushNotifications = value;
+        await SaveSettingsAsync();
+    }
+
+    private async Task SaveSettingsAsync()
+    {
+        var userId = AppState.CurrentUser?.Id;
+
+        if (userId is null)
+        {
+            return;
+        }
+
+        _isSaving = true;
+
+        var request = new UpdateUserSettingsRequest(_receiveEmailNotifications, _receivePushNotifications, _preferredTheme);
+
+        var result = await UserSettingsService.UpdateAsync(userId.Value, request);
+
+        if (result.IsSuccess)
+        {
+            Snackbar.Add("Settings saved", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add(result.Error?.Message ?? "Failed to save settings", Severity.Error);
+        }
+
+        _isSaving = false;
+    }
+
+    private async Task HandleLogoutAsync()
+    {
+        await AuthService.LogoutAsync();
+    }
+
+    private string GetInitials()
+    {
+        var fullName = AppState.CurrentUser?.FullName;
+
+        if (string.IsNullOrWhiteSpace(fullName))
+        {
+            return "?";
+        }
+
+        var parts = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        if (parts.Length >= 2)
+        {
+            return $"{parts[0][0]}{parts[^1][0]}".ToUpperInvariant();
+        }
+
+        return parts[0][0].ToString().ToUpperInvariant();
+    }
+}

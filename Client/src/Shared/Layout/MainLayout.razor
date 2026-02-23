@@ -4,6 +4,7 @@
 @inject AppState AppState
 @inject IAuthenticationService AuthService
 @inject NavigationManager NavigationManager
+@inject IAppVersionService VersionService
 
 <style>    
     .mud-drawer .mud-nav-link.active .mud-nav-link-icon {
@@ -19,27 +20,12 @@
                 <MudIconButton Icon="@Icons.Material.Filled.Menu" Edge="Edge.Start" OnClick="@ToggleDrawer" Class="d-sm-none hamburger" />
                 <MudSpacer />
                 <NotificationBell />
-                <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
-                    <ActivatorContent>
-                        <MudAvatar Color="Color.Secondary" Size="Size.Small" Class="cursor-pointer">
-                            @GetInitials()
-                        </MudAvatar>
-                    </ActivatorContent>
-                    <ChildContent>
-                        <MudMenuItem Disabled="true">
-                            <div class="d-flex flex-column">
-                                <MudText Typo="Typo.subtitle2">@AppState.CurrentUser?.FullName</MudText>
-                                <MudText Typo="Typo.caption" Class="mud-text-secondary">@AppState.CurrentUser?.Email</MudText>
-                            </div>
-                        </MudMenuItem>
-                        <MudDivider />
-                        <MudMenuItem Icon="@Icons.Material.Filled.Person" Href="/profile">Profile</MudMenuItem>
-                        <MudDivider />
-                        <MudMenuItem Icon="@Icons.Material.Filled.Logout" OnClick="@HandleLogoutAsync" IconColor="Color.Error">
-                            <MudText Color="Color.Error">Logout</MudText>
-                        </MudMenuItem>
-                    </ChildContent>
-                </MudMenu>
+                <MudAvatar Color="Color.Secondary"
+                           Size="Size.Small"
+                           Class="cursor-pointer ml-2"
+                           @onclick="@NavigateToProfile">
+                    @GetInitials()
+                </MudAvatar>
             </MudAppBar>
 
             <MudDrawer @bind-Open="_drawerOpen"
@@ -72,6 +58,9 @@
                     <MudButton Variant="Variant.Outlined" Color="Color.Inherit" FullWidth="true" OnClick="@HandleLogoutAsync" StartIcon="@Icons.Material.Filled.Logout">
                         Logout
                     </MudButton>
+                    <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-2 mud-text-secondary">
+                        v@(VersionService.FullVersion)
+                    </MudText>
                 </div>
             </MudDrawer>
         </Authorized>
@@ -97,6 +86,11 @@
     private void ToggleDrawer()
     {
         _drawerOpen = !_drawerOpen;
+    }
+
+    private void NavigateToProfile()
+    {
+        NavigationManager.NavigateTo("/profile");
     }
 
     private string GetInitials()

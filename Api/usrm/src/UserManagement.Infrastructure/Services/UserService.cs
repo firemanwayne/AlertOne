@@ -13,7 +13,7 @@ namespace UserManagement.Infrastructure.Services;
 /// <summary>
 /// Service for user management operations
 /// </summary>
-internal sealed class UserService(ILogger<UserService> logger, UserManager<ApplicationUser> userManager) : IUserService
+internal sealed class UserService(ILogger<UserService> logger, UserManager<ApplicationUser> userManager, IUserSettingsService userSettingsService) : IUserService
 {
     public async Task<Result<UserResponse>> CreateUserAsync(CreateUserRequest request, CancellationToken cancellationToken = default)
     {
@@ -74,6 +74,11 @@ internal sealed class UserService(ILogger<UserService> logger, UserManager<Appli
         }
 
         logger.LogInformation("User created successfully: {UserId}", user.Id);
+
+        // Create default user settings
+        var userId = UserId.From(user.Id);
+
+        await userSettingsService.CreateDefaultAsync(userId, cancellationToken);
 
         var roles = await userManager.GetRolesAsync(user);
         var response = MapToUserResponse(user, roles);
