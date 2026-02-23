@@ -1,10 +1,13 @@
-﻿using AlertOne.Maui.Services;
+using AlertOne.Maui.Platforms.Android.Services;
+using AlertOne.Maui.Services;
 
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 using Android.Views;
+
+using Firebase;
 
 namespace AlertOne.Maui.Platforms.Android;
 
@@ -35,8 +38,34 @@ public class MainActivity : MauiAppCompatActivity
             Window.SetStatusBarColor(global::Android.Graphics.Color.ParseColor("#1a2c4e"));
         }
 
+        // Initialize Firebase
+        InitializeFirebase();
+
         // Handle deep link on app launch
         HandleDeepLinkIntent(Intent, isAppRunning: false);
+    }
+
+    private void InitializeFirebase()
+    {
+        try
+        {
+            if (FirebaseApp.GetApps(this).Count == 0)
+            {
+                FirebaseApp.InitializeApp(this);
+            }
+
+            // Set the static reference for the Firebase messaging service
+            var pushService = IPlatformApplication.Current?.Services.GetService<PushNotificationRegistrationService>();
+
+            if (pushService is not null)
+            {
+                AlertOneFirebaseMessagingService.PushNotificationService = pushService;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to initialize Firebase: {ex.Message}");
+        }
     }
 
     protected override void OnNewIntent(Intent? intent)

@@ -10,7 +10,9 @@
     <Project Path="Api/core/AlertOne.Api.Core/AlertOne.Api.Core.csproj" Id="ce4c1aa6-4124-4479-9330-89da063035b0" />
   </Folder>
   <Folder Name="/Api/src/infrastructure/">
+    <Project Path="Api/infrastructure/Azure.AppConfig/Azure.AppConfig.csproj" Id="086ca554-7da8-4d43-813d-029b939a89c6" />
     <Project Path="Api/infrastructure/Azure.Communications/Azure.Communications.csproj" Id="0920877d-7cc3-4200-bb61-7fe0820d044d" />
+    <Project Path="Api/infrastructure/Azure.NotificationHubs/Azure.NotificationHubs.csproj" />
   </Folder>
   <Folder Name="/Api/src/usrm/">
     <Project Path="Api/usrm/src/UserManagement.Client/UserManagement.Client.csproj" />
@@ -19,6 +21,7 @@
   </Folder>
   <Folder Name="/Api/tests/" />
   <Folder Name="/Api/tests/IntegrationTests/">
+    <Project Path="Api/tests/IntegrationTests/AlertManagement.Client.IntegrationTests/AlertManagement.Client.IntegrationTests.csproj" />
     <Project Path="Api/usrm/tests/IntegrationTests/UserManagement.Client.IntegrationTests/UserManagement.Client.IntegrationTests.csproj" />
   </Folder>
   <Folder Name="/Api/tests/UnitTests/">

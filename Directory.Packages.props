@@ -31,6 +31,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.13" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.13" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.13" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.13" />
     <!-- JWT (independent versioning) -->
     <PackageVersion Include="MudBlazor" Version="9.0.0" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.2.1" />
@@ -45,6 +46,9 @@
     <!-- MAUI -->
     <PackageVersion Include="Microsoft.Maui.Controls" Version="9.0.120" />
     <PackageVersion Include="Microsoft.Maui.Core" Version="9.0.120" />
+    <!-- Firebase for Android Push Notifications -->
+    <PackageVersion Include="Xamarin.Firebase.Messaging" Version="124.0.3.1" />
+    <PackageVersion Include="Xamarin.GooglePlayServices.Base" Version="118.5.0.3" />
     <!-- Blazor (independent versioning) -->
     <PackageVersion Include="Blazored.LocalStorage" Version="4.5.0" />
     <!-- Aspire (independent versioning) -->

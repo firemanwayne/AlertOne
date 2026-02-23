@@ -11,6 +11,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\..\infrastructure\Azure.AppConfig\Azure.AppConfig.csproj" />
+		<ProjectReference Include="..\..\..\infrastructure\Azure.Communications\Azure.Communications.csproj" />
+		<ProjectReference Include="..\..\..\infrastructure\Azure.NotificationHubs\Azure.NotificationHubs.csproj" />
 		<ProjectReference Include="..\AlertManagement.Infrastructure\AlertManagement.Infrastructure.csproj" />
 	</ItemGroup>
 
@@ -34,9 +37,6 @@
 		<None Update="local.settings.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<CopyToPublishDirectory>Never</CopyToPublishDirectory>
-		</None>
-		<None Update="appsettings.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
 </Project>

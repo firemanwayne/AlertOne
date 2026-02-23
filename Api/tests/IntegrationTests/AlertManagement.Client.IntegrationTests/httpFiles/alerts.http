@@ -1,0 +1,219 @@
+### Alert Management Endpoints Testing
+@baseUrl = http://localhost:7072/api
+@contentType = application/json
+
+### Variables (will be set from responses)
+@alertId =
+@alertTypeId =
+@alertStatusLevelId =
+@userId = test-user
+
+###############################################################################
+# 1. Get All Alerts
+###############################################################################
+
+GET {{baseUrl}}/alerts
+Content-Type: {{contentType}}
+
+###############################################################################
+# 2. Get Active Alert
+###############################################################################
+
+GET {{baseUrl}}/alerts/active
+Content-Type: {{contentType}}
+
+###############################################################################
+# 3. Get Active Alert - Expected 204 No Content when no active alert
+###############################################################################
+
+### Note: Returns 204 when there is no active alert
+
+GET {{baseUrl}}/alerts/active
+Content-Type: {{contentType}}
+
+###############################################################################
+# 4. Create Alert - Valid Request
+###############################################################################
+
+### Note: Requires valid alertTypeId from alert types endpoint
+POST {{baseUrl}}/alerts
+Content-Type: {{contentType}}
+
+{
+  "alertTypeId": "{{alertTypeId}}",
+  "createdBy": "{{userId}}"
+}
+
+###############################################################################
+# 5. Create Alert - Missing AlertTypeId (Should fail with 400 Bad Request)
+###############################################################################
+
+POST {{baseUrl}}/alerts
+Content-Type: {{contentType}}
+
+{
+  "alertTypeId": "",
+  "createdBy": "{{userId}}"
+}
+
+###############################################################################
+# 6. Create Alert - Invalid JSON (Should fail with 400 Bad Request)
+###############################################################################
+
+POST {{baseUrl}}/alerts
+Content-Type: {{contentType}}
+
+{
+  invalid json
+
+###############################################################################
+# 7. Get Alert By ID - Valid ID
+###############################################################################
+
+GET {{baseUrl}}/alerts/{{alertId}}
+Content-Type: {{contentType}}
+
+###############################################################################
+# 8. Get Alert By ID - Non-existent ID (Should fail with 404 Not Found)
+###############################################################################
+
+GET {{baseUrl}}/alerts/00000000-0000-0000-0000-000000000000
+Content-Type: {{contentType}}
+
+###############################################################################
+# 9. Get Alert By ID - Invalid GUID format (Should fail with 404/400)
+###############################################################################
+
+GET {{baseUrl}}/alerts/invalid-guid-format
+Content-Type: {{contentType}}
+
+###############################################################################
+# 10. Get Alert History - Valid ID
+###############################################################################
+
+GET {{baseUrl}}/alerts/{{alertId}}/history
+Content-Type: {{contentType}}
+
+###############################################################################
+# 11. Get Alert History - Non-existent ID (Should fail with 404 Not Found)
+###############################################################################
+
+GET {{baseUrl}}/alerts/00000000-0000-0000-0000-000000000000/history
+Content-Type: {{contentType}}
+
+###############################################################################
+# 12. Update Alert Status - Valid Request
+###############################################################################
+
+PUT {{baseUrl}}/alerts/{{alertId}}/status
+Content-Type: {{contentType}}
+
+{
+  "alertStatusLevelId": "{{alertStatusLevelId}}",
+  "updatedBy": "{{userId}}"
+}
+
+###############################################################################
+# 13. Update Alert Status - Missing Status Level ID (Should fail with 400)
+###############################################################################
+
+PUT {{baseUrl}}/alerts/{{alertId}}/status
+Content-Type: {{contentType}}
+
+{
+  "alertStatusLevelId": "",
+  "updatedBy": "{{userId}}"
+}
+
+###############################################################################
+# 14. Update Alert Status - Non-existent Alert (Should fail with 404)
+###############################################################################
+
+PUT {{baseUrl}}/alerts/00000000-0000-0000-0000-000000000000/status
+Content-Type: {{contentType}}
+
+{
+  "alertStatusLevelId": "{{alertStatusLevelId}}",
+  "updatedBy": "{{userId}}"
+}
+
+###############################################################################
+# 15. Rescind Alert - Valid Request
+###############################################################################
+
+DELETE {{baseUrl}}/alerts/{{alertId}}/rescind
+Content-Type: {{contentType}}
+
+{
+  "rescindedBy": "{{userId}}"
+}
+
+###############################################################################
+# 16. Rescind Alert - Non-existent Alert (Should fail with 404)
+###############################################################################
+
+DELETE {{baseUrl}}/alerts/00000000-0000-0000-0000-000000000000/rescind
+Content-Type: {{contentType}}
+
+{
+  "rescindedBy": "{{userId}}"
+}
+
+###############################################################################
+# 17. Rescind Alert - Missing Request Body (Should fail with 400)
+###############################################################################
+
+DELETE {{baseUrl}}/alerts/{{alertId}}/rescind
+Content-Type: {{contentType}}
+
+###############################################################################
+# Full Test Flow
+###############################################################################
+
+### Step 1: Get all alerts to verify service is running
+GET {{baseUrl}}/alerts
+Content-Type: {{contentType}}
+
+### Step 2: Check for active alert
+GET {{baseUrl}}/alerts/active
+Content-Type: {{contentType}}
+
+### Step 3: Create a new alert (set alertTypeId first)
+# @name createAlert
+POST {{baseUrl}}/alerts
+Content-Type: {{contentType}}
+
+{
+  "alertTypeId": "{{alertTypeId}}",
+  "createdBy": "admin"
+}
+
+### Step 4: Get the created alert by ID
+# Use the id from createAlert response
+GET {{baseUrl}}/alerts/{{alertId}}
+Content-Type: {{contentType}}
+
+### Step 5: Update the alert status
+PUT {{baseUrl}}/alerts/{{alertId}}/status
+Content-Type: {{contentType}}
+
+{
+  "alertStatusLevelId": "{{alertStatusLevelId}}",
+  "updatedBy": "admin"
+}
+
+### Step 6: View alert history
+GET {{baseUrl}}/alerts/{{alertId}}/history
+Content-Type: {{contentType}}
+
+### Step 7: Rescind the alert
+DELETE {{baseUrl}}/alerts/{{alertId}}/rescind
+Content-Type: {{contentType}}
+
+{
+  "rescindedBy": "admin"
+}
+
+### Step 8: Verify alert is no longer active
+GET {{baseUrl}}/alerts/active
+Content-Type: {{contentType}}

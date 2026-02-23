@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+
 namespace Domains.UserManagement.Services;
 
 /// <summary>
@@ -6,7 +8,9 @@ namespace Domains.UserManagement.Services;
 internal sealed class AuthenticationService(
     UserManagementApiClient apiClient,
     ITokenStorageService tokenStorage,
-    AppState appState) : IAuthenticationService
+    AppState appState,
+    IPushNotificationRegistrationService? pushNotificationService = null,
+    ILogger<AuthenticationService>? logger = null) : IAuthenticationService
 {
     public async Task<IApiResult<AuthenticationResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
     {
@@ -36,9 +40,41 @@ internal sealed class AuthenticationService(
                 Roles = [.. authResponse.User.Roles]
             };
             appState.IsAuthenticated = true;
+
+            // Register for push notifications (fire and forget, don't block login)
+            _ = RegisterForPushNotificationsAsync(authResponse.User.Id.ToString(), authResponse.User.Roles, cancellationToken);
         }
 
         return result;
+    }
+
+    private async Task RegisterForPushNotificationsAsync(string userId, IEnumerable<string> roles, CancellationToken cancellationToken)
+    {
+        if (pushNotificationService is null || !pushNotificationService.IsSupported)
+        {
+            return;
+        }
+
+        try
+        {
+            // Build tags from user roles
+            var tags = roles.Select(r => $"role:{r.ToLowerInvariant()}").ToList();
+
+            var registrationId = await pushNotificationService.RegisterAsync(userId, tags, cancellationToken);
+
+            if (registrationId is not null)
+            {
+                logger?.LogInformation("Push notification registration successful. RegistrationId: {RegistrationId}", registrationId);
+            }
+            else
+            {
+                logger?.LogWarning("Push notification registration failed");
+            }
+        }
+        catch (Exception ex)
+        {
+            logger?.LogError(ex, "Error registering for push notifications");
+        }
     }
 
     public async Task<IApiResult<AuthenticationResponse>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
@@ -70,6 +106,9 @@ internal sealed class AuthenticationService(
                 Roles = [.. authResponse.User.Roles]
             };
             appState.IsAuthenticated = true;
+
+            // Register for push notifications (fire and forget, don't block registration)
+            _ = RegisterForPushNotificationsAsync(authResponse.User.Id.ToString(), authResponse.User.Roles, cancellationToken);
         }
 
         return result;
@@ -102,6 +141,9 @@ internal sealed class AuthenticationService(
 
     public async Task<IApiResult> LogoutAsync(CancellationToken cancellationToken = default)
     {
+        // Unregister from push notifications
+        await UnregisterFromPushNotificationsAsync(cancellationToken);
+
         // Clear tokens from storage
         await tokenStorage.ClearTokensAsync();
 
@@ -109,5 +151,31 @@ internal sealed class AuthenticationService(
         appState.Clear();
 
         return Result.Success();
+    }
+
+    private async Task UnregisterFromPushNotificationsAsync(CancellationToken cancellationToken)
+    {
+        if (pushNotificationService is null || !pushNotificationService.IsRegistered)
+        {
+            return;
+        }
+
+        try
+        {
+            var success = await pushNotificationService.UnregisterAsync(cancellationToken);
+
+            if (success)
+            {
+                logger?.LogInformation("Push notification unregistration successful");
+            }
+            else
+            {
+                logger?.LogWarning("Push notification unregistration failed");
+            }
+        }
+        catch (Exception ex)
+        {
+            logger?.LogError(ex, "Error unregistering from push notifications");
+        }
     }
 }

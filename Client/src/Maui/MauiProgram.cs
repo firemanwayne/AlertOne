@@ -10,7 +10,10 @@ using Domains.AlertManagement;
 using Domains.UserManagement;
 
 using Microsoft.AspNetCore.Components.Authorization;
+
+#if DEBUG
 using Microsoft.Extensions.Logging;
+#endif
 
 using MudBlazor.Services;
 
@@ -48,6 +51,15 @@ public static class MauiProgram
         builder
             .Services
             .AddSingleton<DeepLinkService>();
+
+        // Push notification service
+        builder
+            .Services
+            .AddSingleton<PushNotificationRegistrationService>();
+
+        builder
+            .Services
+            .AddSingleton<IPushNotificationRegistrationService>(sp => sp.GetRequiredService<PushNotificationRegistrationService>());
 
         // Blazor WebView
         builder

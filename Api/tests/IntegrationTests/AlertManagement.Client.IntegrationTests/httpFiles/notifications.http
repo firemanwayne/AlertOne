@@ -1,0 +1,393 @@
+### Push Notification Endpoints Testing
+@baseUrl = http://localhost:7071/api
+@contentType = application/json
+
+### Variables (will be set from responses)
+@userId = test-user-123
+@registrationId =
+
+###############################################################################
+# DEVICE REGISTRATION
+###############################################################################
+
+###############################################################################
+# Register Device - Android (FCM)
+###############################################################################
+
+# @name registerDevice
+POST {{baseUrl}}/notifications/register
+Content-Type: {{contentType}}
+
+{
+  "deviceToken": "your-fcm-device-token-here",
+  "platform": "fcm",
+  "userId": "{{userId}}",
+  "tags": ["role:admin", "team:operations"]
+}
+
+### Save the registrationId from response: @registrationId = {{registerDevice.response.body.registrationId}}
+
+###############################################################################
+# Register Device - iOS (APNs)
+###############################################################################
+
+POST {{baseUrl}}/notifications/register
+Content-Type: {{contentType}}
+
+{
+  "deviceToken": "your-apns-device-token-here",
+  "platform": "apns",
+  "userId": "{{userId}}",
+  "tags": ["role:responder"]
+}
+
+###############################################################################
+# Register Device - Missing Required Fields (Should fail with 400)
+###############################################################################
+
+POST {{baseUrl}}/notifications/register
+Content-Type: {{contentType}}
+
+{
+  "deviceToken": "some-token"
+}
+
+###############################################################################
+# Register Device - Empty Body (Should fail with 400)
+###############################################################################
+
+POST {{baseUrl}}/notifications/register
+Content-Type: {{contentType}}
+
+{}
+
+###############################################################################
+# Unregister Device - Valid Registration ID
+###############################################################################
+
+DELETE {{baseUrl}}/notifications/unregister/{{registrationId}}
+
+###############################################################################
+# Unregister Device - Non-existent Registration ID
+###############################################################################
+
+DELETE {{baseUrl}}/notifications/unregister/non-existent-registration-id
+
+###############################################################################
+# SEND NOTIFICATIONS
+###############################################################################
+
+###############################################################################
+# 1. Test Notification - Send to All Devices
+###############################################################################
+
+POST {{baseUrl}}/notifications/test
+Content-Type: {{contentType}}
+
+{
+  "title": "Test Notification",
+  "body": "This is a test notification from AlertOne"
+}
+
+###############################################################################
+# 2. Test Notification - Send to Specific User
+###############################################################################
+
+POST {{baseUrl}}/notifications/test
+Content-Type: {{contentType}}
+
+{
+  "title": "User Test Notification",
+  "body": "Hello User! This is a targeted test.",
+  "userId": "{{userId}}"
+}
+
+###############################################################################
+# 3. Test Notification - Send to Tags
+###############################################################################
+
+POST {{baseUrl}}/notifications/test
+Content-Type: {{contentType}}
+
+{
+  "title": "Tag Test Notification",
+  "body": "Attention team members!",
+  "tags": ["role:admin", "team:ops"]
+}
+
+###############################################################################
+# 4. Test Notification - With Custom Data Payload
+###############################################################################
+
+POST {{baseUrl}}/notifications/test
+Content-Type: {{contentType}}
+
+{
+  "title": "Alert Notification",
+  "body": "New alert has been created",
+  "data": {
+    "alertId": "12345",
+    "priority": "high",
+    "action": "view_alert"
+  }
+}
+
+###############################################################################
+# 5. Test Notification - Default Values (Empty Body)
+###############################################################################
+
+POST {{baseUrl}}/notifications/test
+Content-Type: {{contentType}}
+
+{}
+
+###############################################################################
+# 6. Test Notification - Title Only
+###############################################################################
+
+POST {{baseUrl}}/notifications/test
+Content-Type: {{contentType}}
+
+{
+  "title": "Important Notice"
+}
+
+###############################################################################
+# 7. Send To User - Valid Request
+###############################################################################
+
+POST {{baseUrl}}/notifications/send/user/{{userId}}
+Content-Type: {{contentType}}
+
+{
+  "title": "Direct Message",
+  "body": "You have a new alert assignment"
+}
+
+###############################################################################
+# 8. Send To User - With Data Payload
+###############################################################################
+
+POST {{baseUrl}}/notifications/send/user/{{userId}}
+Content-Type: {{contentType}}
+
+{
+  "title": "Alert Assignment",
+  "body": "You have been assigned to respond to alert #12345",
+  "data": {
+    "alertId": "12345",
+    "action": "respond"
+  }
+}
+
+###############################################################################
+# 9. Send To User - Missing Title (Should fail with 400 Bad Request)
+###############################################################################
+
+POST {{baseUrl}}/notifications/send/user/{{userId}}
+Content-Type: {{contentType}}
+
+{
+  "body": "Body without title"
+}
+
+###############################################################################
+# 10. Send To User - Missing Body (Should fail with 400 Bad Request)
+###############################################################################
+
+POST {{baseUrl}}/notifications/send/user/{{userId}}
+Content-Type: {{contentType}}
+
+{
+  "title": "Title without body"
+}
+
+###############################################################################
+# 11. Send To User - Empty Request (Should fail with 400 Bad Request)
+###############################################################################
+
+POST {{baseUrl}}/notifications/send/user/{{userId}}
+Content-Type: {{contentType}}
+
+{}
+
+###############################################################################
+# 12. Send To All - Valid Request
+###############################################################################
+
+POST {{baseUrl}}/notifications/send/all
+Content-Type: {{contentType}}
+
+{
+  "title": "Broadcast Alert",
+  "body": "Emergency evacuation in progress"
+}
+
+###############################################################################
+# 13. Send To All - With Data Payload
+###############################################################################
+
+POST {{baseUrl}}/notifications/send/all
+Content-Type: {{contentType}}
+
+{
+  "title": "Emergency Alert",
+  "body": "Please evacuate immediately",
+  "data": {
+    "alertType": "evacuation",
+    "severity": "critical",
+    "actionUrl": "/alerts/active"
+  }
+}
+
+###############################################################################
+# 14. Send To All - Missing Required Fields (Should fail with 400)
+###############################################################################
+
+POST {{baseUrl}}/notifications/send/all
+Content-Type: {{contentType}}
+
+{
+  "data": {
+    "someData": "value"
+  }
+}
+
+###############################################################################
+# 15. Send To Tags - Valid Request (Single Tag)
+###############################################################################
+
+POST {{baseUrl}}/notifications/send/tags
+Content-Type: {{contentType}}
+
+{
+  "title": "Team Alert",
+  "body": "Your team has a new assignment",
+  "tags": ["role:manager"]
+}
+
+###############################################################################
+# 16. Send To Tags - Multiple Tags
+###############################################################################
+
+POST {{baseUrl}}/notifications/send/tags
+Content-Type: {{contentType}}
+
+{
+  "title": "Shift Alert",
+  "body": "Emergency response needed",
+  "tags": ["location:headquarters", "shift:day", "role:responder"]
+}
+
+###############################################################################
+# 17. Send To Tags - With Data Payload
+###############################################################################
+
+POST {{baseUrl}}/notifications/send/tags
+Content-Type: {{contentType}}
+
+{
+  "title": "Department Update",
+  "body": "New policy update available",
+  "tags": ["department:operations"],
+  "data": {
+    "policyId": "POL-2024-001",
+    "action": "read_policy"
+  }
+}
+
+###############################################################################
+# 18. Send To Tags - Empty Tags Array (Should fail with 400 Bad Request)
+###############################################################################
+
+POST {{baseUrl}}/notifications/send/tags
+Content-Type: {{contentType}}
+
+{
+  "title": "Alert",
+  "body": "No tags provided",
+  "tags": []
+}
+
+###############################################################################
+# 19. Send To Tags - Missing Tags (Should fail with 400 Bad Request)
+###############################################################################
+
+POST {{baseUrl}}/notifications/send/tags
+Content-Type: {{contentType}}
+
+{
+  "title": "Alert",
+  "body": "Missing tags field"
+}
+
+###############################################################################
+# 20. Send To Tags - Null Tags (Should fail with 400 Bad Request)
+###############################################################################
+
+POST {{baseUrl}}/notifications/send/tags
+Content-Type: {{contentType}}
+
+{
+  "title": "Alert",
+  "body": "Null tags",
+  "tags": null
+}
+
+###############################################################################
+# Full Test Flow - Alert Notification Scenario
+###############################################################################
+
+### Step 1: Test connectivity with simple notification
+POST {{baseUrl}}/notifications/test
+Content-Type: {{contentType}}
+
+{
+  "title": "System Test",
+  "body": "Testing notification hub connectivity"
+}
+
+### Step 2: Send alert to all emergency responders
+POST {{baseUrl}}/notifications/send/tags
+Content-Type: {{contentType}}
+
+{
+  "title": "EMERGENCY ALERT",
+  "body": "Active shooter situation reported at main building",
+  "tags": ["role:emergency_responder", "status:on_duty"],
+  "data": {
+    "alertId": "ALERT-001",
+    "alertType": "active_shooter",
+    "severity": "critical",
+    "location": "Main Building",
+    "timestamp": "2024-01-15T10:30:00Z"
+  }
+}
+
+### Step 3: Send update to specific incident commander
+POST {{baseUrl}}/notifications/send/user/incident-commander-001
+Content-Type: {{contentType}}
+
+{
+  "title": "Incident Command Update",
+  "body": "You have been designated as Incident Commander for ALERT-001",
+  "data": {
+    "alertId": "ALERT-001",
+    "role": "incident_commander",
+    "action": "acknowledge"
+  }
+}
+
+### Step 4: Broadcast all-clear to all devices
+POST {{baseUrl}}/notifications/send/all
+Content-Type: {{contentType}}
+
+{
+  "title": "ALL CLEAR",
+  "body": "The emergency situation has been resolved. Normal operations may resume.",
+  "data": {
+    "alertId": "ALERT-001",
+    "status": "resolved",
+    "timestamp": "2024-01-15T11:45:00Z"
+  }
+}

@@ -1,6 +1,8 @@
 using AlertManagement.Client.Middleware;
 using AlertManagement.Infrastructure;
 using AlertManagement.Infrastructure.Data;
+using Azure.AppConfig;
+using Azure.NotificationHubs;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,6 +10,14 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 var builder = FunctionsApplication.CreateBuilder(args);
+
+builder
+    .Configuration
+    .AddAppConfiguration();
+
+builder
+    .Services
+    .AddAzureNotificationHubs(builder.Configuration);
 
 builder
     .Services

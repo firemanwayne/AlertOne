@@ -117,4 +117,11 @@
       <ProjectReference Include="..\Domains\Domains.UserManagement\Domains.UserManagement.csproj" />      
     </ItemGroup>
 
+  <!-- Firebase Cloud Messaging for Android -->
+  <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'android'">
+    <PackageReference Include="Xamarin.Firebase.Messaging" />
+    <PackageReference Include="Xamarin.GooglePlayServices.Base" />
+    <GoogleServicesJson Include="Platforms\Android\google-services.json" />
+  </ItemGroup>
+
 </Project>

@@ -57,6 +57,7 @@ public sealed class HealthFunctions(AlertDbContext dbContext, ILogger<HealthFunc
         var dbCheck = await CheckDatabaseAsync(context.CancellationToken);
 
         healthResult.Checks.Add(dbCheck);
+
         healthResult.Status = healthResult.Checks.All(c => c.Status == HealthStatus.Healthy)
             ? HealthStatus.Healthy
             : HealthStatus.Unhealthy;
