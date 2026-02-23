@@ -184,32 +184,44 @@ internal sealed class PushNotificationService : IPushNotificationService
 
     private async Task<RegistrationDescription> CreateFcmRegistrationAsync(string deviceToken, List<string> tags, CancellationToken cancellationToken)
     {
+        // Get a new registration ID from the hub
+        var registrationId = await _hubClient.CreateRegistrationIdAsync(cancellationToken);
+
         var registration = new FcmV1RegistrationDescription(deviceToken)
         {
+            RegistrationId = registrationId,
             Tags = new HashSet<string>(tags)
         };
 
-        return await _hubClient.CreateRegistrationAsync(registration, cancellationToken);
+        return await _hubClient.CreateOrUpdateRegistrationAsync(registration, cancellationToken);
     }
 
     private async Task<RegistrationDescription> CreateApnsRegistrationAsync(string deviceToken, List<string> tags, CancellationToken cancellationToken)
     {
+        // Get a new registration ID from the hub
+        var registrationId = await _hubClient.CreateRegistrationIdAsync(cancellationToken);
+
         var registration = new AppleRegistrationDescription(deviceToken)
         {
+            RegistrationId = registrationId,
             Tags = new HashSet<string>(tags)
         };
 
-        return await _hubClient.CreateRegistrationAsync(registration, cancellationToken);
+        return await _hubClient.CreateOrUpdateRegistrationAsync(registration, cancellationToken);
     }
 
     private async Task<RegistrationDescription> CreateWnsRegistrationAsync(string channelUri, List<string> tags, CancellationToken cancellationToken)
     {
+        // Get a new registration ID from the hub
+        var registrationId = await _hubClient.CreateRegistrationIdAsync(cancellationToken);
+
         var registration = new WindowsRegistrationDescription(channelUri)
         {
+            RegistrationId = registrationId,
             Tags = new HashSet<string>(tags)
         };
 
-        return await _hubClient.CreateRegistrationAsync(registration, cancellationToken);
+        return await _hubClient.CreateOrUpdateRegistrationAsync(registration, cancellationToken);
     }
 
     private static string BuildFcmPayload(string title, string body, IDictionary<string, string>? data)
