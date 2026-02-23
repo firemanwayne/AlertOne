@@ -58,8 +58,8 @@
                     <MudButton Variant="Variant.Outlined" Color="Color.Inherit" FullWidth="true" OnClick="@HandleLogoutAsync" StartIcon="@Icons.Material.Filled.Logout">
                         Logout
                     </MudButton>
-                    <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-2 mud-text-secondary">
-                        v@(VersionService.FullVersion)
+                    <MudText Typo="Typo.caption" Style="display:flex;flex-direction:column" Align="Align.Center" Class="mt-2 mud-text-secondary">
+                        v: @VersionService.Version
                     </MudText>
                 </div>
             </MudDrawer>
