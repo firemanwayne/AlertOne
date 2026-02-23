@@ -10,10 +10,10 @@ namespace UserManagement.Infrastructure.Identity;
 public sealed class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
 {
     public DbSet<UserDevice> UserDevices => Set<UserDevice>();
+
     public DbSet<UserInvitationEntity> UserInvitations => Set<UserInvitationEntity>();
 
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : base(options)
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
     }
 

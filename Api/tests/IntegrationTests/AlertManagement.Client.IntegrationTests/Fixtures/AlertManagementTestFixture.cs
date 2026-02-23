@@ -27,8 +27,8 @@ public sealed class AlertManagementTestFixture : IDisposable
             .AddJsonFile("appsettings.Testing.json", optional: true)
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["AzureNotificationHubs:ConnectionString"] = "Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=Test;SharedAccessKey=TestKey",
-                ["AzureNotificationHubs:HubName"] = "test-hub"
+                ["AzureNotificationHubsOptions:ConnectionString"] = "Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=Test;SharedAccessKey=TestKey",
+                ["AzureNotificationHubsOptions:HubName"] = "test-hub"
             })
             .Build();
 

@@ -1,19 +1,24 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
 
 namespace AlertManagement.Infrastructure.Data;
 
 /// <summary>
 /// Design-time factory for AlertDbContext for EF Core migrations
 /// </summary>
-public sealed class AlertDbContextFactory : IDesignTimeDbContextFactory<AlertDbContext>
+public sealed class AlertDbContextFactory(IConfiguration configuration) : IDesignTimeDbContextFactory<AlertDbContext>
 {
     public AlertDbContext CreateDbContext(string[] args)
     {
+        var connectionString = configuration.GetValue<string>("AzureSqlServer:ConnectionString");
+
+        ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
+
         var optionsBuilder = new DbContextOptionsBuilder<AlertDbContext>();
 
         optionsBuilder
-            .UseAzureSql("Server=tcp:alert-one-sql-server-dev.database.windows.net,1433;Initial Catalog=alert-one-sql-db-dev;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;Authentication='Active Directory Default'");
+            .UseAzureSql(connectionString);
 
         return new AlertDbContext(optionsBuilder.Options);
     }

@@ -12,7 +12,9 @@ namespace AlertManagement.Infrastructure.Services;
 /// <summary>
 /// Service for alert management operations
 /// </summary>
-internal sealed class AlertService(AlertDbContext context, ILogger<AlertService> logger) : IAlertService
+internal sealed class AlertService(
+    AlertDbContext context,
+    ILogger<AlertService> logger) : IAlertService
 {
     private const string EventTypeCreated = "Created";
     private const string EventTypeRescinded = "Rescinded";

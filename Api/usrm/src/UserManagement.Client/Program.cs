@@ -1,3 +1,4 @@
+using Azure.AppConfig;
 using Azure.Communications;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Azure.Functions.Worker.Builder;
@@ -12,6 +13,10 @@ using UserManagement.Infrastructure.Identity;
 var builder = FunctionsApplication.CreateBuilder(args);
 
 builder
+    .Configuration
+    .AddAppConfiguration();
+
+builder
     .Services
     .AddApplicationInsightsTelemetryWorkerService();
 
@@ -22,13 +27,7 @@ builder
 
 builder
     .Services
-    .AddAzureCommunications(opts =>
-    {
-        opts.ConnectionString = builder.Configuration["AzureCommunications:ConnectionString"] ?? throw new InvalidCastException();
-        opts.WebAppBaseUrl = builder.Configuration["AzureCommunications:WebAppBaseUrl"] ?? throw new InvalidCastException();
-        opts.SenderAddress = builder.Configuration["AzureCommunications:SenderAddress"] ?? throw new InvalidCastException();
-        opts.MobileAppScheme = builder.Configuration["AzureCommunications:MobileAppScheme"] ?? throw new InvalidCastException();
-    });
+    .AddAzureCommunications(builder.Configuration);
 
 builder
     .UseMiddleware<ExceptionHandlingMiddleware>()

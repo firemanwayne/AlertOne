@@ -17,6 +17,9 @@ public static class ServiceRegistryExtensions
             .Connect(new Uri("https://alert-one-app-config-dev.azconfig.io"), credential)
             // Load all keys that start with `AzureNotificationHubs:` and have no label
             .Select(keyFilter: "AzureNotificationHubs:*", labelFilter: LabelFilter.Null)
+            .Select(keyFilter: "AzureCommunications:*", labelFilter: LabelFilter.Null)
+            .Select(keyFilter: "AzureSqlServer:*", labelFilter: LabelFilter.Null)
+            .Select(keyFilter: "JwtSettings:*", labelFilter: LabelFilter.Null)
             // Configure Key Vault reference resolution
             .ConfigureKeyVault(kv =>
             {
@@ -25,7 +28,11 @@ public static class ServiceRegistryExtensions
             .ConfigureRefresh(refreshOptions =>
             {
                 // Trigger full configuration refresh only if the `AzureNotificationHubs` changes.
-                refreshOptions.Register("AzureNotificationHubs", refreshAll: true);
+                refreshOptions
+                .Register("AzureNotificationHubs", refreshAll: true)
+                .Register("AzureCommunications", refreshAll: true)
+                .Register("AzureSqlServer", refreshAll: true)
+                .Register("JwtSettings", refreshAll: true);
             });
         });
 

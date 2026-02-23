@@ -3,9 +3,9 @@ namespace Azure.NotificationHubs.Options;
 /// <summary>
 /// Configuration options for Azure Notification Hubs.
 /// </summary>
-public sealed class AzureNotificationHubs
+public sealed class AzureNotificationHubsOptions
 {
-    public const string SectionName = "AzureNotificationHubs";
+    public const string SectionName = "AzureNotificationHubsOptions";
 
     /// <summary>
     /// The connection string for Azure Notification Hub.

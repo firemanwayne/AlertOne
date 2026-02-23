@@ -13,7 +13,12 @@ namespace UserManagement.Infrastructure.Services;
 /// <summary>
 /// Service for authentication operations
 /// </summary>
-internal sealed class AuthenticationService(ITokenService tokenService, IDeviceService deviceService, ILogger<AuthenticationService> logger, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager) : IAuthenticationService
+internal sealed class AuthenticationService(
+    ITokenService tokenService,
+    IDeviceService deviceService,
+    ILogger<AuthenticationService> logger,
+    UserManager<ApplicationUser> userManager,
+    SignInManager<ApplicationUser> signInManager) : IAuthenticationService
 {
     public async Task<Result<AuthenticationResponse>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
     {
@@ -308,9 +313,11 @@ internal sealed class AuthenticationService(ITokenService tokenService, IDeviceS
         return Result.Success();
     }
 
-    private static IEnumerable<Core.ValueObjects.UserClaim> BuildClaims(Guid userId, string email, string firstName, string lastName, IList<string> roles)
+#pragma warning disable CA1859 // Use concrete types when possible for improved performance
+    private static IEnumerable<UserClaim> BuildClaims(Guid userId, string email, string firstName, string lastName, IList<string> roles)
+#pragma warning restore CA1859 // Use concrete types when possible for improved performance
     {
-        var claims = new List<Core.ValueObjects.UserClaim>
+        var claims = new List<UserClaim>
         {
             new(JwtRegisteredClaimNames.Sub, userId.ToString()),
             new(JwtRegisteredClaimNames.Email, email),
@@ -320,7 +327,7 @@ internal sealed class AuthenticationService(ITokenService tokenService, IDeviceS
 
         foreach (var role in roles)
         {
-            claims.Add(new Core.ValueObjects.UserClaim("role", role));
+            claims.Add(new UserClaim("role", role));
         }
 
         return claims;

@@ -1,5 +1,5 @@
 ### Alert Management Endpoints Testing
-@baseUrl = http://localhost:7072/api
+@baseUrl = http://localhost:7071/api
 @contentType = application/json
 
 ### Variables (will be set from responses)

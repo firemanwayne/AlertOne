@@ -19,7 +19,7 @@ public static class ServiceRegistryExtensions
     /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddAzureNotificationHubs(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<AzureNotificationHubs>(configuration.GetSection(AzureNotificationHubs.SectionName));
+        services.Configure<AzureNotificationHubsOptions>(configuration.GetSection(AzureNotificationHubsOptions.SectionName));
 
         services.AddSingleton<IPushNotificationService, PushNotificationService>();
 
@@ -32,7 +32,7 @@ public static class ServiceRegistryExtensions
     /// <param name="services">The service collection.</param>
     /// <param name="configure">Action to configure the options.</param>
     /// <returns>The service collection for chaining.</returns>
-    public static IServiceCollection AddAzureNotificationHubs(this IServiceCollection services, Action<AzureNotificationHubs> configure)
+    public static IServiceCollection AddAzureNotificationHubs(this IServiceCollection services, Action<AzureNotificationHubsOptions> configure)
     {
         services.Configure(configure);
 

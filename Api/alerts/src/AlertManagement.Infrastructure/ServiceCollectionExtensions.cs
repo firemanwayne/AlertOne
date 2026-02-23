@@ -29,8 +29,9 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration
-            .GetConnectionString("SqlServer");
+        var connectionString = configuration.GetValue<string>("AzureSqlServer:ConnectionString");
+
+        ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
 
         services
             .AddDbContext<AlertDbContext>(options =>

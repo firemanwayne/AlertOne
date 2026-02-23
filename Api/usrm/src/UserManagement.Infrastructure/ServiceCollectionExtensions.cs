@@ -65,8 +65,9 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration
-            .GetConnectionString("SqlServer");
+        var connectionString = configuration.GetValue<string>("AzureSqlServer:ConnectionString");
+
+        ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
 
         services.AddDbContext<ApplicationDbContext>(options =>
         {
@@ -80,11 +81,13 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection ConfigureJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
+        var sectionName = $"{nameof(JwtSettings)}:usrm";
+
         var jwtSettings = configuration
-            .GetSection(nameof(JwtSettings))
+            .GetSection(sectionName)
             .Get<JwtSettings>() ?? throw new InvalidOperationException("JwtSettings not configured");
 
-        services.Configure<JwtSettings>(configuration.GetSection(nameof(JwtSettings)));
+        services.Configure<JwtSettings>(configuration.GetSection(sectionName));
 
         services.AddAuthentication(options =>
         {

@@ -11,6 +11,7 @@
 	</ItemGroup>
 	
 	<ItemGroup>
+		<ProjectReference Include="..\..\..\infrastructure\Azure.AppConfig\Azure.AppConfig.csproj" />
 		<ProjectReference Include="..\..\..\infrastructure\Azure.Communications\Azure.Communications.csproj" />
 		<ProjectReference Include="..\UserManagement.Infrastructure\UserManagement.Infrastructure.csproj" />
 	</ItemGroup>

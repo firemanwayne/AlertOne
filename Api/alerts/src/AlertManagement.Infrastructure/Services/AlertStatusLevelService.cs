@@ -12,7 +12,9 @@ namespace AlertManagement.Infrastructure.Services;
 /// <summary>
 /// Service for alert status level management operations
 /// </summary>
-internal sealed class AlertStatusLevelService(AlertDbContext context, ILogger<AlertStatusLevelService> logger) : IAlertStatusLevelService
+internal sealed class AlertStatusLevelService(
+    AlertDbContext context,
+    ILogger<AlertStatusLevelService> logger) : IAlertStatusLevelService
 {
     public async Task<Result<IEnumerable<AlertStatusLevelResponse>>> GetAllAsync(CancellationToken cancellationToken = default)
     {
