@@ -28,7 +28,8 @@
       "Bash(done)",
       "Bash(gh project item-list:*)",
       "Bash(git status:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(find:*)"
     ]
   }
 }

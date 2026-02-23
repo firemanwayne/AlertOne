@@ -18,7 +18,8 @@ internal sealed class InvitationService(
     ILogger<InvitationService> logger,
     ApplicationDbContext dbContext,
     IEmailService emailService,
-    UserManager<ApplicationUser> userManager) : IInvitationService
+    UserManager<ApplicationUser> userManager,
+    IUserSettingsService userSettingsService) : IInvitationService
 {
     public async Task<Result<InvitationResponse>> CreateAsync(CreateInvitationRequest request, CancellationToken cancellationToken = default)
     {
@@ -270,6 +271,10 @@ internal sealed class InvitationService(
             var errors = string.Join(", ", roleResult.Errors.Select(e => e.Description));
             logger.LogWarning("Failed to assign role to user {UserId}: {Errors}", user.Id, errors);
         }
+
+        // Create default user settings
+        var userId = UserId.From(user.Id);
+        await userSettingsService.CreateDefaultAsync(userId, cancellationToken);
 
         // Mark invitation as accepted
         invitation.IsAccepted = true;
