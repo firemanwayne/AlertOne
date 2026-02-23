@@ -3,7 +3,8 @@ namespace Domains.UserManagement.Services;
 /// <summary>
 /// Service for user management operations
 /// </summary>
-internal sealed class UserManagementService(UserManagementApiClient apiClient) : IUserManagementService
+internal sealed class UserManagementService(
+    IUserManagementApiClient apiClient) : IUserManagementService
 {
     public async Task<IApiResult<IEnumerable<UserResponse>>> GetAllUsersAsync(CancellationToken cancellationToken = default)
     {

@@ -27,7 +27,7 @@ public static class ServiceRegistryExtensions
         // services.AddTransient<RoleListViewModel>();
 
         services
-            .AddHttpClient<UserManagementApiClient>(client =>
+            .AddHttpClient<IUserManagementApiClient, UserManagementApiClient>(client =>
             {
                 client.BaseAddress = new Uri("https://alertone-usrm-dev-eastus2-001-hxhjhwdbethbgtgt.eastus2-01.azurewebsites.net");
                 //client.BaseAddress = new Uri("http://localhost:7071");

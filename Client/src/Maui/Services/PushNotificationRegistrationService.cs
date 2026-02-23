@@ -10,7 +10,7 @@ namespace AlertOne.Maui.Services;
 /// MAUI implementation of push notification registration service.
 /// </summary>
 public sealed class PushNotificationRegistrationService(
-    IApiClient apiClient,
+    IAlertManagementApiClient apiClient,
     ILogger<PushNotificationRegistrationService> logger) : IPushNotificationRegistrationService
 {
     private string? _deviceToken;
@@ -94,7 +94,7 @@ public sealed class PushNotificationRegistrationService(
 
             logger.LogInformation("Registering device for push notifications. Platform: {Platform}, UserId: {UserId}", platform, userId);
 
-            var result = await apiClient.PostAsync<RegisterDeviceRequest, DeviceRegistrationResponse>("notifications/register", request, cancellationToken);
+            var result = await apiClient.PostAsync<RegisterDeviceRequest, DeviceRegistrationResponse>("/api/notifications/register", request, cancellationToken);
 
             if (result.IsSuccess)
             {
@@ -125,7 +125,7 @@ public sealed class PushNotificationRegistrationService(
         {
             logger.LogInformation("Unregistering device. RegistrationId: {RegistrationId}", _registrationId);
 
-            var result = await apiClient.DeleteAsync($"notifications/unregister/{_registrationId}", cancellationToken);
+            var result = await apiClient.DeleteAsync($"/api/notifications/unregister/{_registrationId}", cancellationToken);
 
             if (result.IsSuccess)
             {

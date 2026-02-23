@@ -6,7 +6,7 @@ namespace Domains.UserManagement.Services;
 /// Service for user authentication operations
 /// </summary>
 internal sealed class AuthenticationService(
-    UserManagementApiClient apiClient,
+    IUserManagementApiClient apiClient,
     ITokenStorageService tokenStorage,
     AppState appState,
     IPushNotificationRegistrationService? pushNotificationService = null,

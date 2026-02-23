@@ -1,6 +1,6 @@
 namespace Domains.AlertManagement.Services;
 
-internal sealed class AlertService(AlertManagementApiClient apiClient) : IAlertService
+internal sealed class AlertService(IAlertManagementApiClient apiClient) : IAlertService
 {
     public Task<IApiResult<IEnumerable<AlertResponse>>> GetAllAsync(CancellationToken cancellationToken = default)
         => apiClient.GetAsync<IEnumerable<AlertResponse>>("/api/alerts", cancellationToken);

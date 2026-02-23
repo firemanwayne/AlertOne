@@ -3,7 +3,8 @@ namespace Domains.UserManagement.Services;
 /// <summary>
 /// Service for user invitation operations
 /// </summary>
-internal sealed class InvitationService(UserManagementApiClient apiClient) : IInvitationService
+internal sealed class InvitationService(
+    IUserManagementApiClient apiClient) : IInvitationService
 {
     public async Task<IApiResult<IEnumerable<InvitationResponse>>> GetAllAsync(CancellationToken cancellationToken = default)
     {

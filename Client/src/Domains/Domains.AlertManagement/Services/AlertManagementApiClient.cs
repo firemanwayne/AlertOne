@@ -3,7 +3,7 @@ namespace Domains.AlertManagement.Services;
 /// <summary>
 /// Typed HTTP client for AlertManagement API communication
 /// </summary>
-public sealed class AlertManagementApiClient(HttpClient client) : IApiClient
+internal sealed class AlertManagementApiClient(HttpClient client) : IAlertManagementApiClient
 {
     private readonly JsonSerializerOptions _jsonOptions = new()
     {

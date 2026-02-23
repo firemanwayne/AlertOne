@@ -3,7 +3,7 @@ namespace Domains.UserManagement.Services;
 /// <summary>
 /// Typed HTTP client for UserManagement API communication
 /// </summary>
-public sealed class UserManagementApiClient(HttpClient client) : IApiClient
+internal sealed class UserManagementApiClient(HttpClient client) : IUserManagementApiClient
 {
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -135,13 +135,10 @@ public sealed class UserManagementApiClient(HttpClient client) : IApiClient
         {
             var data = await response.Content.ReadFromJsonAsync<TResponse>(_jsonOptions);
 
-            if (data is null)
-            {
-                return Result<TResponse>
-                    .Failure(Error.Internal("Api.DeserializationFailed", "Failed to deserialize response"));
-            }
-
-            return Result<TResponse>.Success(data);
+            return data is null
+                ? Result<TResponse>
+                    .Failure(Error.Internal("Api.DeserializationFailed", "Failed to deserialize response"))
+                : Result<TResponse>.Success(data);
         }
 
         var error = await ParseErrorResponseAsync(response);
@@ -149,7 +146,9 @@ public sealed class UserManagementApiClient(HttpClient client) : IApiClient
         return Result<TResponse>.Failure(error);
     }
 
+#pragma warning disable CA1822 // Mark members as static
     private async Task<Error> ParseErrorResponseAsync(HttpResponseMessage response)
+#pragma warning restore CA1822 // Mark members as static
     {
         try
         {

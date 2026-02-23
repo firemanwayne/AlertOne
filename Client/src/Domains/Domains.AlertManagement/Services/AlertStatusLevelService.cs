@@ -1,6 +1,6 @@
 namespace Domains.AlertManagement.Services;
 
-internal sealed class AlertStatusLevelService(AlertManagementApiClient apiClient) : IAlertStatusLevelService
+internal sealed class AlertStatusLevelService(IAlertManagementApiClient apiClient) : IAlertStatusLevelService
 {
     public Task<IApiResult<IEnumerable<AlertStatusLevelResponse>>> GetAllAsync(CancellationToken cancellationToken = default)
         => apiClient.GetAsync<IEnumerable<AlertStatusLevelResponse>>("/api/alert-status-levels", cancellationToken);

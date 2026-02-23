@@ -189,7 +189,7 @@ internal sealed class PushNotificationService : IPushNotificationService
             Tags = new HashSet<string>(tags)
         };
 
-        return await _hubClient.CreateOrUpdateRegistrationAsync(registration, cancellationToken);
+        return await _hubClient.CreateRegistrationAsync(registration, cancellationToken);
     }
 
     private async Task<RegistrationDescription> CreateApnsRegistrationAsync(string deviceToken, List<string> tags, CancellationToken cancellationToken)
@@ -199,7 +199,7 @@ internal sealed class PushNotificationService : IPushNotificationService
             Tags = new HashSet<string>(tags)
         };
 
-        return await _hubClient.CreateOrUpdateRegistrationAsync(registration, cancellationToken);
+        return await _hubClient.CreateRegistrationAsync(registration, cancellationToken);
     }
 
     private async Task<RegistrationDescription> CreateWnsRegistrationAsync(string channelUri, List<string> tags, CancellationToken cancellationToken)
@@ -209,7 +209,7 @@ internal sealed class PushNotificationService : IPushNotificationService
             Tags = new HashSet<string>(tags)
         };
 
-        return await _hubClient.CreateOrUpdateRegistrationAsync(registration, cancellationToken);
+        return await _hubClient.CreateRegistrationAsync(registration, cancellationToken);
     }
 
     private static string BuildFcmPayload(string title, string body, IDictionary<string, string>? data)

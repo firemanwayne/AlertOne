@@ -3,7 +3,8 @@ namespace Domains.UserManagement.Services;
 /// <summary>
 /// Service for role management operations
 /// </summary>
-internal sealed class RoleManagementService(UserManagementApiClient apiClient) : IRoleManagementService
+internal sealed class RoleManagementService(
+    IUserManagementApiClient apiClient) : IRoleManagementService
 {
     public async Task<IApiResult<IEnumerable<RoleResponse>>> GetAllRolesAsync(CancellationToken cancellationToken = default)
     {
