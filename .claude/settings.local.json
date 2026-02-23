@@ -16,7 +16,19 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push)",
-      "Bash(dotnet restore:*)"
+      "Bash(dotnet restore:*)",
+      "Bash(gh auth:*)",
+      "Bash(gh label:*)",
+      "Bash(gh issue create:*)",
+      "Bash(gh issue list:*)",
+      "Bash(gh project create:*)",
+      "Bash(gh project list:*)",
+      "Bash(for i in 1 2 3 4 5 6 7)",
+      "Bash(do gh project item-add 1 --owner firemanwayne --url \"https://github.com/firemanwayne/AlertOne/issues/$i\")",
+      "Bash(done)",
+      "Bash(gh project item-list:*)",
+      "Bash(git status:*)",
+      "Bash(git push:*)"
     ]
   }
 }

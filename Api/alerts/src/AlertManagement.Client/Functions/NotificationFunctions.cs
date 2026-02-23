@@ -27,24 +27,91 @@ public sealed class NotificationFunctions(IPushNotificationService pushNotificat
     [Function("NotificationRegister")]
     public async Task<HttpResponseData> Register([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = REGISTER)] HttpRequestData req, FunctionContext context)
     {
-        logger.LogInformation("Registering device for push notifications");
+        logger.LogInformation("=== Device Registration Request Started ===");
 
-        var request = await req.ReadFromJsonAsync<RegisterDeviceRequest>();
+        RegisterDeviceRequest? request;
 
-        if (request is null || string.IsNullOrEmpty(request.DeviceToken) || string.IsNullOrEmpty(request.Platform) || string.IsNullOrEmpty(request.UserId))
+        try
         {
+            request = await req.ReadFromJsonAsync<RegisterDeviceRequest>();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to parse request body");
+
+            var parseError = req.CreateResponse(HttpStatusCode.BadRequest);
+
+            await parseError.WriteAsJsonAsync(new { error = "Invalid JSON in request body", details = ex.Message });
+
+            return parseError;
+        }
+
+        if (request is null)
+        {
+            logger.LogWarning("Request body is null");
+
             var badRequest = req.CreateResponse(HttpStatusCode.BadRequest);
 
-            await badRequest.WriteAsJsonAsync(new { error = "DeviceToken, Platform, and UserId are required" });
+            await badRequest.WriteAsJsonAsync(new { error = "Request body is required" });
+
+            return badRequest;
+        }
+
+        // Log received request details
+        var tokenPreview = string.IsNullOrEmpty(request.DeviceToken)
+            ? "(empty)"
+            : $"{request.DeviceToken[..Math.Min(20, request.DeviceToken.Length)]}...({request.DeviceToken.Length} chars)";
+
+        logger.LogInformation("Registration request received:");
+        logger.LogInformation("  - Platform: {Platform}", request.Platform ?? "(null)");
+        logger.LogInformation("  - UserId: {UserId}", request.UserId ?? "(null)");
+        logger.LogInformation("  - DeviceToken: {TokenPreview}", tokenPreview);
+        logger.LogInformation("  - Tags: {Tags}", request.Tags is not null ? string.Join(", ", request.Tags) : "(none)");
+
+        // Validate required fields
+        if (string.IsNullOrEmpty(request.DeviceToken))
+        {
+            logger.LogWarning("Validation failed: DeviceToken is missing");
+
+            var badRequest = req.CreateResponse(HttpStatusCode.BadRequest);
+
+            await badRequest.WriteAsJsonAsync(new { error = "DeviceToken is required" });
+
+            return badRequest;
+        }
+
+        if (string.IsNullOrEmpty(request.Platform))
+        {
+            logger.LogWarning("Validation failed: Platform is missing");
+
+            var badRequest = req.CreateResponse(HttpStatusCode.BadRequest);
+
+            await badRequest.WriteAsJsonAsync(new { error = "Platform is required (fcm, apns, or wns)" });
+
+            return badRequest;
+        }
+
+        if (string.IsNullOrEmpty(request.UserId))
+        {
+            logger.LogWarning("Validation failed: UserId is missing");
+
+            var badRequest = req.CreateResponse(HttpStatusCode.BadRequest);
+
+            await badRequest.WriteAsJsonAsync(new { error = "UserId is required" });
 
             return badRequest;
         }
 
         try
         {
+            logger.LogInformation("Calling NotificationHub to register device...");
+
             var registrationId = await pushNotificationService.RegisterDeviceAsync(request.DeviceToken, request.Platform, request.UserId, request.Tags, context.CancellationToken);
 
-            logger.LogInformation("Device registered successfully. RegistrationId: {RegistrationId}, UserId: {UserId}, Platform: {Platform}", registrationId, request.UserId, request.Platform);
+            logger.LogInformation("=== Device Registration Successful ===");
+            logger.LogInformation("  - RegistrationId: {RegistrationId}", registrationId);
+            logger.LogInformation("  - UserId: {UserId}", request.UserId);
+            logger.LogInformation("  - Platform: {Platform}", request.Platform);
 
             var response = req.CreateResponse(HttpStatusCode.OK);
 
@@ -54,11 +121,24 @@ public sealed class NotificationFunctions(IPushNotificationService pushNotificat
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to register device for user {UserId}", request.UserId);
+            logger.LogError(ex, "=== Device Registration Failed ===");
+            logger.LogError("  - UserId: {UserId}", request.UserId);
+            logger.LogError("  - Platform: {Platform}", request.Platform);
+            logger.LogError("  - Error: {ErrorMessage}", ex.Message);
+
+            if (ex.InnerException is not null)
+            {
+                logger.LogError("  - Inner Error: {InnerErrorMessage}", ex.InnerException.Message);
+            }
 
             var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
 
-            await errorResponse.WriteAsJsonAsync(new { error = "Failed to register device", details = ex.Message });
+            await errorResponse.WriteAsJsonAsync(new
+            {
+                error = "Failed to register device",
+                details = ex.Message,
+                innerError = ex.InnerException?.Message
+            });
 
             return errorResponse;
         }
