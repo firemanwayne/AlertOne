@@ -1,10 +1,14 @@
 using AlertOne.Maui.Platforms.Android.Services;
 using AlertOne.Maui.Services;
 
+using Android;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
+
+using AndroidX.Core.App;
+using AndroidX.Core.Content;
 
 using Firebase;
 
@@ -38,8 +42,22 @@ public class MainActivity : MauiAppCompatActivity
         // Initialize Firebase
         InitializeFirebase();
 
+        // Request notification permission for Android 13+
+        RequestNotificationPermission();
+
         // Handle deep link on app launch
         HandleDeepLinkIntent(Intent, isAppRunning: false);
+    }
+
+    private void RequestNotificationPermission()
+    {
+        if (OperatingSystem.IsAndroidVersionAtLeast(33))
+        {
+            if (ContextCompat.CheckSelfPermission(this, Manifest.Permission.PostNotifications) != Permission.Granted)
+            {
+                ActivityCompat.RequestPermissions(this, [Manifest.Permission.PostNotifications], 0);
+            }
+        }
     }
 
     private void InitializeFirebase()

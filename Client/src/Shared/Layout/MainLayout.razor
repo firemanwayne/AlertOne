@@ -18,6 +18,7 @@
             <MudAppBar Elevation="1" Dense="true" Style="@($"color:{Colors.BlueGray.Lighten3}; background:{Colors.BlueGray.Darken4};")">
                 <MudIconButton Icon="@Icons.Material.Filled.Menu" Edge="Edge.Start" OnClick="@ToggleDrawer" Class="d-sm-none hamburger" />
                 <MudSpacer />
+                <NotificationBell />
                 <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
                     <ActivatorContent>
                         <MudAvatar Color="Color.Secondary" Size="Size.Small" Class="cursor-pointer">

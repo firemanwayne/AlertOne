@@ -1,0 +1,198 @@
+@page "/notifications"
+@attribute [Authorize]
+@implements IDisposable
+
+@inject NotificationState NotificationState
+@inject NavigationManager NavigationManager
+
+<PageTitle>AlertOne - Notifications</PageTitle>
+
+<MudGrid>
+    <MudItem xs="12">
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+            <MudText Typo="Typo.h5">Notifications</MudText>
+            <MudStack Row="true" Spacing="2">
+                @if (NotificationState.HasUnread)
+                {
+                    <MudButton Variant="Variant.Outlined"
+                               Size="Size.Small"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.DoneAll"
+                               OnClick="@MarkAllAsRead">
+                        Mark all as read
+                    </MudButton>
+                }
+                @if (NotificationState.Notifications.Any())
+                {
+                    <MudButton Variant="Variant.Outlined"
+                               Size="Size.Small"
+                               Color="Color.Error"
+                               StartIcon="@Icons.Material.Filled.DeleteSweep"
+                               OnClick="@ClearAll">
+                        Clear all
+                    </MudButton>
+                }
+            </MudStack>
+        </MudStack>
+    </MudItem>
+
+    <MudItem xs="12">
+        @if (!NotificationState.Notifications.Any())
+        {
+            <MudPaper Class="pa-8 d-flex flex-column align-center justify-center" Elevation="1" Style="min-height: 300px;">
+                <MudIcon Icon="@Icons.Material.Outlined.NotificationsNone"
+                         Size="Size.Large"
+                         Color="Color.Default"
+                         Style="font-size: 4rem;"
+                         Class="mb-4" />
+                <MudText Typo="Typo.h6" Color="Color.Secondary">No notifications</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    You're all caught up! New notifications will appear here.
+                </MudText>
+            </MudPaper>
+        }
+        else
+        {
+            <MudPaper Elevation="1">
+                <MudList T="NotificationItem" Dense="false">
+                    @foreach (var notification in NotificationState.Notifications)
+                    {
+                        <MudListItem T="NotificationItem"
+                                     Class="@GetNotificationClass(notification)"
+                                     OnClick="@(() => HandleNotificationClick(notification))">
+                            <div class="d-flex align-center" style="width: 100%;">
+                                <MudIcon Icon="@GetNotificationIcon(notification)"
+                                         Color="@GetNotificationColor(notification)"
+                                         Class="mr-4" />
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-space-between align-center">
+                                        <MudText Typo="Typo.subtitle1" Class="@(notification.IsRead ? "" : "mud-primary-text")">
+                                            @notification.Title
+                                        </MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                            @FormatTime(notification.ReceivedAt)
+                                        </MudText>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(notification.Body))
+                                    {
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                            @notification.Body
+                                        </MudText>
+                                    }
+                                </div>
+                                <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                               Size="Size.Small"
+                                               Color="Color.Default"
+                                               OnClick="@(() => RemoveNotification(notification.Id))"
+                                               OnClick:stopPropagation="true"
+                                               Class="ml-2" />
+                            </div>
+                        </MudListItem>
+                        <MudDivider />
+                    }
+                </MudList>
+            </MudPaper>
+        }
+    </MudItem>
+</MudGrid>
+
+<style>
+    .notification-unread {
+        background-color: var(--mud-palette-primary-lighten);
+    }
+</style>
+
+@code {
+    protected override void OnInitialized()
+    {
+        NotificationState.OnChange += StateHasChanged;
+    }
+
+    private void MarkAllAsRead()
+    {
+        NotificationState.MarkAllAsRead();
+    }
+
+    private void ClearAll()
+    {
+        NotificationState.Clear();
+    }
+
+    private void RemoveNotification(string id)
+    {
+        NotificationState.Remove(id);
+    }
+
+    private void HandleNotificationClick(NotificationItem notification)
+    {
+        NotificationState.MarkAsRead(notification.Id);
+
+        if (!string.IsNullOrEmpty(notification.AlertId))
+        {
+            NavigationManager.NavigateTo($"/alerts/{notification.AlertId}");
+        }
+    }
+
+    private static string GetNotificationClass(NotificationItem notification)
+    {
+        return notification.IsRead ? "" : "notification-unread";
+    }
+
+    private static string GetNotificationIcon(NotificationItem notification)
+    {
+        var severity = notification.Severity?.ToLowerInvariant();
+
+        return severity switch
+        {
+            "critical" or "error" => Icons.Material.Filled.Error,
+            "warning" => Icons.Material.Filled.Warning,
+            "success" => Icons.Material.Filled.CheckCircle,
+            _ => Icons.Material.Filled.Notifications
+        };
+    }
+
+    private static Color GetNotificationColor(NotificationItem notification)
+    {
+        var severity = notification.Severity?.ToLowerInvariant();
+
+        return severity switch
+        {
+            "critical" or "error" => Color.Error,
+            "warning" => Color.Warning,
+            "success" => Color.Success,
+            _ => Color.Info
+        };
+    }
+
+    private static string FormatTime(DateTime time)
+    {
+        var elapsed = DateTime.UtcNow - time;
+
+        if (elapsed.TotalMinutes < 1)
+        {
+            return "Just now";
+        }
+
+        if (elapsed.TotalMinutes < 60)
+        {
+            return $"{(int)elapsed.TotalMinutes} min ago";
+        }
+
+        if (elapsed.TotalHours < 24)
+        {
+            return $"{(int)elapsed.TotalHours} hours ago";
+        }
+
+        if (elapsed.TotalDays < 7)
+        {
+            return $"{(int)elapsed.TotalDays} days ago";
+        }
+
+        return time.ToString("MMM d, yyyy");
+    }
+
+    public void Dispose()
+    {
+        NotificationState.OnChange -= StateHasChanged;
+    }
+}

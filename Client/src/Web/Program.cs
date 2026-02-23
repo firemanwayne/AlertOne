@@ -28,6 +28,7 @@ builder.Services.AddMudServices();
 
 // Global state
 builder.Services.AddSingleton<AppState>();
+builder.Services.AddSingleton<NotificationState>();
 
 // HttpClient with JWT handler
 builder.Services.AddTransient<JwtAuthHeaderHandler>();

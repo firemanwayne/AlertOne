@@ -45,7 +45,8 @@ public static class MauiProgram
         // Global state
         builder
             .Services
-            .AddSingleton<AppState>();
+            .AddSingleton<AppState>()
+            .AddSingleton<NotificationState>();
 
         // Deep link service
         builder

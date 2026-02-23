@@ -1,6 +1,7 @@
 @implements IDisposable
 
 @inject IPushNotificationRegistrationService PushNotificationService
+@inject NotificationState NotificationState
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 
@@ -15,6 +16,9 @@
         // Use InvokeAsync to ensure we're on the UI thread
         InvokeAsync(() =>
         {
+            // Add to notification history
+            NotificationState.Add(e);
+
             var title = e.Title ?? "Notification";
             var body = e.Body ?? string.Empty;
 

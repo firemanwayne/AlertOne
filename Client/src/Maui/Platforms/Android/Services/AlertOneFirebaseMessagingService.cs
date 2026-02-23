@@ -50,8 +50,8 @@ public class AlertOneFirebaseMessagingService : FirebaseMessagingService
         // Forward to the registration service
         PushNotificationService?.OnNotificationReceived(title, body, dataDict, isInForeground);
 
-        // Show notification if app is in background
-        if (!isInForeground && !string.IsNullOrEmpty(title))
+        // Show notification in system tray (both foreground and background)
+        if (!string.IsNullOrEmpty(title))
         {
             ShowNotification(title, body ?? string.Empty, dataDict);
         }

@@ -26,7 +26,8 @@ internal sealed class AlertService(
     {
         logger.LogInformation("Getting all alerts");
 
-        var alerts = await context.Alerts
+        var alerts = await context
+            .Alerts
             .Include(a => a.AlertType)
             .ThenInclude(t => t.AlertTypeUsers)
             .Include(a => a.AlertStatusLevel)
@@ -66,7 +67,8 @@ internal sealed class AlertService(
                 Error.Validation("Alert.CreatedByRequired", "CreatedBy is required"));
         }
 
-        var alertType = await context.AlertTypes
+        var alertType = await context
+            .AlertTypes
             .Include(t => t.AlertTypeUsers)
             .FirstOrDefaultAsync(t => t.Id == request.AlertTypeId, cancellationToken);
 
@@ -77,7 +79,8 @@ internal sealed class AlertService(
         }
 
         // Automatically use the default status level
-        var statusLevel = await context.AlertStatusLevels
+        var statusLevel = await context
+            .AlertStatusLevels
             .FirstOrDefaultAsync(s => s.IsDefault, cancellationToken);
 
         if (statusLevel is null)
@@ -87,7 +90,8 @@ internal sealed class AlertService(
         }
 
         // Deactivate any currently active alert
-        var activeAlert = await context.Alerts
+        var activeAlert = await context
+            .Alerts
             .FirstOrDefaultAsync(a => a.IsActive, cancellationToken);
 
         if (activeAlert is not null)
@@ -147,7 +151,8 @@ internal sealed class AlertService(
                 Error.Validation("Alert.RescindedByRequired", "RescindedBy is required"));
         }
 
-        var alert = await context.Alerts
+        var alert = await context
+            .Alerts
             .Include(a => a.AlertType)
             .ThenInclude(t => t.AlertTypeUsers)
             .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
@@ -166,7 +171,8 @@ internal sealed class AlertService(
         }
 
         // Find the canceled status level if one exists
-        var canceledStatusLevel = await context.AlertStatusLevels
+        var canceledStatusLevel = await context
+            .AlertStatusLevels
             .FirstOrDefaultAsync(s => s.IsCanceled, cancellationToken);
 
         var now = DateTime.UtcNow;
@@ -193,7 +199,9 @@ internal sealed class AlertService(
             Notes = null
         };
 
-        context.AlertHistories.Add(historyEntry);
+        context
+            .AlertHistories
+            .Add(historyEntry);
 
         await context.SaveChangesAsync(cancellationToken);
 
@@ -214,18 +222,21 @@ internal sealed class AlertService(
 
         if (string.IsNullOrWhiteSpace(request.UpdatedBy))
         {
-            return Result.Failure<AlertResponse>(
+            return Result
+                .Failure<AlertResponse>(
                 Error.Validation("Alert.UpdatedByRequired", "UpdatedBy is required"));
         }
 
-        var alert = await context.Alerts
+        var alert = await context
+            .Alerts
             .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
 
         if (alert is null)
         {
             logger.LogWarning("Alert not found: {AlertId}", id);
-            return Result.Failure<AlertResponse>(
-                Error.NotFound("Alert.NotFound", $"Alert with ID {id} not found"));
+
+            return Result
+                .Failure<AlertResponse>(Error.NotFound("Alert.NotFound", $"Alert with ID {id} not found"));
         }
 
         if (!alert.IsActive)
@@ -234,7 +245,8 @@ internal sealed class AlertService(
                 Error.Validation("Alert.NotActive", "Alert is not currently active and cannot have its status updated"));
         }
 
-        var statusLevel = await context.AlertStatusLevels
+        var statusLevel = await context
+            .AlertStatusLevels
             .FirstOrDefaultAsync(s => s.Id == request.AlertStatusLevelId, cancellationToken);
 
         if (statusLevel is null)
@@ -265,7 +277,8 @@ internal sealed class AlertService(
 
         logger.LogInformation("Alert {AlertId} status updated to {StatusLevelId} by {UpdatedBy}", id, request.AlertStatusLevelId, request.UpdatedBy);
 
-        var updatedAlert = await context.Alerts
+        var updatedAlert = await context
+            .Alerts
             .Include(a => a.AlertType)
             .ThenInclude(t => t.AlertTypeUsers)
             .Include(a => a.AlertStatusLevel)
@@ -281,7 +294,8 @@ internal sealed class AlertService(
     {
         logger.LogInformation("Getting alert {AlertId}", id);
 
-        var alert = await context.Alerts
+        var alert = await context
+            .Alerts
             .Include(a => a.AlertType)
             .ThenInclude(t => t.AlertTypeUsers)
             .Include(a => a.AlertStatusLevel)
@@ -290,6 +304,7 @@ internal sealed class AlertService(
         if (alert is null)
         {
             logger.LogWarning("Alert not found: {AlertId}", id);
+
             return Result.Failure<AlertResponse>(
                 Error.NotFound("Alert.NotFound", $"Alert with ID {id} not found"));
         }
@@ -301,17 +316,20 @@ internal sealed class AlertService(
     {
         logger.LogInformation("Getting history for alert {AlertId}", alertId);
 
-        var alertExists = await context.Alerts
+        var alertExists = await context
+            .Alerts
             .AnyAsync(a => a.Id == alertId, cancellationToken);
 
         if (!alertExists)
         {
             logger.LogWarning("Alert not found when fetching history: {AlertId}", alertId);
-            return Result.Failure<IEnumerable<AlertHistoryResponse>>(
-                Error.NotFound("Alert.NotFound", $"Alert with ID {alertId} not found"));
+
+            return Result
+                .Failure<IEnumerable<AlertHistoryResponse>>(Error.NotFound("Alert.NotFound", $"Alert with ID {alertId} not found"));
         }
 
-        var history = await context.AlertHistories
+        var history = await context
+            .AlertHistories
             .Where(h => h.AlertId == alertId)
             .OrderByDescending(h => h.UpdatedDate)
             .ToListAsync(cancellationToken);
@@ -327,6 +345,7 @@ internal sealed class AlertService(
     private static AlertResponse MapToResponse(Alert alert)
     {
         var alertType = alert.AlertType;
+
         var notifyUserIds = alertType.AlertTypeUsers
             .Select(u => u.UserId)
             .ToList();
@@ -341,6 +360,7 @@ internal sealed class AlertService(
             alertType.UpdatedDate);
 
         var statusLevel = alert.AlertStatusLevel;
+
         var statusLevelResponse = new AlertStatusLevelResponse(
             statusLevel.Id,
             statusLevel.Name,
@@ -373,7 +393,8 @@ internal sealed class AlertService(
             return;
         }
 
-        var userIds = alertType.AlertTypeUsers
+        var userIds = alertType
+            .AlertTypeUsers
             .Select(u => u.UserId)
             .ToList();
 
