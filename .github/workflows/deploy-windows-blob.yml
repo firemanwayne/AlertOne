@@ -33,6 +33,21 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Create global.json to pin SDK version
+        shell: pwsh
+        run: |
+          $globalJson = @{
+            sdk = @{
+              version = "9.0.100"
+              rollForward = "latestFeature"
+            }
+          } | ConvertTo-Json -Depth 10
+          $globalJson | Out-File -FilePath "${{ github.workspace }}/global.json" -Encoding UTF8
+          Write-Host "Created global.json:"
+          Get-Content "${{ github.workspace }}/global.json"
+          Write-Host "Using SDK:"
+          dotnet --version
+
       - name: Install MAUI workloads
         run: dotnet workload install maui
 
