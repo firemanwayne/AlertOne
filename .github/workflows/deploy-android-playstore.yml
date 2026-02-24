@@ -57,7 +57,7 @@ jobs:
         run: dotnet workload install maui-android
 
       - name: Restore dependencies
-        run: dotnet restore ${{ env.MAUI_PROJECT_PATH }}
+        run: dotnet restore ${{ env.MAUI_PROJECT_PATH }} -p:TargetFramework=net9.0-android
 
       - name: Extract version from tag
         id: version

@@ -33,26 +33,21 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Create global.json to pin SDK version
+      - name: Verify SDK version
         shell: pwsh
         run: |
-          $globalJson = @{
-            sdk = @{
-              version = "9.0.100"
-              rollForward = "latestFeature"
-            }
-          } | ConvertTo-Json -Depth 10
-          $globalJson | Out-File -FilePath "${{ github.workspace }}/global.json" -Encoding UTF8
-          Write-Host "Created global.json:"
-          Get-Content "${{ github.workspace }}/global.json"
-          Write-Host "Using SDK:"
+          Write-Host "Using global.json from repository"
+          if (Test-Path "global.json") {
+            Get-Content "global.json"
+          }
+          Write-Host "SDK version:"
           dotnet --version
 
       - name: Install MAUI workloads
         run: dotnet workload install maui
 
       - name: Restore dependencies
-        run: dotnet restore ${{ env.MAUI_PROJECT_PATH }}
+        run: dotnet restore ${{ env.MAUI_PROJECT_PATH }} -p:TargetFramework=net9.0-windows10.0.19041.0
 
       - name: Extract version from tag
         id: version
