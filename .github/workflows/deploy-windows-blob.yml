@@ -37,7 +37,7 @@ jobs:
         run: dotnet workload install maui-windows
 
       - name: Restore dependencies
-        run: dotnet restore ${{ env.MAUI_PROJECT_PATH }}
+        run: dotnet restore ${{ env.MAUI_PROJECT_PATH }} -p:TargetFramework=net9.0-windows10.0.19041.0
 
       - name: Extract version from tag
         id: version
