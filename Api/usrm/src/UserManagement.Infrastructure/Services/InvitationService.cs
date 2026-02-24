@@ -23,7 +23,8 @@ internal sealed class InvitationService(
 {
     public async Task<Result<InvitationResponse>> CreateAsync(CreateInvitationRequest request, CancellationToken cancellationToken = default)
     {
-        logger.LogInformation("Creating invitation for email: {Email}", request.Email);
+        logger
+            .LogInformation("Creating invitation for email: {Email}", request.Email);
 
         var emailResult = Email.Create(request.Email);
 
@@ -37,14 +38,16 @@ internal sealed class InvitationService(
 
         if (existingUser is not null)
         {
-            logger.LogWarning("Invitation creation failed: User with email {Email} already exists", request.Email);
+            logger
+                .LogWarning("Invitation creation failed: User with email {Email} already exists", request.Email);
 
             return Result
                 .Failure<InvitationResponse>(Error.Conflict("Invitation.UserExists", $"A user with email {request.Email} already exists"));
         }
 
         // Check if there's already a pending invitation for this email
-        var existingInvitation = await dbContext.UserInvitations
+        var existingInvitation = await dbContext
+            .UserInvitations
             .FirstOrDefaultAsync(i => i.Email == emailResult.Value.Value && !i.IsAccepted, cancellationToken);
 
         if (existingInvitation is not null)
@@ -75,7 +78,8 @@ internal sealed class InvitationService(
         {
             await emailService.SendInvitationEmailAsync(invitation.Email, invitation.ActivationCode, invitation.InvitedBy, cancellationToken);
 
-            logger.LogInformation("Invitation email sent successfully to {Email}", invitation.Email);
+            logger
+                .LogInformation("Invitation email sent successfully to {Email}", invitation.Email);
         }
         catch (Exception ex)
         {
@@ -92,7 +96,8 @@ internal sealed class InvitationService(
     {
         logger.LogInformation("Getting all invitations");
 
-        var invitations = await dbContext.UserInvitations
+        var invitations = await dbContext
+            .UserInvitations
             .OrderByDescending(i => i.InvitedAt)
             .ToListAsync(cancellationToken);
 
@@ -111,7 +116,8 @@ internal sealed class InvitationService(
                 Error.Validation("Invitation.CodeEmpty", "Activation code cannot be empty"));
         }
 
-        var invitation = await dbContext.UserInvitations
+        var invitation = await dbContext
+            .UserInvitations
             .FirstOrDefaultAsync(i => i.ActivationCode == activationCode, cancellationToken);
 
         if (invitation is null)
@@ -129,7 +135,8 @@ internal sealed class InvitationService(
     {
         logger.LogInformation("Getting invitation by ID: {InvitationId}", id);
 
-        var invitation = await dbContext.UserInvitations
+        var invitation = await dbContext
+            .UserInvitations
             .FirstOrDefaultAsync(i => i.Id == id, cancellationToken);
 
         if (invitation is null)
@@ -153,7 +160,8 @@ internal sealed class InvitationService(
                 Error.Validation("Invitation.CodeEmpty", "Activation code cannot be empty"));
         }
 
-        var invitation = await dbContext.UserInvitations
+        var invitation = await dbContext
+            .UserInvitations
             .FirstOrDefaultAsync(i => i.ActivationCode == activationCode, cancellationToken);
 
         if (invitation is null)

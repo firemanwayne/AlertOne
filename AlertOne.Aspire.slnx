@@ -59,6 +59,7 @@
     <File Path=".github/workflows/deploy-alertmanagement-api.yml" />
     <File Path=".github/workflows/deploy-android-playstore.yml" />
     <File Path=".github/workflows/deploy-usermanagement-api.yml" />
+    <File Path=".github/workflows/deploy-windows-blob.yml" />
     <File Path="Directory.Packages.props" />
   </Folder>
 </Solution>

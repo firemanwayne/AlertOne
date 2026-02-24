@@ -1,0 +1,297 @@
+name: Deploy Windows App to Azure Blob Storage (Microsoft Store)
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      submit_to_store:
+        description: 'Submit to Microsoft Store'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  MAUI_PROJECT_PATH: 'Client/src/Maui/AlertOne.Maui.csproj'
+  STORAGE_CONTAINER: 'releases'
+  APP_NAME: 'AlertOne'
+
+jobs:
+  build-and-deploy:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install MAUI workloads
+        run: dotnet workload install maui-windows
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.MAUI_PROJECT_PATH }}
+
+      - name: Extract version from tag
+        id: version
+        shell: pwsh
+        run: |
+          if ("${{ github.ref_type }}" -eq "tag") {
+            $version = "${{ github.ref_name }}" -replace '^v', ''
+          } else {
+            $version = "1.0.${{ github.run_number }}"
+          }
+
+          $parts = $version.Split('.')
+          $major = if ($parts.Length -gt 0) { $parts[0] } else { "1" }
+          $minor = if ($parts.Length -gt 1) { $parts[1] } else { "0" }
+          $patch = if ($parts.Length -gt 2) { $parts[2] } else { "0" }
+
+          # MSIX requires 4-part version
+          $msixVersion = "$major.$minor.$patch.0"
+          $displayVersion = "$major.$minor.$patch"
+
+          Write-Host "Display Version: $displayVersion"
+          Write-Host "MSIX Version: $msixVersion"
+
+          echo "DISPLAY_VERSION=$displayVersion" >> $env:GITHUB_OUTPUT
+          echo "MSIX_VERSION=$msixVersion" >> $env:GITHUB_OUTPUT
+
+      - name: Decode signing certificate
+        shell: pwsh
+        run: |
+          $pfxBytes = [Convert]::FromBase64String("${{ secrets.WINDOWS_SIGNING_CERT_BASE64 }}")
+          [IO.File]::WriteAllBytes("${{ github.workspace }}\AlertOne.pfx", $pfxBytes)
+
+      - name: Build MSIX Package for Microsoft Store
+        shell: pwsh
+        run: |
+          dotnet publish ${{ env.MAUI_PROJECT_PATH }} `
+            -c Release `
+            -f net9.0-windows10.0.19041.0 `
+            -p:RuntimeIdentifier=win-x86 `
+            -p:WindowsPackageType=MSIX `
+            -p:AppxPackageSigningEnabled=true `
+            -p:PackageCertificateThumbprint="" `
+            -p:PackageCertificateKeyFile="${{ github.workspace }}\AlertOne.pfx" `
+            -p:PackageCertificatePassword="${{ secrets.WINDOWS_SIGNING_CERT_PASSWORD }}" `
+            -p:ApplicationDisplayVersion="${{ steps.version.outputs.DISPLAY_VERSION }}" `
+            -p:ApplicationVersion="${{ github.run_number }}" `
+            -p:GenerateAppxPackageOnBuild=true `
+            -o "${{ github.workspace }}/publish/msix"
+
+      - name: Find MSIX package
+        id: msix
+        shell: pwsh
+        run: |
+          $version = "${{ steps.version.outputs.DISPLAY_VERSION }}"
+          $outputDir = "${{ github.workspace }}/output"
+
+          New-Item -ItemType Directory -Force -Path $outputDir
+
+          # Find the MSIX file
+          $msixFile = Get-ChildItem -Path "${{ github.workspace }}/publish" -Filter "*.msix" -Recurse | Select-Object -First 1
+
+          if ($null -eq $msixFile) {
+            # Try finding msixbundle
+            $msixFile = Get-ChildItem -Path "${{ github.workspace }}/publish" -Filter "*.msixbundle" -Recurse | Select-Object -First 1
+          }
+
+          if ($null -eq $msixFile) {
+            # Check in AppPackages folder
+            $msixFile = Get-ChildItem -Path "${{ github.workspace }}" -Filter "*.msix" -Recurse | Where-Object { $_.FullName -like "*AppPackages*" } | Select-Object -First 1
+          }
+
+          if ($null -eq $msixFile) {
+            Write-Host "Searching for any MSIX files..."
+            Get-ChildItem -Path "${{ github.workspace }}" -Filter "*.msix" -Recurse | ForEach-Object { Write-Host $_.FullName }
+            Get-ChildItem -Path "${{ github.workspace }}" -Filter "*.msixbundle" -Recurse | ForEach-Object { Write-Host $_.FullName }
+            Write-Error "No MSIX file found"
+            exit 1
+          }
+
+          Write-Host "Found MSIX: $($msixFile.FullName)"
+
+          # Copy to output with standardized name
+          $extension = $msixFile.Extension
+          $targetMsix = Join-Path $outputDir "AlertOne-$version$extension"
+          $latestMsix = Join-Path $outputDir "AlertOne$extension"
+
+          Copy-Item -Path $msixFile.FullName -Destination $targetMsix -Force
+          Copy-Item -Path $msixFile.FullName -Destination $latestMsix -Force
+
+          Write-Host "Created: $targetMsix"
+          Write-Host "Created: $latestMsix"
+
+          echo "MSIX_PATH=$targetMsix" >> $env:GITHUB_OUTPUT
+          echo "LATEST_MSIX_PATH=$latestMsix" >> $env:GITHUB_OUTPUT
+          echo "EXTENSION=$extension" >> $env:GITHUB_OUTPUT
+
+      - name: Build MSIX Upload Package for Store
+        if: ${{ inputs.submit_to_store == true }}
+        shell: pwsh
+        run: |
+          dotnet publish ${{ env.MAUI_PROJECT_PATH }} `
+            -c Release `
+            -f net9.0-windows10.0.19041.0 `
+            -p:RuntimeIdentifier=win-x86 `
+            -p:WindowsPackageType=MSIX `
+            -p:AppxPackageSigningEnabled=false `
+            -p:UapAppxPackageBuildMode=StoreUpload `
+            -p:ApplicationDisplayVersion="${{ steps.version.outputs.DISPLAY_VERSION }}" `
+            -p:ApplicationVersion="${{ github.run_number }}" `
+            -p:GenerateAppxPackageOnBuild=true `
+            -o "${{ github.workspace }}/publish/store"
+
+      - name: Find Store Upload Package
+        if: ${{ inputs.submit_to_store == true }}
+        id: store
+        shell: pwsh
+        run: |
+          $version = "${{ steps.version.outputs.DISPLAY_VERSION }}"
+          $outputDir = "${{ github.workspace }}/output"
+
+          # Find the msixupload file
+          $uploadFile = Get-ChildItem -Path "${{ github.workspace }}" -Filter "*.msixupload" -Recurse | Select-Object -First 1
+
+          if ($null -eq $uploadFile) {
+            Write-Host "No .msixupload found, looking for .msixbundle..."
+            $uploadFile = Get-ChildItem -Path "${{ github.workspace }}/publish/store" -Filter "*.msixbundle" -Recurse | Select-Object -First 1
+          }
+
+          if ($null -ne $uploadFile) {
+            $extension = $uploadFile.Extension
+            $targetUpload = Join-Path $outputDir "AlertOne-$version-store$extension"
+            Copy-Item -Path $uploadFile.FullName -Destination $targetUpload -Force
+            Write-Host "Created store upload: $targetUpload"
+            echo "STORE_UPLOAD_PATH=$targetUpload" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Host "No store upload package found"
+          }
+
+      - name: Upload MSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-msix-${{ steps.version.outputs.DISPLAY_VERSION }}
+          path: |
+            ${{ github.workspace }}/output/AlertOne-${{ steps.version.outputs.DISPLAY_VERSION }}${{ steps.msix.outputs.EXTENSION }}
+            ${{ github.workspace }}/output/AlertOne${{ steps.msix.outputs.EXTENSION }}
+          retention-days: 30
+
+      - name: Upload Store Package artifact
+        if: ${{ inputs.submit_to_store == true && steps.store.outputs.STORE_UPLOAD_PATH != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-store-${{ steps.version.outputs.DISPLAY_VERSION }}
+          path: ${{ steps.store.outputs.STORE_UPLOAD_PATH }}
+          retention-days: 30
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Upload MSIX to Azure Blob Storage
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            VERSION="${{ steps.version.outputs.DISPLAY_VERSION }}"
+            EXT="${{ steps.msix.outputs.EXTENSION }}"
+
+            # Upload versioned MSIX
+            az storage blob upload \
+              --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
+              --container-name ${{ env.STORAGE_CONTAINER }} \
+              --name "windows/$VERSION/AlertOne-$VERSION-x86$EXT" \
+              --file "${{ github.workspace }}/output/AlertOne-$VERSION$EXT" \
+              --overwrite true
+
+            # Upload as latest
+            az storage blob upload \
+              --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
+              --container-name ${{ env.STORAGE_CONTAINER }} \
+              --name "windows/latest/AlertOne-x86$EXT" \
+              --file "${{ github.workspace }}/output/AlertOne$EXT" \
+              --overwrite true
+
+            echo "Uploaded MSIX to: windows/$VERSION/AlertOne-$VERSION-x86$EXT"
+            echo "Uploaded MSIX to: windows/latest/AlertOne-x86$EXT"
+
+      - name: Submit to Microsoft Store
+        if: ${{ inputs.submit_to_store == true }}
+        shell: pwsh
+        run: |
+          # Install Windows Store submission CLI
+          dotnet tool install -g Microsoft.Apps.Store.DevCLI
+
+          # Configure store credentials
+          store-cli configure `
+            --tenantId "${{ secrets.AZURE_TENANT_ID }}" `
+            --clientId "${{ secrets.STORE_CLIENT_ID }}" `
+            --clientSecret "${{ secrets.STORE_CLIENT_SECRET }}"
+
+          # Submit to store
+          $uploadPath = "${{ steps.store.outputs.STORE_UPLOAD_PATH }}"
+          if ([string]::IsNullOrEmpty($uploadPath)) {
+            $uploadPath = "${{ steps.msix.outputs.MSIX_PATH }}"
+          }
+
+          store-cli submit `
+            --appId "${{ secrets.STORE_APP_ID }}" `
+            --packagePath "$uploadPath"
+
+          Write-Host "Submitted to Microsoft Store!"
+
+      - name: Generate download URLs
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            VERSION="${{ steps.version.outputs.DISPLAY_VERSION }}"
+            ACCOUNT="${{ secrets.AZURE_STORAGE_ACCOUNT }}"
+            CONTAINER="${{ env.STORAGE_CONTAINER }}"
+            EXT="${{ steps.msix.outputs.EXTENSION }}"
+
+            echo "## Download Links" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Version $VERSION (x86)" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| File | URL |" >> $GITHUB_STEP_SUMMARY
+            echo "|------|-----|" >> $GITHUB_STEP_SUMMARY
+            echo "| AlertOne-x86$EXT (latest) | https://$ACCOUNT.blob.core.windows.net/$CONTAINER/windows/latest/AlertOne-x86$EXT |" >> $GITHUB_STEP_SUMMARY
+            echo "| AlertOne-$VERSION-x86$EXT | https://$ACCOUNT.blob.core.windows.net/$CONTAINER/windows/$VERSION/AlertOne-$VERSION-x86$EXT |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Cleanup sensitive files
+        if: always()
+        shell: pwsh
+        run: |
+          Remove-Item -Path "${{ github.workspace }}\AlertOne.pfx" -Force -ErrorAction SilentlyContinue
+
+      - name: Azure logout
+        if: always()
+        run: az logout
+
+  notify:
+    needs: build-and-deploy
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Notify on success
+        if: needs.build-and-deploy.result == 'success'
+        run: |
+          echo "Windows MSIX package successfully deployed!"
+
+      - name: Notify on failure
+        if: needs.build-and-deploy.result == 'failure'
+        run: |
+          echo "Windows deployment failed!"
+          exit 1

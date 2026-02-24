@@ -76,12 +76,21 @@ AlertOne/
   - Support for Android (FCM) and iOS (APNs)
   - Tag-based targeting (by role, team, location)
   - User-specific notifications
+  - In-app notification bell with unread count
+  - Notification history page
+  - Automatic notifications on alert creation and status updates
 
 - **User Management**
   - JWT-based authentication
   - Role-based authorization
   - User registration and profile management
-  - User invitation system (coming soon)
+  - User invitation system with email activation
+  - User settings and preferences
+
+- **User Settings**
+  - Email notification preferences
+  - Push notification preferences
+  - Theme customization (placeholder for future)
 
 ## Getting Started
 
@@ -195,6 +204,26 @@ dotnet run
 | GET | `/users/{id}` | Get user by ID |
 | PUT | `/users/{id}` | Update user |
 | DELETE | `/users/{id}` | Delete user |
+
+### User Settings (`/api`)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/users/{userId}/settings` | Get user settings |
+| PUT | `/users/{userId}/settings` | Update user settings |
+| POST | `/users/{userId}/settings/default` | Create default settings |
+
+### Invitations (`/api`)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/invitations` | Get all invitations |
+| GET | `/invitations/{id}` | Get invitation by ID |
+| POST | `/invitations` | Create new invitation |
+| POST | `/invitations/accept` | Accept invitation |
+| POST | `/invitations/{id}/resend` | Resend invitation |
+| DELETE | `/invitations/{id}` | Delete invitation |
+| GET | `/invitations/validate/{code}` | Validate activation code |
 
 ## Configuration
 
