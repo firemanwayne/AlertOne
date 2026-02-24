@@ -112,7 +112,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\Aspire\AlertOne.ServiceDefaults.Maui\AlertOne.ServiceDefaults.Maui.csproj" />
       <ProjectReference Include="..\Domains\Domains.AlertManagement\Domains.AlertManagement.csproj" />
       <ProjectReference Include="..\Domains\Domains.UserManagement\Domains.UserManagement.csproj" />      
     </ItemGroup>
