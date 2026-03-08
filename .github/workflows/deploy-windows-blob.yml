@@ -23,6 +23,20 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check if signing certificate is available
+        id: check-cert
+        shell: pwsh
+        env:
+          SIGNING_CERT: ${{ secrets.WINDOWS_SIGNING_CERT_BASE64 }}
+        run: |
+          if ([string]::IsNullOrEmpty($env:SIGNING_CERT)) {
+            Write-Host "No signing certificate configured"
+            echo "HAS_CERT=false" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Host "Signing certificate is available"
+            echo "HAS_CERT=true" >> $env:GITHUB_OUTPUT
+          }
+
       - name: Setup .NET ${{ env.DOTNET_VERSION }}
         uses: actions/setup-dotnet@v4
         with:
@@ -71,7 +85,7 @@ jobs:
           echo "DISPLAY_VERSION=$displayVersion" >> $env:GITHUB_OUTPUT
 
       - name: Decode signing certificate
-        if: ${{ secrets.WINDOWS_SIGNING_CERT_BASE64 != '' }}
+        if: steps.check-cert.outputs.HAS_CERT == 'true'
         shell: pwsh
         run: |
           $pfxBytes = [Convert]::FromBase64String("${{ secrets.WINDOWS_SIGNING_CERT_BASE64 }}")
@@ -200,7 +214,7 @@ jobs:
           }
 
       - name: Sign MSI package
-        if: ${{ secrets.WINDOWS_SIGNING_CERT_BASE64 != '' }}
+        if: steps.check-cert.outputs.HAS_CERT == 'true'
         shell: pwsh
         run: |
           $msiPath = "${{ steps.msi.outputs.MSI_PATH }}"
@@ -229,7 +243,7 @@ jobs:
           }
 
       - name: Skip signing (no certificate)
-        if: ${{ secrets.WINDOWS_SIGNING_CERT_BASE64 == '' }}
+        if: steps.check-cert.outputs.HAS_CERT == 'false'
         run: |
           echo "::warning::MSI package is not signed. Set WINDOWS_SIGNING_CERT_BASE64 secret to enable signing."
 
@@ -288,7 +302,7 @@ jobs:
             echo "| alertone-$VERSION.msi | https://${{ env.STORAGE_ACCOUNT }}.blob.core.windows.net/${{ env.STORAGE_CONTAINER }}/alertone-$VERSION.msi |" >> $GITHUB_STEP_SUMMARY
 
       - name: Cleanup sensitive files
-        if: ${{ always() && secrets.WINDOWS_SIGNING_CERT_BASE64 != '' }}
+        if: always()
         shell: pwsh
         run: |
           Remove-Item -Path "${{ github.workspace }}\AlertOne.pfx" -Force -ErrorAction SilentlyContinue
