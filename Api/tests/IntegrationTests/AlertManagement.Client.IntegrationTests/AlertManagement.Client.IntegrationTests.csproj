@@ -8,7 +8,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\..\alerts\src\AlertManagement.Client\AlertManagement.Client.csproj" />
+		<ProjectReference Include="..\..\..\src\alerts\src\AlertManagement.Client\AlertManagement.Client.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -22,6 +22,7 @@ public sealed class AuthenticationServiceTests
     private Mock<SignInManager<ApplicationUser>> _signInManagerMock = null!;
     private Mock<ITokenService> _tokenServiceMock = null!;
     private Mock<IDeviceService> _deviceServiceMock = null!;
+    private Mock<IUserSettingsService> _userSettingsServiceMock = null!;
     private Mock<ILogger<AuthenticationService>> _loggerMock = null!;
     private AuthenticationService _authenticationService = null!;
 
@@ -32,11 +33,13 @@ public sealed class AuthenticationServiceTests
         _signInManagerMock = MockHelpers.MockSignInManager(_userManagerMock);
         _tokenServiceMock = new Mock<ITokenService>();
         _deviceServiceMock = new Mock<IDeviceService>();
+        _userSettingsServiceMock = new Mock<IUserSettingsService>();
         _loggerMock = new Mock<ILogger<AuthenticationService>>();
 
         _authenticationService = new AuthenticationService(
             _tokenServiceMock.Object,
             _deviceServiceMock.Object,
+            _userSettingsServiceMock.Object,
             _loggerMock.Object,
             _userManagerMock.Object,
             _signInManagerMock.Object);

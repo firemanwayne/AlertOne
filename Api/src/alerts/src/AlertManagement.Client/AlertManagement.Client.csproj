@@ -11,9 +11,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\..\infrastructure\Azure.AppConfig\Azure.AppConfig.csproj" />
-		<ProjectReference Include="..\..\..\infrastructure\Azure.Communications\Azure.Communications.csproj" />
-		<ProjectReference Include="..\..\..\infrastructure\Azure.NotificationHubs\Azure.NotificationHubs.csproj" />
+		<ProjectReference Include="..\..\..\..\lib\infrastructure\Azure.AppConfig\Azure.AppConfig.csproj" />
+		<ProjectReference Include="..\..\..\..\lib\infrastructure\Azure.Communications\Azure.Communications.csproj" />
+		<ProjectReference Include="..\..\..\..\lib\infrastructure\Azure.NotificationHubs\Azure.NotificationHubs.csproj" />
 		<ProjectReference Include="..\AlertManagement.Infrastructure\AlertManagement.Infrastructure.csproj" />
 	</ItemGroup>
 

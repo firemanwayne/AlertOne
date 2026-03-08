@@ -29,7 +29,10 @@
       "Bash(gh project item-list:*)",
       "Bash(git status:*)",
       "Bash(git push:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(tree:*)",
+      "Bash(git mv:*)",
+      "Bash(dotnet test:*)"
     ]
   }
 }

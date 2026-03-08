@@ -7,6 +7,7 @@ using UserManagement.Core.DTOs.Requests;
 using UserManagement.Core.ValueObjects;
 using UserManagement.Infrastructure.Identity;
 using UserManagement.Infrastructure.Services;
+using UserManagement.Core.Interfaces;
 using UserManagement.Infrastructure.Tests.Helpers;
 
 namespace UserManagement.Infrastructure.Tests.Services;
@@ -16,6 +17,7 @@ public sealed class UserServiceTests
 {
     private Mock<UserManager<ApplicationUser>> _userManagerMock = null!;
     private Mock<ILogger<UserService>> _loggerMock = null!;
+    private Mock<IUserSettingsService> _userSettingsServiceMock = null!;
     private UserService _userService = null!;
 
     [TestInitialize]
@@ -23,8 +25,9 @@ public sealed class UserServiceTests
     {
         _userManagerMock = MockHelpers.MockUserManager();
         _loggerMock = new Mock<ILogger<UserService>>();
+        _userSettingsServiceMock = new Mock<IUserSettingsService>();
 
-        _userService = new UserService(_loggerMock.Object, _userManagerMock.Object);
+        _userService = new UserService(_loggerMock.Object, _userManagerMock.Object, _userSettingsServiceMock.Object);
     }
 
     [TestMethod]
