@@ -7,17 +7,8 @@
 @inject ISnackbar Snackbar
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
-    <div class="d-flex justify-space-between align-center mb-4">
-        <MudText Typo="Typo.h4">Alert Types</MudText>
-        <MudButton Variant="Variant.Filled"
-                   Color="Color.Primary"
-                   StartIcon="@Icons.Material.Filled.Add"
-                   OnClick="@HandleCreate">
-            New
-        </MudButton>
-    </div>
-
     <AlertTypeList @ref="_listRef"
+                   OnCreate="@HandleCreate"
                    OnEdit="@HandleEdit"
                    OnDelete="@HandleDelete" />
 </MudContainer>

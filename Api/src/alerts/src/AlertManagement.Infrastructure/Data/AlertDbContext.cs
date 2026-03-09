@@ -35,7 +35,8 @@ public sealed class AlertDbContext(DbContextOptions<AlertDbContext> options) : D
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).HasMaxLength(256).IsRequired();
             entity.Property(e => e.Description).HasMaxLength(1024).IsRequired();
-            entity.Property(e => e.Color).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.BackgroundColor).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.TextColor).HasMaxLength(50).IsRequired();
             entity.HasIndex(e => e.Name).IsUnique();
         });
 
@@ -54,7 +55,8 @@ public sealed class AlertDbContext(DbContextOptions<AlertDbContext> options) : D
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).HasMaxLength(256).IsRequired();
             entity.Property(e => e.Description).HasMaxLength(1024).IsRequired();
-            entity.Property(e => e.Color).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.BackgroundColor).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.TextColor).HasMaxLength(50).IsRequired();
             entity.HasIndex(e => e.Name).IsUnique();
         });
 

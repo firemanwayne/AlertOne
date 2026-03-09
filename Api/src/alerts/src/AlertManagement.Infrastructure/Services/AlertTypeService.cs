@@ -75,7 +75,8 @@ internal sealed class AlertTypeService(
             Id = Guid.NewGuid().ToString(),
             Name = request.Name,
             Description = request.Description,
-            Color = request.Color,
+            BackgroundColor = request.BackgroundColor,
+            TextColor = request.TextColor,
             CreatedDate = DateTime.UtcNow,
             UpdatedDate = DateTime.UtcNow
         };
@@ -134,7 +135,8 @@ internal sealed class AlertTypeService(
 
         alertType.Name = request.Name;
         alertType.Description = request.Description;
-        alertType.Color = request.Color;
+        alertType.BackgroundColor = request.BackgroundColor;
+        alertType.TextColor = request.TextColor;
         alertType.UpdatedDate = DateTime.UtcNow;
 
         // Replace notify user list
@@ -202,7 +204,8 @@ internal sealed class AlertTypeService(
             alertType.Id,
             alertType.Name,
             alertType.Description,
-            alertType.Color,
+            alertType.BackgroundColor,
+            alertType.TextColor,
             notifyUserIds,
             alertType.CreatedDate,
             alertType.UpdatedDate);

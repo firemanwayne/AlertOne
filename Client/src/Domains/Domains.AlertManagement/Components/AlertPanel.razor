@@ -7,84 +7,97 @@
 @inject ISnackbar Snackbar
 @inject NavigationManager Nav
 
-<div class="alert-panel">
-    @if (_isLoading)
-    {
-        <div class="d-flex align-center gap-2">
-            <MudProgressCircular Size="Size.Small" Indeterminate="true" />
-            <MudText Typo="Typo.body2" Class="mud-text-secondary">Loading alerts...</MudText>
-        </div>
-    }
-    else if (_activeAlert != null)
-    {
-        <MudCard Elevation="2" Style="@($"border: 2px solid {_activeAlert.Type.Color};")" @onclick="@(() => NavigateToDashboard(_activeAlert.Id))">
-            <MudCardHeader Style="@($"background-color: {_activeAlert.Type.Color}; color: #fff;")">
-                <CardHeaderContent>
-                    <div class="d-flex flex-column flex-sm-row align-center gap-2 w-100">
-                        <div class="d-flex align-center gap-2 flex-wrap">
-                            <MudIcon Icon="@Icons.Material.Filled.Warning" />
-                            <MudText Typo="Typo.h6" Class="font-weight-bold">ACTIVE ALERT</MudText>
-                            <MudChip T="string"
-                                     Style="@($"background-color: {_activeAlert.StatusLevel.Color}; color: #fff;")"
-                                     Size="Size.Small">
-                                @_activeAlert.StatusLevel.Name
-                            </MudChip>
-                        </div>
-                        @if (_isManager)
-                        {
-                            <div class="mt-2 mt-sm-0 ml-sm-auto">
-                                <MudButton Variant="Variant.Filled"
-                                           Color="Color.Warning"
-                                           Size="Size.Small"
-                                           OnClick="@HandleRescindAsync"
-                                           Disabled="@_isSubmitting">
-                                    @if (_isSubmitting)
-                                    {
-                                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-1" />
-                                    }
-                                    Rescind Alert
-                                </MudButton>
+@if (_isLoading)
+{
+    <div class="d-flex align-center gap-2">
+        <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+        <MudText Typo="Typo.body2" Class="mud-text-secondary">Loading alerts...</MudText>
+    </div>
+}
+else
+{
+    <div class="alert-panel">
+
+        @foreach (var activeAlert in _activeAlerts)
+        {
+            var style = $"border: 2px solid {activeAlert.Type.BackgroundColor};";
+            var mudHeaderStyle = $"background-color: {activeAlert.Type.BackgroundColor}; color: {activeAlert.Type.TextColor};";
+
+            <MudCard Elevation="2" Style="@style" @onclick="@(() => NavigateToDashboard(activeAlert.Id))">
+                <MudCardHeader Style="@mudHeaderStyle">
+
+                    <CardHeaderContent>
+                        <div class="d-flex flex-column flex-sm-row align-center gap-2 w-100">
+                            <div class="d-flex align-center gap-2 flex-wrap">
+                                <MudIcon Icon="@Icons.Material.Filled.Warning" />
+                                <MudText Typo="Typo.h6" Class="font-weight-bold">ACTIVE ALERT</MudText>
+                                <MudChip T="string"
+                                         Style="@($"background-color: {activeAlert.StatusLevel.BackgroundColor}; color: {activeAlert.StatusLevel.TextColor};")"
+                                         Size="Size.Small">
+                                    @activeAlert.StatusLevel.Name
+                                </MudChip>
                             </div>
-                        }
-                    </div>
-                </CardHeaderContent>
-            </MudCardHeader>
-            <MudCardContent>
-                <MudGrid>
-                    <MudItem xs="12" md="6">
-                        <MudText Typo="Typo.subtitle1" Class="font-weight-bold">@_activeAlert.Type.Name</MudText>
-                        <MudText Typo="Typo.body2" Class="mud-text-secondary">@_activeAlert.Type.Description</MudText>
-                    </MudItem>
-                    <MudItem xs="12" md="6" Class="d-flex flex-column text-center">
-                        <MudText Typo="Typo.caption" Class="mud-text-secondary">
-                            Activated by <strong>@_activeAlert.CreatedBy</strong>
-                        </MudText>
-                        <MudText Typo="Typo.caption" Class="mud-text-secondary">
-                            @_activeAlert.CreatedDate.ToString("MMM d, yyyy h:mm tt")
-                        </MudText>
-                    </MudItem>
-                </MudGrid>
-            </MudCardContent>
-            @if (!_isManager)
-            {
-                <MudCardContent Class="pt-0">
-                    <MudText Typo="Typo.caption" Class="mud-text-secondary">
-                        Only managers can rescind this alert.
-                    </MudText>
+                            @if (_isManager)
+                            {
+                                <div class="mt-2 mt-sm-0 ml-sm-auto">
+                                    <MudButton Variant="Variant.Filled"
+                                               Color="Color.Warning"
+                                               Size="Size.Small"
+                                               OnClick="@(() => HandleRescindAsync(activeAlert.Id))"
+                                               Disabled="@_isSubmitting">
+                                        @if (_isSubmitting)
+                                        {
+                                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-1" />
+                                        }
+                                        Rescind Alert
+                                    </MudButton>
+                                </div>
+                            }
+                        </div>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudGrid>
+                        <MudItem xs="12" md="6">
+                            <MudText Typo="Typo.subtitle1" Class="font-weight-bold">@activeAlert.Type.Name</MudText>
+                            <MudText Typo="Typo.body2" Class="mud-text-secondary">@activeAlert.Type.Description</MudText>
+                        </MudItem>
+                        <MudItem xs="12" md="6" Class="d-flex flex-column text-center">
+                            <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                                Activated by <strong>@activeAlert.CreatedBy</strong>
+                            </MudText>
+                            <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                                @activeAlert.CreatedDate.ToString("MMM d, yyyy h:mm tt")
+                            </MudText>
+                        </MudItem>
+                    </MudGrid>
                 </MudCardContent>
-            }
-        </MudCard>
-    }
-    else if (_showActivateForm)
-    {
-        <MudCard Elevation="2">
+
+                @if (!_isManager)
+                {
+                    <MudCardContent Class="pt-0">
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                            Only managers can rescind this alert.
+                        </MudText>
+                    </MudCardContent>
+                }
+
+            </MudCard>
+        }
+    </div>
+}
+
+@if (_showActivateForm)
+{
+    <div class="alert-panel">
+        <MudCard Elevation="3">
             <MudCardHeader>
                 <CardHeaderContent>
                     <MudText Typo="Typo.h6">Activate Alert</MudText>
                 </CardHeaderContent>
                 <CardHeaderActions>
                     <MudIconButton Icon="@Icons.Material.Filled.Close"
-                                    Color="Color.Warning"
+                                   Color="Color.Warning"
                                    OnClick="@CancelActivate" />
                 </CardHeaderActions>
             </MudCardHeader>
@@ -105,12 +118,16 @@
 
                     @if (!string.IsNullOrEmpty(_activateModel.TypeId))
                     {
-                        var selected = _alertTypes.FirstOrDefault(t => t.Id == _activateModel.TypeId);
+                        var selected = _alertTypes
+                        .FirstOrDefault(t => t.Id == _activateModel.TypeId);
+
                         @if (selected != null)
                         {
+                            var selectedCss = $"background-color: {selected.BackgroundColor}22; border-left: 4px solid {selected.BackgroundColor};";
+
                             <MudPaper Elevation="0"
                                       Class="pa-3 mb-4"
-                                      Style="@($"background-color: {selected.Color}22; border-left: 4px solid {selected.Color};")">
+                                      Style="@(selectedCss)">
                                 <MudText Typo="Typo.body2">@selected.Description</MudText>
                             </MudPaper>
                         }
@@ -141,14 +158,19 @@
                 </MudButton>
             </MudCardActions>
         </MudCard>
-    }
-    else
-    {
+    </div>
+}
+else
+{
+    <div class="alert-panel" style="padding-top:50px;">
         <div class="d-flex align-center gap-3">
+            @if(_activeAlerts.Count == 0)
+            {
             <div class="d-flex align-center gap-2">
                 <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
                 <MudText Typo="Typo.body2">No active alerts</MudText>
             </div>
+            }
             <MudButton Variant="Variant.Filled"
                        Color="Color.Error"
                        Size="Size.Small"
@@ -156,18 +178,24 @@
                 Activate Alert
             </MudButton>
         </div>
-    }
-</div>
+    </div>
+}
+
 
 @code {
     [Parameter]
     public EventCallback OnAlertChanged { get; set; }
 
-    private AlertViewModel? _activeAlert;
+    private List<AlertViewModel> _activeAlerts = [];
+
     private List<AlertTypeViewModel> _alertTypes = new();
+
     private bool _isLoading = true;
+
     private bool _isSubmitting = false;
+
     private bool _showActivateForm = false;
+
     private bool _formIsValid = false;
 
     private MudForm _form = null!;
@@ -189,17 +217,18 @@
         try
         {
             var alertsTask = AlertService.GetAllAsync();
+
             var typesTask = AlertTypeService.GetAllAsync();
 
             await Task.WhenAll(alertsTask, typesTask);
 
             if (alertsTask.Result.IsSuccess)
             {
-                _activeAlert = alertsTask.Result.Value
+                _activeAlerts = alertsTask.Result.Value
                     .Where(a => a.IsActive)
                     .OrderByDescending(a => a.CreatedDate)
                     .Select(AlertViewModel.FromResponse)
-                    .FirstOrDefault();
+                    .ToList();
             }
 
             if (typesTask.Result.IsSuccess)
@@ -218,6 +247,7 @@
     private void ShowActivateForm()
     {
         _activateModel = new ActivateModel();
+
         _showActivateForm = true;
     }
 
@@ -231,6 +261,7 @@
         if (_form != null)
         {
             await _form.Validate();
+
             if (!_form.IsValid)
             {
                 return;
@@ -249,9 +280,11 @@
 
             if (result.IsSuccess)
             {
-                _activeAlert = AlertViewModel.FromResponse(result.Value);
-                _showActivateForm = false;
+                _activeAlerts
+                .Add(AlertViewModel.FromResponse(result.Value));
+
                 Snackbar.Add("Alert activated successfully", Severity.Success);
+
                 await OnAlertChanged.InvokeAsync();
             }
             else
@@ -269,25 +302,22 @@
         }
     }
 
-    private async Task HandleRescindAsync()
+    private async Task HandleRescindAsync(string alertId)
     {
-        if (_activeAlert == null)
-        {
-            return;
-        }
-
         _isSubmitting = true;
 
         try
         {
             var rescindRequest = new RescindAlertRequest(AppState.CurrentUser?.Email ?? string.Empty);
 
-            var result = await AlertService.RescindAsync(_activeAlert.Id, rescindRequest);
+            var result = await AlertService.RescindAsync(alertId, rescindRequest);
 
             if (result.IsSuccess)
             {
-                _activeAlert = null;
+                await RefreshAsync();
+
                 Snackbar.Add("Alert rescinded successfully", Severity.Success);
+
                 await OnAlertChanged.InvokeAsync();
             }
             else

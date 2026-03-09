@@ -29,13 +29,22 @@ public sealed class AlertStatusLevelViewModel : ViewModelBase
         set => SetProperty(ref _description, value);
     }
 
-    private string _color = string.Empty;
+    private string _backgroundColor = string.Empty;
 
-    [Display(Name = "Color")]
-    public string Color
+    [Display(Name = "Background Color")]
+    public string BackgroundColor
     {
-        get => _color;
-        set => SetProperty(ref _color, value);
+        get => _backgroundColor;
+        set => SetProperty(ref _backgroundColor, value);
+    }
+
+    private string _textColor = string.Empty;
+
+    [Display(Name = "Text Color")]
+    public string TextColor
+    {
+        get => _textColor;
+        set => SetProperty(ref _textColor, value);
     }
 
     private bool _sendNotifications;
@@ -70,7 +79,8 @@ public sealed class AlertStatusLevelViewModel : ViewModelBase
         Id = response.Id,
         Name = response.Name,
         Description = response.Description,
-        Color = response.Color,
+        BackgroundColor = response.BackgroundColor,
+        TextColor = response.TextColor,
         SendNotifications = response.SendNotifications,
         IsDefault = response.IsDefault,
         IsCanceled = response.IsCanceled,

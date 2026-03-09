@@ -50,9 +50,12 @@ internal sealed class BrowserTokenStorageService(ILocalStorageService localStora
             return null;
         }
 
-        if (DateTime.TryParse(expiryString, out var expiryTime))
+        if (DateTime.TryParse(expiryString, null, System.Globalization.DateTimeStyles.RoundtripKind, out var expiryTime))
         {
-            return expiryTime;
+            // Ensure we return UTC for proper comparison
+            return expiryTime.Kind == DateTimeKind.Utc
+                ? expiryTime
+                : expiryTime.ToUniversalTime();
         }
 
         return null;

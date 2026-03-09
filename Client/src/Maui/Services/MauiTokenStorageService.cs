@@ -47,9 +47,12 @@ internal sealed class MauiTokenStorageService : ITokenStorageService
                 return null;
             }
 
-            if (DateTime.TryParse(expiryString, out var expiry))
+            if (DateTime.TryParse(expiryString, null, System.Globalization.DateTimeStyles.RoundtripKind, out var expiry))
             {
-                return expiry;
+                // Ensure we return UTC for proper comparison
+                return expiry.Kind == DateTimeKind.Utc
+                    ? expiry
+                    : expiry.ToUniversalTime();
             }
 
             return null;

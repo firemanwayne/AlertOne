@@ -6,5 +6,6 @@ namespace Domains.AlertManagement.AlertTypeAggregate.Requests;
 public sealed record UpdateAlertTypeRequest(
     string Name,
     string Description,
-    string Color,
+    string BackgroundColor,
+    string TextColor,
     List<string> NotifyUserIds);

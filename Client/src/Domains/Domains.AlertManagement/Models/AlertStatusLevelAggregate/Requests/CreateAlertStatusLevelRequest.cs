@@ -6,7 +6,8 @@ namespace Domains.AlertManagement.AlertStatusLevelAggregate.Requests;
 public sealed record CreateAlertStatusLevelRequest(
     string Name,
     string Description,
-    string Color,
+    string BackgroundColor,
+    string TextColor,
     bool SendNotifications,
     bool IsDefault,
     bool IsCanceled);

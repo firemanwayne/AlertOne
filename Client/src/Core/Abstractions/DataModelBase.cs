@@ -44,7 +44,9 @@ public abstract class DataModelBase
         set => SetProperty(ref _updatedBy, value);
     }
 
+#pragma warning disable CA1822 // Mark members as static
     protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+#pragma warning restore CA1822 // Mark members as static
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {

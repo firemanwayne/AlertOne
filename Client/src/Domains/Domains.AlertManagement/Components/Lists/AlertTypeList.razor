@@ -7,6 +7,17 @@
         <MudText Typo="Typo.h6">Alert Types</MudText>
         <MudSpacer />
         <MudIconButton Icon="@Icons.Material.Filled.Refresh" OnClick="@LoadAsync" />
+        @if (OnCreate.HasDelegate)
+        {
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       Size="Size.Small"
+                       Class="ml-2"
+                       OnClick="@(() => OnCreate.InvokeAsync())">
+                New
+            </MudButton>
+        }
     </MudToolBar>
 
     @if (_isLoading)
@@ -36,7 +47,7 @@
 
         <MudTable Items="@FilteredTypes" Hover="true" Striped="true" Dense="true">
             <HeaderContent>
-                <MudTh>Color</MudTh>
+                <MudTh>Colors</MudTh>
                 <MudTh>Name</MudTh>
                 <MudTh>Description</MudTh>
                 <MudTh>Notify Users</MudTh>
@@ -44,7 +55,11 @@
             </HeaderContent>
             <RowTemplate>
                 <MudTd>
-                    <MudAvatar Size="Size.Small" Style="@($"background-color: {context.Color}")"> </MudAvatar>
+                    <MudChip T="string"
+                             Style="@($"background-color: {context.BackgroundColor}; color: {context.TextColor};")"
+                             Size="Size.Small">
+                        Aa
+                    </MudChip>
                 </MudTd>
                 <MudTd DataLabel="Name">
                     <MudText Typo="Typo.body2" Class="font-weight-bold">@context.Name</MudText>
@@ -77,6 +92,9 @@
 </MudPaper>
 
 @code {
+    [Parameter]
+    public EventCallback OnCreate { get; set; }
+
     [Parameter]
     public EventCallback<AlertTypeViewModel> OnEdit { get; set; }
 

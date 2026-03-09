@@ -69,7 +69,7 @@ public abstract class ViewModelBase : INotifyPropertyChanged
     [Display(Name = "Is New?")]
     public bool IsNew { get; set; }
 
-    public bool SpinnerVisible { get; set; }
+    public bool SpinnerVisible { get; private set; }
 
     public bool DisableSpinnerButton { get; set; }
 
@@ -101,7 +101,7 @@ public abstract class ViewModelBase : INotifyPropertyChanged
     /// <summary>
     /// Convenience property to set the url segment of index page
     /// </summary>
-    public static string IndexSegment { get; set; } = string.Empty;
+    public string IndexSegment { get; protected set; } = string.Empty;
 
     [JsonIgnore] public ClaimsPrincipal CurrentUser { get; set; }
 

@@ -62,13 +62,13 @@
                     </MudTd>
                     <MudTd Style="text-align: center">
                         <div class="d-flex align-center gap-2 justify-center">
-                            <MudAvatar Size="Size.Small" Style="@($"background-color: {context.Type.Color}; width: 12px; height: 12px;")"> </MudAvatar>
+                            <MudAvatar Size="Size.Small" Style="@($"background-color: {context.Type.BackgroundColor}; width: 12px; height: 12px;")"> </MudAvatar>
                             <MudText Typo="Typo.body2">@context.Type.Name</MudText>
                         </div>
                     </MudTd>
                     <MudTd Style="text-align: center">
                         <MudChip T="string"
-                                 Style="@($"background-color: {context.StatusLevel.Color}; color: #fff;")"
+                                 Style="@($"background-color: {context.StatusLevel.BackgroundColor}; color: {context.StatusLevel.TextColor};")"
                                  Size="Size.Small">
                             @context.StatusLevel.Name
                         </MudChip>
@@ -106,7 +106,7 @@
                         <MudCardContent Class="pa-3">
                             <div class="d-flex justify-space-between align-center mb-2">
                                 <div class="d-flex align-center gap-2">
-                                    <MudAvatar Size="Size.Small" Style="@($"background-color: {alert.Type.Color}; width: 12px; height: 12px;")"> </MudAvatar>
+                                    <MudAvatar Size="Size.Small" Style="@($"background-color: {alert.Type.BackgroundColor}; width: 12px; height: 12px;")"> </MudAvatar>
                                     <MudText Typo="Typo.subtitle2">@alert.Type.Name</MudText>
                                 </div>
                                 @if (alert.IsActive)
@@ -123,7 +123,7 @@
                                 <MudItem xs="6">
                                     <MudText Typo="Typo.caption" Class="mud-text-secondary">Status</MudText>
                                     <MudChip T="string"
-                                             Style="@($"background-color: {alert.StatusLevel.Color}; color: #fff;")"
+                                             Style="@($"background-color: {alert.StatusLevel.BackgroundColor}; color: {alert.StatusLevel.TextColor};")"
                                              Size="Size.Small">
                                         @alert.StatusLevel.Name
                                     </MudChip>

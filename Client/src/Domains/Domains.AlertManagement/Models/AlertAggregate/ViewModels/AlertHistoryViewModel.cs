@@ -7,16 +7,14 @@ using System.Security.Claims;
 public sealed class AlertHistoryViewModel : ViewModelBase
 {
     public AlertHistoryViewModel(ClaimsPrincipal user) : base(user)
-    {
-    }
+    { }
 
     public AlertHistoryViewModel(string id, ClaimsPrincipal user) : base(id, user)
-    {
-    }
+    { }
 
     private string _alertId = string.Empty;
 
-    [Display(Name = "Alert ID")]
+    [Display(Name = "Alert Id")]
     public string AlertId
     {
         get => _alertId;

@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  DOTNET_VERSION: '9.0.102'
+  DOTNET_VERSION: '9.0.x'
   MAUI_PROJECT_PATH: 'Client/src/Maui/AlertOne.Maui.csproj'
   STORAGE_ACCOUNT: 'alertoneeastus001'
   STORAGE_CONTAINER: 'downloads'

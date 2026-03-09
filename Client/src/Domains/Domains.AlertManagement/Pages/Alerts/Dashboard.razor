@@ -33,15 +33,15 @@
     }
     else
     {
-        <MudCard Elevation="2" Class="mb-4" Style="@($"border: 2px solid {_alert.Type.Color};")">
-            <MudCardHeader Style="@($"background-color: {_alert.Type.Color}; color: #fff;")">
+        <MudCard Elevation="2" Class="mb-4" Style="@($"border: 2px solid {_alert.Type.BackgroundColor};")">
+            <MudCardHeader Style="@($"background-color: {_alert.Type.BackgroundColor}; color: {_alert.Type.TextColor};")">
                 <CardHeaderContent>
                     <div class="d-flex flex-column flex-sm-row align-center gap-2 w-100">
                         <div class="d-flex align-center gap-2 flex-wrap">
                             <MudIcon Icon="@Icons.Material.Filled.Warning" />
                             <MudText Typo="Typo.h6" Class="font-weight-bold">@_alert.Type.Name</MudText>
                             <MudChip T="string"
-                                     Style="@($"background-color: {_alert.StatusLevel.Color}; color: #fff;")"
+                                     Style="@($"background-color: {_alert.StatusLevel.BackgroundColor}; color: {_alert.StatusLevel.TextColor};")"
                                      Size="Size.Small">
                                 @_alert.StatusLevel.Name
                             </MudChip>

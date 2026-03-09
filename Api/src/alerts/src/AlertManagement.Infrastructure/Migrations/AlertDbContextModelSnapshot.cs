@@ -115,7 +115,7 @@ namespace AlertManagement.Infrastructure.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("Color")
+                    b.Property<string>("BackgroundColor")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -146,6 +146,11 @@ namespace AlertManagement.Infrastructure.Migrations
                     b.Property<bool>("SendNotifications")
                         .HasColumnType("bit");
 
+                    b.Property<string>("TextColor")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -166,7 +171,7 @@ namespace AlertManagement.Infrastructure.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("Color")
+                    b.Property<string>("BackgroundColor")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -187,6 +192,11 @@ namespace AlertManagement.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("TextColor")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()

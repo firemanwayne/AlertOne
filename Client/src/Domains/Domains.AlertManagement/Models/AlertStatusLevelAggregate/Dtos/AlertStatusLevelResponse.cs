@@ -11,7 +11,9 @@ public sealed class AlertStatusLevelResponse : DataModelBase
 
     public string Description { get; set; } = string.Empty;
 
-    public string Color { get; set; } = string.Empty;
+    public string BackgroundColor { get; set; } = string.Empty;
+
+    public string TextColor { get; set; } = string.Empty;
 
     public bool SendNotifications { get; set; }
 

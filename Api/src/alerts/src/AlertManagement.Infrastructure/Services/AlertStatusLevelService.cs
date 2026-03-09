@@ -97,7 +97,8 @@ internal sealed class AlertStatusLevelService(
             Id = Guid.NewGuid().ToString(),
             Name = request.Name,
             Description = request.Description,
-            Color = request.Color,
+            BackgroundColor = request.BackgroundColor,
+            TextColor = request.TextColor,
             SendNotifications = request.SendNotifications,
             IsDefault = request.IsDefault,
             IsCanceled = request.IsCanceled,
@@ -172,7 +173,8 @@ internal sealed class AlertStatusLevelService(
 
         statusLevel.Name = request.Name;
         statusLevel.Description = request.Description;
-        statusLevel.Color = request.Color;
+        statusLevel.BackgroundColor = request.BackgroundColor;
+        statusLevel.TextColor = request.TextColor;
         statusLevel.SendNotifications = request.SendNotifications;
         statusLevel.IsDefault = request.IsDefault;
         statusLevel.IsCanceled = request.IsCanceled;
@@ -224,7 +226,8 @@ internal sealed class AlertStatusLevelService(
             statusLevel.Id,
             statusLevel.Name,
             statusLevel.Description,
-            statusLevel.Color,
+            statusLevel.BackgroundColor,
+            statusLevel.TextColor,
             statusLevel.SendNotifications,
             statusLevel.IsDefault,
             statusLevel.IsCanceled,

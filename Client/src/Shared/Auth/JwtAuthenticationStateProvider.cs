@@ -39,6 +39,21 @@ public sealed class JwtAuthenticationStateProvider : AuthenticationStateProvider
             return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
         }
 
+        // Check if token is expired
+        var isExpired = await _tokenStorage.IsTokenExpiredAsync();
+
+        if (isExpired)
+        {
+            // Token is expired - clear state and return unauthenticated
+            _appState.PropertyChanged -= OnAppStatePropertyChanged;
+            _appState.IsAuthenticated = false;
+            _appState.CurrentUser = null;
+            _appState.AccessToken = null;
+            _appState.PropertyChanged += OnAppStatePropertyChanged;
+
+            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+        }
+
         var claims = ParseClaimsFromJwt(token).ToList();
 
         // Hydrate AppState from JWT claims when missing (e.g. page refresh)

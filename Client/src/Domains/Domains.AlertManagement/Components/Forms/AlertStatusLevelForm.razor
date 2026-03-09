@@ -30,12 +30,35 @@
                           HelperText="Describe when this status level is used"
                           Class="mb-4" />
 
-            <MudColorPicker @bind-Text="_model.Color"
-                            Label="Color"
-                            Variant="Variant.Outlined"
-                            DisableToolbar="false"
-                            DisableAlpha="true"
-                            Class="mb-4" />
+            <MudText Typo="Typo.subtitle2" Class="mb-2">Colors</MudText>
+
+            <div class="d-flex align-center gap-4 mb-4">
+                <MudColorPicker @bind-Text="_model.BackgroundColor"
+                                Label="Background Color"
+                                Variant="Variant.Outlined"
+                                DisableToolbar="false"
+                                DisableAlpha="true"
+                                PickerVariant="PickerVariant.Inline" />
+                <MudAvatar Size="Size.Large" Style="@($"background-color: {_model.BackgroundColor};")"> </MudAvatar>
+            </div>
+
+            <div class="d-flex align-center gap-4 mb-4">
+                <MudColorPicker @bind-Text="_model.TextColor"
+                                Label="Text Color"
+                                Variant="Variant.Outlined"
+                                DisableToolbar="false"
+                                DisableAlpha="true"
+                                PickerVariant="PickerVariant.Inline" />
+                <MudAvatar Size="Size.Large" Style="@($"background-color: {_model.TextColor};")"> </MudAvatar>
+            </div>
+
+            <MudText Typo="Typo.subtitle2" Class="mb-2">Combined Preview</MudText>
+            <MudChip T="string"
+                     Style="@($"background-color: {_model.BackgroundColor}; color: {_model.TextColor};")"
+                     Size="Size.Large"
+                     Class="mb-4">
+                Sample Status Text
+            </MudChip>
 
             <MudSwitch T="bool"
                        @bind-Value="_model.SendNotifications"
@@ -104,7 +127,8 @@
             {
                 Name = StatusLevel.Name,
                 Description = StatusLevel.Description,
-                Color = StatusLevel.Color,
+                BackgroundColor = StatusLevel.BackgroundColor,
+                TextColor = StatusLevel.TextColor,
                 SendNotifications = StatusLevel.SendNotifications,
                 IsDefault = StatusLevel.IsDefault,
                 IsCanceled = StatusLevel.IsCanceled
@@ -134,7 +158,8 @@
                 var request = new CreateAlertStatusLevelRequest(
                     _model.Name,
                     _model.Description,
-                    _model.Color,
+                    _model.BackgroundColor,
+                    _model.TextColor,
                     _model.SendNotifications,
                     _model.IsDefault,
                     _model.IsCanceled);
@@ -156,7 +181,8 @@
                 var request = new UpdateAlertStatusLevelRequest(
                     _model.Name,
                     _model.Description,
-                    _model.Color,
+                    _model.BackgroundColor,
+                    _model.TextColor,
                     _model.SendNotifications,
                     _model.IsDefault,
                     _model.IsCanceled);
@@ -188,7 +214,8 @@
     {
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public string Color { get; set; } = "#6c757d";
+        public string BackgroundColor { get; set; } = "#6c757d";
+        public string TextColor { get; set; } = "#ffffff";
         public bool SendNotifications { get; set; } = true;
         public bool IsDefault { get; set; }
         public bool IsCanceled { get; set; }

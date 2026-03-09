@@ -31,20 +31,35 @@
                           HelperText="Describe what this alert type represents..."
                           Class="mb-4" />
 
+            <MudText Typo="Typo.subtitle2" Class="mb-2">Colors</MudText>
+
             <div class="d-flex align-center gap-4 mb-4">
-                <MudColorPicker @bind-Text="_model.Color"
-                                Label="Color"
+                <MudColorPicker @bind-Text="_model.BackgroundColor"
+                                Label="Background Color"
                                 Variant="Variant.Outlined"
                                 DisableToolbar="false"
                                 DisableAlpha="true"
-                                Style="max-width: 200px;" />
-
-                <MudChip T="string"
-                         Style="@($"background-color: {_model.Color}; color: #fff;")"
-                         Size="Size.Large">
-                    Preview
-                </MudChip>
+                                PickerVariant="PickerVariant.Inline" />
+                <MudAvatar Size="Size.Large" Style="@($"background-color: {_model.BackgroundColor};")"> </MudAvatar>
             </div>
+
+            <div class="d-flex align-center gap-4 mb-4">
+                <MudColorPicker @bind-Text="_model.TextColor"
+                                Label="Text Color"
+                                Variant="Variant.Outlined"
+                                DisableToolbar="false"
+                                DisableAlpha="true"
+                                PickerVariant="PickerVariant.Inline" />
+                <MudAvatar Size="Size.Large" Style="@($"background-color: {_model.TextColor};")"> </MudAvatar>
+            </div>
+
+            <MudText Typo="Typo.subtitle2" Class="mb-2">Combined Preview</MudText>
+            <MudChip T="string"
+                     Style="@($"background-color: {_model.BackgroundColor}; color: {_model.TextColor};")"
+                     Size="Size.Large"
+                     Class="mb-4">
+                Sample Alert Text
+            </MudChip>
 
             <MudText Typo="Typo.subtitle2" Class="mb-2">Notify Users</MudText>
             <MudText Typo="Typo.caption" Class="mud-text-secondary mb-2">
@@ -162,7 +177,8 @@
             {
                 Name = AlertType.Name,
                 Description = AlertType.Description,
-                Color = AlertType.Color,
+                BackgroundColor = AlertType.BackgroundColor,
+                TextColor = AlertType.TextColor,
                 NotifyUserIds = AlertType.NotifyUserIds.ToList()
             };
         }
@@ -228,7 +244,8 @@
                 var request = new CreateAlertTypeRequest(
                     _model.Name,
                     _model.Description,
-                    _model.Color,
+                    _model.BackgroundColor,
+                    _model.TextColor,
                     _model.NotifyUserIds);
 
                 var result = await AlertTypeService.CreateAsync(request);
@@ -248,7 +265,8 @@
                 var request = new UpdateAlertTypeRequest(
                     _model.Name,
                     _model.Description,
-                    _model.Color,
+                    _model.BackgroundColor,
+                    _model.TextColor,
                     _model.NotifyUserIds);
 
                 var result = await AlertTypeService.UpdateAsync(AlertType.Id, request);
@@ -278,7 +296,8 @@
     {
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public string Color { get; set; } = "#0d6efd";
+        public string BackgroundColor { get; set; } = "#0d6efd";
+        public string TextColor { get; set; } = "#ffffff";
         public List<string> NotifyUserIds { get; set; } = new();
     }
 }

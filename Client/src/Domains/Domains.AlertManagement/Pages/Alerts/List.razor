@@ -2,10 +2,6 @@
 @attribute [Authorize]
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
-    <div class="d-flex justify-space-between align-center mb-4">
-        <MudText Typo="Typo.h4">Alerts</MudText>
-    </div>
-
     <MudPaper Elevation="1" Class="mb-4 pa-4">
         <AlertPanel @ref="_alertPanelRef" OnAlertChanged="@HandleAlertChanged" />
     </MudPaper>
