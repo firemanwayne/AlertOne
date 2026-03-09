@@ -99,10 +99,9 @@ var baseAppSettings = {
   WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED: '1'
 }
 
-// App settings for Flex Consumption plans (minimal - storage is in functionAppConfig)
+// App settings for Flex Consumption plans (minimal - runtime is in functionAppConfig)
 var flexAppSettings = {
   FUNCTIONS_EXTENSION_VERSION: '~4'
-  FUNCTIONS_WORKER_RUNTIME: 'dotnet-isolated'
 }
 
 var insightsSettings = !empty(appInsightsConnectionString) ? {
