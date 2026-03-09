@@ -13,7 +13,7 @@ param deployAppConfiguration = true
 param appConfigurationSku = 'standard'
 
 // SKU parameters
-param appServicePlanSku = 'Y1'
+param appServicePlanSku = 'FC1'
 param sqlDatabaseSkuName = 'GP_S_Gen5_1'
 param sqlDatabaseSkuTier = 'GeneralPurpose'
 param sqlDatabaseSkuFamily = 'Gen5'

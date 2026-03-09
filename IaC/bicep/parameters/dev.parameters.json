@@ -54,7 +54,7 @@
       "value": "free"
     },
     "appServicePlanSku": {
-      "value": "Y1"
+      "value": "FC1"
     },
     "sqlDatabaseSkuName": {
       "value": "GP_S_Gen5_1"

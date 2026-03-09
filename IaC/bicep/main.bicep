@@ -74,7 +74,7 @@ param appConfigurationSku string = 'free'
   'EP2'       // Elastic Premium 2
   'EP3'       // Elastic Premium 3
 ])
-param appServicePlanSku string = 'Y1'
+param appServicePlanSku string = 'FC1'
 
 @description('SQL Database SKU name')
 param sqlDatabaseSkuName string = 'GP_S_Gen5_1'
