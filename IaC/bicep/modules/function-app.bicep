@@ -86,6 +86,9 @@ param sqlConnectionStringSecretName string = 'AzureSqlServer-ConnectionString'
 var isLinux = operatingSystem == 'Linux'
 var kind = isFlexConsumption ? 'functionapp,linux' : (isLinux ? 'functionapp,linux' : 'functionapp')
 
+// Flex Consumption requires version without 'v' prefix (e.g., '9.0' not 'v9.0')
+var flexRuntimeVersion = replace(dotnetVersion, 'v', '')
+
 // App settings for non-Flex Consumption plans
 var baseAppSettings = {
   AzureWebJobsStorage: storageAccountConnectionString
@@ -175,7 +178,7 @@ resource functionAppFlex 'Microsoft.Web/sites@2023-12-01' = if (isFlexConsumptio
       }
       runtime: {
         name: 'dotnet-isolated'
-        version: dotnetVersion
+        version: flexRuntimeVersion
       }
       scaleAndConcurrency: {
         maximumInstanceCount: maximumInstanceCount
