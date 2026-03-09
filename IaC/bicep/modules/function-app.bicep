@@ -14,6 +14,9 @@ param appServicePlanId string
 @secure()
 param storageAccountConnectionString string
 
+@description('Storage account name for Flex Consumption')
+param storageAccountName string = ''
+
 @description('Application Insights Instrumentation Key')
 @secure()
 param appInsightsInstrumentationKey string = ''
@@ -54,9 +57,36 @@ param functionAppScaleLimit int = 100
 @description('Additional app settings')
 param appSettings object = {}
 
-var isLinux = operatingSystem == 'Linux'
-var kind = isLinux ? 'functionapp,linux' : 'functionapp'
+@description('Whether this is a Flex Consumption plan')
+param isFlexConsumption bool = false
 
+@description('Maximum instance count for Flex Consumption')
+param maximumInstanceCount int = 100
+
+@description('Instance memory in MB for Flex Consumption')
+@allowed([
+  2048
+  4096
+])
+param instanceMemoryMB int = 2048
+
+@description('Azure AD authentication secret')
+@secure()
+param aadAuthSecret string = ''
+
+@description('Allowed Azure AD tenant IDs')
+param aadAllowedTenants string = ''
+
+@description('Key Vault name for secret references')
+param keyVaultName string = ''
+
+@description('SQL Server connection string secret name in Key Vault')
+param sqlConnectionStringSecretName string = 'AzureSqlServer-ConnectionString'
+
+var isLinux = operatingSystem == 'Linux'
+var kind = isFlexConsumption ? 'functionapp,linux' : (isLinux ? 'functionapp,linux' : 'functionapp')
+
+// App settings for non-Flex Consumption plans
 var baseAppSettings = {
   AzureWebJobsStorage: storageAccountConnectionString
   WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: storageAccountConnectionString
@@ -66,13 +96,29 @@ var baseAppSettings = {
   WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED: '1'
 }
 
+// App settings for Flex Consumption plans (minimal - storage is in functionAppConfig)
+var flexAppSettings = {
+  FUNCTIONS_EXTENSION_VERSION: '~4'
+  FUNCTIONS_WORKER_RUNTIME: 'dotnet-isolated'
+}
+
 var insightsSettings = !empty(appInsightsConnectionString) ? {
   APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
 } : !empty(appInsightsInstrumentationKey) ? {
   APPINSIGHTS_INSTRUMENTATIONKEY: appInsightsInstrumentationKey
 } : {}
 
-var mergedAppSettings = union(baseAppSettings, insightsSettings, appSettings)
+var authSettings = union(
+  !empty(aadAuthSecret) ? { MICROSOFT_PROVIDER_AUTHENTICATION_SECRET: aadAuthSecret } : {},
+  !empty(aadAllowedTenants) ? { WEBSITE_AUTH_AAD_ALLOWED_TENANTS: aadAllowedTenants } : {}
+)
+
+// Key Vault reference for SQL connection string
+var sqlConnectionSettings = !empty(keyVaultName) ? {
+  ConnectionStrings__SqlServer: '@Microsoft.KeyVault(SecretUri=https://${keyVaultName}${environment().suffixes.keyvaultDns}/secrets/${sqlConnectionStringSecretName}/)'
+} : {}
+
+var mergedAppSettings = union(isFlexConsumption ? flexAppSettings : baseAppSettings, insightsSettings, authSettings, sqlConnectionSettings, appSettings)
 
 var appInsightsTags = !empty(appInsightsResourceId) ? {
   'hidden-link: /app-insights-resource-id': appInsightsResourceId
@@ -80,7 +126,67 @@ var appInsightsTags = !empty(appInsightsResourceId) ? {
 
 var mergedTags = union(tags, appInsightsTags)
 
-resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
+// Flex Consumption Function App
+resource functionAppFlex 'Microsoft.Web/sites@2023-12-01' = if (isFlexConsumption) {
+  name: name
+  location: location
+  tags: mergedTags
+  kind: 'functionapp,linux'
+  identity: {
+    type: 'SystemAssigned'
+  }
+  properties: {
+    serverFarmId: appServicePlanId
+    httpsOnly: true
+    publicNetworkAccess: 'Enabled'
+    reserved: true
+    clientAffinityEnabled: false
+    functionAppConfig: {
+      deployment: {
+        storage: {
+          type: 'blobContainer'
+          value: '${storageAccountConnectionString};ContainerName=deployments'
+          authentication: {
+            type: 'StorageAccountConnectionString'
+            storageAccountConnectionStringName: 'DEPLOYMENT_STORAGE_CONNECTION_STRING'
+          }
+        }
+      }
+      runtime: {
+        name: 'dotnet-isolated'
+        version: dotnetVersion
+      }
+      scaleAndConcurrency: {
+        maximumInstanceCount: maximumInstanceCount
+        instanceMemoryMB: instanceMemoryMB
+      }
+    }
+    siteConfig: {
+      ftpsState: 'FtpsOnly'
+      minTlsVersion: '1.2'
+      cors: {
+        allowedOrigins: corsAllowedOrigins
+        supportCredentials: corsSupportCredentials
+      }
+      appSettings: union([
+        {
+          name: 'DEPLOYMENT_STORAGE_CONNECTION_STRING'
+          value: storageAccountConnectionString
+        }
+        {
+          name: 'AzureWebJobsStorage__accountName'
+          value: storageAccountName
+        }
+      ], [for setting in items(mergedAppSettings): {
+        name: setting.key
+        value: setting.value
+      }])
+    }
+  }
+}
+
+// Standard Consumption Function App
+resource functionApp 'Microsoft.Web/sites@2023-12-01' = if (!isFlexConsumption) {
   name: name
   location: location
   tags: mergedTags
@@ -115,13 +221,13 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
 }
 
 @description('The resource ID of the Function App')
-output id string = functionApp.id
+output id string = isFlexConsumption ? functionAppFlex.id : functionApp.id
 
 @description('The name of the Function App')
-output name string = functionApp.name
+output name string = isFlexConsumption ? functionAppFlex.name : functionApp.name
 
 @description('The default hostname of the Function App')
-output defaultHostName string = functionApp.properties.defaultHostName
+output defaultHostName string = isFlexConsumption ? functionAppFlex.properties.defaultHostName : functionApp.properties.defaultHostName
 
 @description('The principal ID of the Function App managed identity')
-output principalId string = functionApp.identity.principalId
+output principalId string = isFlexConsumption ? functionAppFlex.identity.principalId : functionApp.identity.principalId

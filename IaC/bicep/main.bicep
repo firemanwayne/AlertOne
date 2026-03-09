@@ -135,6 +135,9 @@ var tags = {
   ManagedBy: 'Bicep'
 }
 
+// Determine if using Flex Consumption plan
+var isFlexConsumption = appServicePlanSku == 'FC1'
+
 // Resource naming - all globally unique names include environment and instance
 var sqlServerName = 'alert-one-sql-${environment}-${instance}'
 var sqlDatabaseName = 'alert-one-db-${environment}-${instance}'
@@ -323,17 +326,21 @@ module alertManagementFunction 'modules/function-app.bicep' = if (deployAlertMan
     tags: union(tags, { Service: 'AlertManagement' })
     appServicePlanId: alertMgmtAppServicePlan.outputs.id
     storageAccountConnectionString: alertMgmtStorageAccount.outputs.connectionString
+    storageAccountName: alertMgmtStorageAccount.outputs.name
     appInsightsConnectionString: alertMgmtAppInsights.outputs.connectionString
     appInsightsResourceId: alertMgmtAppInsights.outputs.id
     dotnetVersion: 'v9.0'
     operatingSystem: 'Linux'
     corsAllowedOrigins: corsAllowedOrigins
     corsSupportCredentials: true
+    isFlexConsumption: isFlexConsumption
+    keyVaultName: deployKeyVault ? keyVault.outputs.name : ''
   }
   dependsOn: [
     alertMgmtStorageAccount
     alertMgmtAppServicePlan
     alertMgmtAppInsights
+    keyVault
   ]
 }
 
@@ -380,18 +387,49 @@ module userManagementFunction 'modules/function-app.bicep' = if (deployUserManag
     tags: union(tags, { Service: 'UserManagement' })
     appServicePlanId: userMgmtAppServicePlan.outputs.id
     storageAccountConnectionString: userMgmtStorageAccount.outputs.connectionString
+    storageAccountName: userMgmtStorageAccount.outputs.name
     appInsightsConnectionString: userMgmtAppInsights.outputs.connectionString
     appInsightsResourceId: userMgmtAppInsights.outputs.id
     dotnetVersion: 'v9.0'
     operatingSystem: 'Linux'
     corsAllowedOrigins: corsAllowedOrigins
     corsSupportCredentials: true
+    isFlexConsumption: isFlexConsumption
+    keyVaultName: deployKeyVault ? keyVault.outputs.name : ''
   }
   dependsOn: [
     userMgmtStorageAccount
     userMgmtAppServicePlan
     userMgmtAppInsights
+    keyVault
   ]
+}
+
+// ============================================================================
+// Key Vault Role Assignments for Function Apps
+// ============================================================================
+
+// Key Vault Secrets User role ID
+var keyVaultSecretsUserRoleId = '4633458b-17de-408a-b874-0445c86b69e6'
+
+resource alertMgmtKeyVaultAccess 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deployAlertManagementFunction && deployKeyVault) {
+  name: guid(keyVault.outputs.id, alertManagementFunction.outputs.principalId, keyVaultSecretsUserRoleId)
+  scope: resourceGroup()
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', keyVaultSecretsUserRoleId)
+    principalId: alertManagementFunction.outputs.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource userMgmtKeyVaultAccess 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deployUserManagementFunction && deployKeyVault) {
+  name: guid(keyVault.outputs.id, userManagementFunction.outputs.principalId, keyVaultSecretsUserRoleId)
+  scope: resourceGroup()
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', keyVaultSecretsUserRoleId)
+    principalId: userManagementFunction.outputs.principalId
+    principalType: 'ServicePrincipal'
+  }
 }
 
 // ============================================================================
