@@ -1,18 +1,12 @@
 name: Deploy AlertManagement API
 
+# This workflow is now integrated into deploy-infrastructure.yml
+# Keep for manual deployments only
 on:
-  push:
-    branches:
-      - master
-    paths:
-      - 'Api/src/alerts/**'
-      - 'Api/lib/core/**'
-      - 'Api/lib/infrastructure/**'
-      - '.github/workflows/deploy-alertmanagement-api.yml'
   workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_NAME: 'alertone-alrtmg-dev-eastus2-001'
+  AZURE_FUNCTIONAPP_NAME: 'alertone-alrtmg-dev-001'
   AZURE_FUNCTIONAPP_PACKAGE_PATH: 'Api/src/alerts/src/AlertManagement.Client'
   DOTNET_VERSION: '9.0.x'
 

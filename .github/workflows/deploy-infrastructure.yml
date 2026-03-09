@@ -746,3 +746,71 @@ jobs:
           az appconfig kv set --name ${{ env.APP_CONFIG_PROD }} --key "JwtSettings:usrm:ExpiryMinutes" --value "${{ env.JWT_EXPIRY_MINUTES }}" --yes
           az appconfig kv set --name ${{ env.APP_CONFIG_PROD }} --key "JwtSettings:usrm:Issuer" --value "${{ env.JWT_ISSUER }}" --yes
           az appconfig kv set-keyvault --name ${{ env.APP_CONFIG_PROD }} --key "JwtSettings:usrm:Secret" --secret-identifier "${KV_URI}/secrets/JwtSettings-usrm-Secret" --yes
+
+  # ============================================================================
+  # Deploy Application Code - Dev
+  # ============================================================================
+
+  deploy-code-dev:
+    name: Deploy Code to Dev
+    needs: deploy-dev
+    if: github.event.inputs.what_if != 'true'
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Build Alert Management API
+        run: dotnet publish Api/src/alerts/src/AlertManagement.Client --configuration Release --output ./publish-alerts
+
+      - name: Create Alert Management deployment package
+        run: |
+          cd ./publish-alerts
+          zip -r ../alerts-deploy.zip .
+
+      - name: Deploy Alert Management Function
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ env.ALERT_MGMT_FUNCTION_DEV }}
+          package: ./alerts-deploy.zip
+
+      - name: Build User Management API
+        run: dotnet publish Api/src/usrm/src/UserManagement.Client --configuration Release --output ./publish-usrm
+
+      - name: Create User Management deployment package
+        run: |
+          cd ./publish-usrm
+          zip -r ../usrm-deploy.zip .
+
+      - name: Deploy User Management Function
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ env.USER_MGMT_FUNCTION_DEV }}
+          package: ./usrm-deploy.zip
+
+      - name: Get Static Web App API Token
+        id: swa-token
+        run: |
+          SWA_TOKEN=$(az staticwebapp secrets list --name ${{ env.STATIC_WEB_APP_DEV }} --resource-group ${{ env.AZURE_RESOURCE_GROUP_DEV }} --query "properties.apiKey" -o tsv)
+          echo "::add-mask::$SWA_TOKEN"
+          echo "token=$SWA_TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Build and Deploy Static Web App
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ steps.swa-token.outputs.token }}
+          action: "upload"
+          app_location: "./Client/src/Web"
+          output_location: "wwwroot"
+          skip_app_build: false
