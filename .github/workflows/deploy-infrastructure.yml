@@ -37,8 +37,8 @@ permissions:
   contents: read
 
 env:
-  # Resource group - using existing single resource group
-  AZURE_RESOURCE_GROUP_DEV: 'alert-one-rg'
+  # Resource groups per environment
+  AZURE_RESOURCE_GROUP_DEV: 'alert-one-rg-dev'
   AZURE_RESOURCE_GROUP_STAGING: 'alert-one-rg-staging'
   AZURE_RESOURCE_GROUP_PROD: 'alert-one-rg-prod'
   AZURE_LOCATION: 'eastus2'
