@@ -1,7 +1,7 @@
 using '../main.bicep'
 
 param environment = 'dev'
-param location = 'eastus2'
+param location = 'eastus'
 param locationAbbreviation = 'eastus2'
 param instance = '001'
 param repositoryUrl = 'https://github.com/firemanwayne/AlertOne'
@@ -24,7 +24,7 @@ param deployNotificationHub = true
 param appConfigurationSku = 'free'
 
 // SKU parameters
-param appServicePlanSku = 'FC1'
+param appServicePlanSku = 'Y1'
 param sqlDatabaseSkuName = 'GP_S_Gen5_1'
 param sqlDatabaseSkuTier = 'GeneralPurpose'
 param sqlDatabaseSkuFamily = 'Gen5'

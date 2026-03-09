@@ -6,7 +6,7 @@
       "value": "dev"
     },
     "location": {
-      "value": "eastus2"
+      "value": "eastus"
     },
     "locationAbbreviation": {
       "value": "eastus2"
@@ -54,7 +54,7 @@
       "value": "free"
     },
     "appServicePlanSku": {
-      "value": "FC1"
+      "value": "Y1"
     },
     "sqlDatabaseSkuName": {
       "value": "GP_S_Gen5_1"
