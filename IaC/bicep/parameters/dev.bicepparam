@@ -1,7 +1,7 @@
 using '../main.bicep'
 
 param environment = 'dev'
-param location = 'eastus'
+param location = 'eastus2'
 param locationAbbreviation = 'eastus2'
 param instance = '001'
 param repositoryUrl = 'https://github.com/firemanwayne/AlertOne'
