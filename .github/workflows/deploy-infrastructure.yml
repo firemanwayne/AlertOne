@@ -42,39 +42,48 @@ env:
   AZURE_RESOURCE_GROUP_STAGING: 'alert-one-rg-staging'
   AZURE_RESOURCE_GROUP_PROD: 'alert-one-rg-prod'
   AZURE_LOCATION: 'eastus2'
+  INSTANCE: '001'
   # Function App names by environment
-  ALERT_MGMT_FUNCTION_DEV: 'alertone-alrtmg-dev-eastus2-001'
-  ALERT_MGMT_FUNCTION_STAGING: 'alertone-alrtmg-staging-eastus2-001'
-  ALERT_MGMT_FUNCTION_PROD: 'alertone-alrtmg-prod-eastus2-001'
-  USER_MGMT_FUNCTION_DEV: 'alertone-usrm-dev-eastus2-001'
-  USER_MGMT_FUNCTION_STAGING: 'alertone-usrm-staging-eastus2-001'
-  USER_MGMT_FUNCTION_PROD: 'alertone-usrm-prod-eastus2-001'
-  # App Configuration names by environment (matching existing naming)
-  APP_CONFIG_DEV: 'alert-one-app-config-dev'
-  APP_CONFIG_STAGING: 'alert-one-app-config-staging'
-  APP_CONFIG_PROD: 'alert-one-app-config-prod'
+  ALERT_MGMT_FUNCTION_DEV: 'alertone-alrtmg-dev-001'
+  ALERT_MGMT_FUNCTION_STAGING: 'alertone-alrtmg-staging-001'
+  ALERT_MGMT_FUNCTION_PROD: 'alertone-alrtmg-prod-001'
+  USER_MGMT_FUNCTION_DEV: 'alertone-usrm-dev-001'
+  USER_MGMT_FUNCTION_STAGING: 'alertone-usrm-staging-001'
+  USER_MGMT_FUNCTION_PROD: 'alertone-usrm-prod-001'
+  # App Configuration names by environment
+  APP_CONFIG_DEV: 'alert-one-appconfig-dev-001'
+  APP_CONFIG_STAGING: 'alert-one-appconfig-staging-001'
+  APP_CONFIG_PROD: 'alert-one-appconfig-prod-001'
   # Key Vault names by environment
-  KEY_VAULT_DEV: 'alertone-kv-eastus2-001'
+  KEY_VAULT_DEV: 'alertone-kv-dev-001'
   KEY_VAULT_STAGING: 'alertone-kv-staging-001'
   KEY_VAULT_PROD: 'alertone-kv-prod-001'
   # Communication Services names by environment
-  COMM_SERVICES_DEV: 'alert-one-commsrvs-eastus2-001'
-  COMM_SERVICES_STAGING: 'alert-one-commsrvs-staging-001'
-  COMM_SERVICES_PROD: 'alert-one-commsrvs-prod-001'
+  COMM_SERVICES_DEV: 'alert-one-comm-dev-001'
+  COMM_SERVICES_STAGING: 'alert-one-comm-staging-001'
+  COMM_SERVICES_PROD: 'alert-one-comm-prod-001'
   # Notification Hub names by environment
-  NOTIFICATION_HUB_NS_DEV: 'alertone-notify-eastus2-001'
-  NOTIFICATION_HUB_NS_STAGING: 'alertone-notify-staging-001'
-  NOTIFICATION_HUB_NS_PROD: 'alertone-notify-prod-001'
-  NOTIFICATION_HUB_NAME: 'alertone-notification-hub'
+  NOTIFICATION_HUB_NS_DEV: 'alertone-nhub-dev-001'
+  NOTIFICATION_HUB_NS_STAGING: 'alertone-nhub-staging-001'
+  NOTIFICATION_HUB_NS_PROD: 'alertone-nhub-prod-001'
+  NOTIFICATION_HUB_NAME_DEV: 'alertone-hub-dev-001'
+  NOTIFICATION_HUB_NAME_STAGING: 'alertone-hub-staging-001'
+  NOTIFICATION_HUB_NAME_PROD: 'alertone-hub-prod-001'
   # SQL Server names by environment
-  SQL_SERVER_DEV: 'alert-one-sql-server-dev'
-  SQL_SERVER_STAGING: 'alert-one-sql-server-staging'
-  SQL_SERVER_PROD: 'alert-one-sql-server-prod'
-  SQL_DATABASE_DEV: 'alert-one-sql-db-dev'
-  SQL_DATABASE_STAGING: 'alert-one-sql-db-staging'
-  SQL_DATABASE_PROD: 'alert-one-sql-db-prod'
-  # Static Web App hostnames
-  STATIC_WEB_APP_DEV: 'alert-one-wasm-eastus2-001'
+  SQL_SERVER_DEV: 'alert-one-sql-dev-001'
+  SQL_SERVER_STAGING: 'alert-one-sql-staging-001'
+  SQL_SERVER_PROD: 'alert-one-sql-prod-001'
+  SQL_DATABASE_DEV: 'alert-one-db-dev-001'
+  SQL_DATABASE_STAGING: 'alert-one-db-staging-001'
+  SQL_DATABASE_PROD: 'alert-one-db-prod-001'
+  # Static Web App names by environment
+  STATIC_WEB_APP_DEV: 'alert-one-swa-dev-001'
+  STATIC_WEB_APP_STAGING: 'alert-one-swa-staging-001'
+  STATIC_WEB_APP_PROD: 'alert-one-swa-prod-001'
+  # Email Services names by environment
+  EMAIL_SERVICES_DEV: 'alert-one-email-dev-001'
+  EMAIL_SERVICES_STAGING: 'alert-one-email-staging-001'
+  EMAIL_SERVICES_PROD: 'alert-one-email-prod-001'
   # Mobile App Scheme
   MOBILE_APP_SCHEME: 'alertone'
   # JWT Settings for User Management
@@ -269,7 +278,7 @@ jobs:
           NOTIF_CONN_STRING=$(az notification-hub authorization-rule list-keys \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP_DEV }} \
             --namespace-name ${{ env.NOTIFICATION_HUB_NS_DEV }} \
-            --notification-hub-name ${{ env.NOTIFICATION_HUB_NAME }} \
+            --notification-hub-name ${{ env.NOTIFICATION_HUB_NAME_DEV }} \
             --name DefaultFullSharedAccessSignature \
             --query "primaryConnectionString" -o tsv 2>/dev/null || echo "")
 
@@ -284,7 +293,7 @@ jobs:
 
           # Get Email sender address from Communication Services
           EMAIL_SENDER=$(az communication email domain list \
-            --email-service-name alert-one-domain \
+            --email-service-name ${{ env.EMAIL_SERVICES_DEV }} \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP_DEV }} \
             --query "[0].fromSenderDomain" -o tsv 2>/dev/null || echo "DoNotReply@")
 
@@ -368,9 +377,9 @@ jobs:
           az appconfig kv set \
             --name ${{ env.APP_CONFIG_DEV }} \
             --key "AzureNotificationHubs:HubName" \
-            --value "${{ env.NOTIFICATION_HUB_NAME }}" \
+            --value "${{ env.NOTIFICATION_HUB_NAME_DEV }}" \
             --yes
-          echo "Set AzureNotificationHubs:HubName = ${{ env.NOTIFICATION_HUB_NAME }}"
+          echo "Set AzureNotificationHubs:HubName = ${{ env.NOTIFICATION_HUB_NAME_DEV }}"
 
           # JWT Settings for User Management
           # Generate a secure JWT secret if not exists in Key Vault
@@ -539,14 +548,14 @@ jobs:
           NOTIF_CONN_STRING=$(az notification-hub authorization-rule list-keys \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP_STAGING }} \
             --namespace-name ${{ env.NOTIFICATION_HUB_NS_STAGING }} \
-            --notification-hub-name ${{ env.NOTIFICATION_HUB_NAME }} \
+            --notification-hub-name ${{ env.NOTIFICATION_HUB_NAME_STAGING }} \
             --name DefaultFullSharedAccessSignature \
             --query "primaryConnectionString" -o tsv 2>/dev/null || echo "")
 
           SQL_CONN_STRING="Server=tcp:${{ env.SQL_SERVER_STAGING }}.database.windows.net,1433;Initial Catalog=${{ env.SQL_DATABASE_STAGING }};Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;Authentication=Active Directory Default;"
 
           SWA_HOSTNAME=$(az staticwebapp show \
-            --name alert-one-wasm-staging-001 \
+            --name ${{ env.STATIC_WEB_APP_STAGING }} \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP_STAGING }} \
             --query "defaultHostname" -o tsv 2>/dev/null || echo "")
 
@@ -568,7 +577,7 @@ jobs:
           if [ -n "$SWA_HOSTNAME" ]; then
             az appconfig kv set --name ${{ env.APP_CONFIG_STAGING }} --key "AzureCommunications:WebAppBaseUrl" --value "https://${SWA_HOSTNAME}" --yes
           fi
-          az appconfig kv set --name ${{ env.APP_CONFIG_STAGING }} --key "AzureNotificationHubs:HubName" --value "${{ env.NOTIFICATION_HUB_NAME }}" --yes
+          az appconfig kv set --name ${{ env.APP_CONFIG_STAGING }} --key "AzureNotificationHubs:HubName" --value "${{ env.NOTIFICATION_HUB_NAME_STAGING }}" --yes
 
           # JWT Settings for User Management
           JWT_SECRET=$(az keyvault secret show --vault-name ${{ env.KEY_VAULT_STAGING }} --name "JwtSettings-usrm-Secret" --query "value" -o tsv 2>/dev/null || echo "")
@@ -696,14 +705,14 @@ jobs:
           NOTIF_CONN_STRING=$(az notification-hub authorization-rule list-keys \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP_PROD }} \
             --namespace-name ${{ env.NOTIFICATION_HUB_NS_PROD }} \
-            --notification-hub-name ${{ env.NOTIFICATION_HUB_NAME }} \
+            --notification-hub-name ${{ env.NOTIFICATION_HUB_NAME_PROD }} \
             --name DefaultFullSharedAccessSignature \
             --query "primaryConnectionString" -o tsv 2>/dev/null || echo "")
 
           SQL_CONN_STRING="Server=tcp:${{ env.SQL_SERVER_PROD }}.database.windows.net,1433;Initial Catalog=${{ env.SQL_DATABASE_PROD }};Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;Authentication=Active Directory Default;"
 
           SWA_HOSTNAME=$(az staticwebapp show \
-            --name alert-one-wasm-prod-001 \
+            --name ${{ env.STATIC_WEB_APP_PROD }} \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP_PROD }} \
             --query "defaultHostname" -o tsv 2>/dev/null || echo "")
 
@@ -725,7 +734,7 @@ jobs:
           if [ -n "$SWA_HOSTNAME" ]; then
             az appconfig kv set --name ${{ env.APP_CONFIG_PROD }} --key "AzureCommunications:WebAppBaseUrl" --value "https://${SWA_HOSTNAME}" --yes
           fi
-          az appconfig kv set --name ${{ env.APP_CONFIG_PROD }} --key "AzureNotificationHubs:HubName" --value "${{ env.NOTIFICATION_HUB_NAME }}" --yes
+          az appconfig kv set --name ${{ env.APP_CONFIG_PROD }} --key "AzureNotificationHubs:HubName" --value "${{ env.NOTIFICATION_HUB_NAME_PROD }}" --yes
 
           # JWT Settings for User Management
           JWT_SECRET=$(az keyvault secret show --vault-name ${{ env.KEY_VAULT_PROD }} --name "JwtSettings-usrm-Secret" --query "value" -o tsv 2>/dev/null || echo "")

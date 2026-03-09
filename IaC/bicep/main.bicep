@@ -135,22 +135,22 @@ var tags = {
   ManagedBy: 'Bicep'
 }
 
-// Resource naming - matching existing deployment
-var sqlServerName = 'alert-one-sql-server-${environment}'
-var sqlDatabaseName = 'alert-one-sql-db-${environment}'
-var appConfigurationName = 'alert-one-app-config-${environment}'
-var keyVaultName = 'alertone-kv-${locationAbbreviation}-${instance}'
-var communicationServicesName = 'alert-one-commsrvs-${locationAbbreviation}-${instance}'
-var emailServicesName = 'alert-one-domain'
-var notificationHubNamespaceName = 'alertone-notify-${locationAbbreviation}-${instance}'
-var notificationHubName = 'alertone-notification-hub'
-var staticWebAppName = 'alert-one-wasm-${locationAbbreviation}-${instance}'
+// Resource naming - all globally unique names include environment and instance
+var sqlServerName = 'alert-one-sql-${environment}-${instance}'
+var sqlDatabaseName = 'alert-one-db-${environment}-${instance}'
+var appConfigurationName = 'alert-one-appconfig-${environment}-${instance}'
+var keyVaultName = 'alertone-kv-${environment}-${instance}'
+var communicationServicesName = 'alert-one-comm-${environment}-${instance}'
+var emailServicesName = 'alert-one-email-${environment}-${instance}'
+var notificationHubNamespaceName = 'alertone-nhub-${environment}-${instance}'
+var notificationHubName = 'alertone-hub-${environment}-${instance}'
+var staticWebAppName = 'alert-one-swa-${environment}-${instance}'
 
 // Function app naming
-var alertMgmtFunctionName = 'alertone-alrtmg-${environment}-${locationAbbreviation}-${instance}'
-var userMgmtFunctionName = 'alertone-usrm-${environment}-${locationAbbreviation}-${instance}'
-var alertMgmtAppServicePlanName = 'asp-alertone-alrtmg-${environment}'
-var userMgmtAppServicePlanName = 'asp-alertone-usrm-${environment}'
+var alertMgmtFunctionName = 'alertone-alrtmg-${environment}-${instance}'
+var userMgmtFunctionName = 'alertone-usrm-${environment}-${instance}'
+var alertMgmtAppServicePlanName = 'asp-alrtmg-${environment}-${instance}'
+var userMgmtAppServicePlanName = 'asp-usrm-${environment}-${instance}'
 var alertMgmtStorageAccountName = 'stalrtmg${environment}${take(uniqueString(resourceGroup().id), 4)}'
 var userMgmtStorageAccountName = 'stusrm${environment}${take(uniqueString(resourceGroup().id), 4)}'
 var alertMgmtAppInsightsName = alertMgmtFunctionName
