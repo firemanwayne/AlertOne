@@ -1,0 +1,36 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "serviceName": {
+      "value": "usrm"
+    },
+    "displayName": {
+      "value": "User Management"
+    },
+    "appConfigPrefix": {
+      "value": "Usrm:Api"
+    },
+    "appConfigBaseUriKey": {
+      "value": "Usrm:Api:BaseUri"
+    },
+    "appConfigFunctionKeyKey": {
+      "value": "Usrm:Api:FunctionKey"
+    },
+    "jwtSettings": {
+      "value": {
+        "audience": "alertone-api",
+        "expiryMinutes": "1440",
+        "issuer": "alertone-usrm"
+      }
+    },
+    "appConfigKeys": {
+      "value": {
+        "jwtAudience": "JwtSettings:usrm:Audience",
+        "jwtExpiryMinutes": "JwtSettings:usrm:ExpiryMinutes",
+        "jwtIssuer": "JwtSettings:usrm:Issuer",
+        "jwtSecret": "JwtSettings:usrm:Secret"
+      }
+    }
+  }
+}

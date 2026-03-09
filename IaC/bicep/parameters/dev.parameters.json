@@ -1,0 +1,84 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environment": {
+      "value": "dev"
+    },
+    "location": {
+      "value": "eastus2"
+    },
+    "locationAbbreviation": {
+      "value": "eastus2"
+    },
+    "instance": {
+      "value": "001"
+    },
+    "repositoryUrl": {
+      "value": "https://github.com/firemanwayne/AlertOne"
+    },
+    "branch": {
+      "value": "master"
+    },
+    "sqlAzureAdAdminLogin": {
+      "value": "admin@wdavis2002gmailcom.onmicrosoft.com"
+    },
+    "sqlAzureAdAdminObjectId": {
+      "value": "532dd4be-5499-4444-a7ea-bee09411b9b6"
+    },
+    "deployStaticWebApp": {
+      "value": true
+    },
+    "deployAlertManagementFunction": {
+      "value": true
+    },
+    "deployUserManagementFunction": {
+      "value": true
+    },
+    "deployAppConfiguration": {
+      "value": true
+    },
+    "deploySqlServer": {
+      "value": true
+    },
+    "deployKeyVault": {
+      "value": true
+    },
+    "deployCommunicationServices": {
+      "value": true
+    },
+    "deployNotificationHub": {
+      "value": true
+    },
+    "appConfigurationSku": {
+      "value": "free"
+    },
+    "appServicePlanSku": {
+      "value": "FC1"
+    },
+    "sqlDatabaseSkuName": {
+      "value": "GP_S_Gen5_1"
+    },
+    "sqlDatabaseSkuTier": {
+      "value": "GeneralPurpose"
+    },
+    "sqlDatabaseSkuFamily": {
+      "value": "Gen5"
+    },
+    "sqlDatabaseSkuCapacity": {
+      "value": 1
+    },
+    "staticWebAppSku": {
+      "value": "Standard"
+    },
+    "keyVaultSku": {
+      "value": "standard"
+    },
+    "notificationHubSku": {
+      "value": "Free"
+    },
+    "storageAccountSku": {
+      "value": "Standard_LRS"
+    }
+  }
+}

@@ -22,8 +22,8 @@
   </Folder>
   <Folder Name="/Api/tests/" />
   <Folder Name="/Api/tests/IntegrationTests/">
-    <Project Path="Api/tests/IntegrationTests/AlertManagement.Client.IntegrationTests/AlertManagement.Client.IntegrationTests.csproj" />
     <Project Path="Api/src/usrm/tests/IntegrationTests/UserManagement.Client.IntegrationTests/UserManagement.Client.IntegrationTests.csproj" />
+    <Project Path="Api/tests/IntegrationTests/AlertManagement.Client.IntegrationTests/AlertManagement.Client.IntegrationTests.csproj" />
   </Folder>
   <Folder Name="/Api/tests/UnitTests/">
     <Project Path="Api/src/usrm/tests/UnitTests/UserManagement.Client.Tests/UserManagement.Client.Tests.csproj" />
@@ -55,6 +55,32 @@
   <Folder Name="/Client/src/Web/">
     <Project Path="Client/src/Web/AlertOne.Web.csproj" />
   </Folder>
+  <Folder Name="/IaC/" />
+  <Folder Name="/IaC/bicep/">
+    <File Path="IaC/bicep/main.bicep" />
+  </Folder>
+  <Folder Name="/IaC/bicep/modules/">
+    <File Path="IaC/bicep/modules/app-configuration.bicep" />
+    <File Path="IaC/bicep/modules/app-service-plan.bicep" />
+    <File Path="IaC/bicep/modules/application-insights.bicep" />
+    <File Path="IaC/bicep/modules/communication-services.bicep" />
+    <File Path="IaC/bicep/modules/email-services.bicep" />
+    <File Path="IaC/bicep/modules/function-app.bicep" />
+    <File Path="IaC/bicep/modules/key-vault.bicep" />
+    <File Path="IaC/bicep/modules/notification-hub.bicep" />
+    <File Path="IaC/bicep/modules/sql-database.bicep" />
+    <File Path="IaC/bicep/modules/sql-server.bicep" />
+    <File Path="IaC/bicep/modules/static-web-app.bicep" />
+    <File Path="IaC/bicep/modules/storage-account.bicep" />
+  </Folder>
+  <Folder Name="/IaC/bicep/parameters/">
+    <File Path="IaC/bicep/parameters/alertmanagement.parameters.json" />
+    <File Path="IaC/bicep/parameters/dev.bicepparam" />
+    <File Path="IaC/bicep/parameters/dev.parameters.json" />
+    <File Path="IaC/bicep/parameters/prod.bicepparam" />
+    <File Path="IaC/bicep/parameters/staging.bicepparam" />
+    <File Path="IaC/bicep/parameters/usermanagement.parameters.json" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".github/workflows/azure-static-web-apps-icy-stone-0670cb10f.yml" />
     <File Path=".github/workflows/deploy-alertmanagement-api.yml" />
@@ -63,6 +89,7 @@
     <File Path=".github/workflows/deploy-windows-blob.yml" />
     <File Path="Directory.Packages.props" />
     <File Path="docs/SOC2-COMPLIANCE-ASSESSMENT.md" />
+    <File Path="global.json" />
     <File Path="README.md" />
   </Folder>
 </Solution>

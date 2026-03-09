@@ -32,7 +32,22 @@
       "Bash(find:*)",
       "Bash(tree:*)",
       "Bash(git mv:*)",
-      "Bash(dotnet test:*)"
+      "Bash(dotnet test:*)",
+      "Bash(az group:*)",
+      "Bash(az resource list:*)",
+      "Bash(az sql server:*)",
+      "Bash(az sql db list:*)",
+      "Bash(az appconfig show:*)",
+      "Bash(az staticwebapp show:*)",
+      "Bash(az functionapp show:*)",
+      "Bash(az keyvault show:*)",
+      "Bash(az communication show:*)",
+      "Bash(az notification-hub namespace show:*)",
+      "Bash(az resource show:*)",
+      "Bash(az monitor:*)",
+      "Bash(az appservice plan list:*)",
+      "Bash(az sql db show:*)",
+      "Bash(az storage account:*)"
     ]
   }
 }

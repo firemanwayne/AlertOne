@@ -1,0 +1,739 @@
+name: Deploy Infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+        default: 'dev'
+      deploy_functions:
+        description: 'Deploy Function Apps'
+        required: true
+        type: boolean
+        default: true
+      deploy_static_web_app:
+        description: 'Deploy Static Web App'
+        required: true
+        type: boolean
+        default: true
+      what_if:
+        description: 'Run What-If analysis only (no actual deployment)'
+        required: true
+        type: boolean
+        default: false
+
+  push:
+    branches:
+      - master
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  # Resource group - using existing single resource group
+  AZURE_RESOURCE_GROUP_DEV: 'alert-one-rg'
+  AZURE_RESOURCE_GROUP_STAGING: 'alert-one-rg-staging'
+  AZURE_RESOURCE_GROUP_PROD: 'alert-one-rg-prod'
+  AZURE_LOCATION: 'eastus2'
+  # Function App names by environment
+  ALERT_MGMT_FUNCTION_DEV: 'alertone-alrtmg-dev-eastus2-001'
+  ALERT_MGMT_FUNCTION_STAGING: 'alertone-alrtmg-staging-eastus2-001'
+  ALERT_MGMT_FUNCTION_PROD: 'alertone-alrtmg-prod-eastus2-001'
+  USER_MGMT_FUNCTION_DEV: 'alertone-usrm-dev-eastus2-001'
+  USER_MGMT_FUNCTION_STAGING: 'alertone-usrm-staging-eastus2-001'
+  USER_MGMT_FUNCTION_PROD: 'alertone-usrm-prod-eastus2-001'
+  # App Configuration names by environment (matching existing naming)
+  APP_CONFIG_DEV: 'alert-one-app-config-dev'
+  APP_CONFIG_STAGING: 'alert-one-app-config-staging'
+  APP_CONFIG_PROD: 'alert-one-app-config-prod'
+  # Key Vault names by environment
+  KEY_VAULT_DEV: 'alertone-kv-eastus2-001'
+  KEY_VAULT_STAGING: 'alertone-kv-staging-001'
+  KEY_VAULT_PROD: 'alertone-kv-prod-001'
+  # Communication Services names by environment
+  COMM_SERVICES_DEV: 'alert-one-commsrvs-eastus2-001'
+  COMM_SERVICES_STAGING: 'alert-one-commsrvs-staging-001'
+  COMM_SERVICES_PROD: 'alert-one-commsrvs-prod-001'
+  # Notification Hub names by environment
+  NOTIFICATION_HUB_NS_DEV: 'alertone-notify-eastus2-001'
+  NOTIFICATION_HUB_NS_STAGING: 'alertone-notify-staging-001'
+  NOTIFICATION_HUB_NS_PROD: 'alertone-notify-prod-001'
+  NOTIFICATION_HUB_NAME: 'alertone-notification-hub'
+  # SQL Server names by environment
+  SQL_SERVER_DEV: 'alert-one-sql-server-dev'
+  SQL_SERVER_STAGING: 'alert-one-sql-server-staging'
+  SQL_SERVER_PROD: 'alert-one-sql-server-prod'
+  SQL_DATABASE_DEV: 'alert-one-sql-db-dev'
+  SQL_DATABASE_STAGING: 'alert-one-sql-db-staging'
+  SQL_DATABASE_PROD: 'alert-one-sql-db-prod'
+  # Static Web App hostnames
+  STATIC_WEB_APP_DEV: 'alert-one-wasm-eastus2-001'
+  # Mobile App Scheme
+  MOBILE_APP_SCHEME: 'alertone'
+  # JWT Settings for User Management
+  JWT_AUDIENCE: 'alertone-api'
+  JWT_EXPIRY_MINUTES: '1440'
+  JWT_ISSUER: 'alertone-usrm'
+
+jobs:
+  validate:
+    name: Validate Bicep
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Validate Bicep files
+        working-directory: IaC/bicep
+        run: |
+          echo "Validating Bicep files..."
+          az bicep build --file main.bicep
+          echo "Bicep validation successful!"
+
+  deploy-dev:
+    name: Deploy to Dev
+    needs: validate
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'dev')
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Ensure Resource Group Exists
+        run: |
+          az group create \
+            --name ${{ env.AZURE_RESOURCE_GROUP_DEV }} \
+            --location ${{ env.AZURE_LOCATION }} \
+            --tags Environment=dev Application=AlertOne ManagedBy=GitHubActions \
+            || true
+
+      - name: What-If Analysis
+        if: github.event.inputs.what_if == 'true'
+        working-directory: IaC/bicep
+        run: |
+          az deployment group what-if \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_DEV }} \
+            --template-file main.bicep \
+            --parameters parameters/dev.parameters.json \
+            --parameters deployAlertManagementFunction=${{ github.event.inputs.deploy_functions || true }} \
+            --parameters deployUserManagementFunction=${{ github.event.inputs.deploy_functions || true }} \
+            --parameters deployStaticWebApp=${{ github.event.inputs.deploy_static_web_app || true }}
+
+      - name: Deploy Infrastructure
+        if: github.event.inputs.what_if != 'true'
+        working-directory: IaC/bicep
+        run: |
+          az deployment group create \
+            --name "alertone-infra-$(date +%Y%m%d%H%M%S)" \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_DEV }} \
+            --template-file main.bicep \
+            --parameters parameters/dev.parameters.json \
+            --parameters deployAlertManagementFunction=${{ github.event.inputs.deploy_functions || true }} \
+            --parameters deployUserManagementFunction=${{ github.event.inputs.deploy_functions || true }} \
+            --parameters deployStaticWebApp=${{ github.event.inputs.deploy_static_web_app || true }}
+
+      - name: Get Deployment Outputs
+        if: github.event.inputs.what_if != 'true'
+        id: deployment-outputs
+        run: |
+          echo "## Deployment Outputs" >> $GITHUB_STEP_SUMMARY
+
+          DEPLOYMENT_NAME=$(az deployment group list --resource-group ${{ env.AZURE_RESOURCE_GROUP_DEV }} --query "[0].name" -o tsv)
+
+          az deployment group show \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_DEV }} \
+            --name $DEPLOYMENT_NAME \
+            --query properties.outputs \
+            -o json >> $GITHUB_STEP_SUMMARY
+
+          # Get function app hostnames
+          ALERT_MGMT_HOSTNAME=$(az deployment group show \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_DEV }} \
+            --name $DEPLOYMENT_NAME \
+            --query "properties.outputs.alertManagementFunctionHostName.value" -o tsv)
+
+          USER_MGMT_HOSTNAME=$(az deployment group show \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_DEV }} \
+            --name $DEPLOYMENT_NAME \
+            --query "properties.outputs.userManagementFunctionHostName.value" -o tsv)
+
+          echo "alert_mgmt_hostname=$ALERT_MGMT_HOSTNAME" >> $GITHUB_OUTPUT
+          echo "user_mgmt_hostname=$USER_MGMT_HOSTNAME" >> $GITHUB_OUTPUT
+
+      - name: Update App Configuration with Function URIs and Keys
+        if: github.event.inputs.what_if != 'true'
+        run: |
+          # Get function keys
+          echo "Getting Alert Management function key..."
+          ALERT_MGMT_KEY=$(az functionapp keys list \
+            --name ${{ env.ALERT_MGMT_FUNCTION_DEV }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_DEV }} \
+            --query "functionKeys.default" -o tsv 2>/dev/null || echo "")
+
+          if [ -z "$ALERT_MGMT_KEY" ]; then
+            ALERT_MGMT_KEY=$(az functionapp keys list \
+              --name ${{ env.ALERT_MGMT_FUNCTION_DEV }} \
+              --resource-group ${{ env.AZURE_RESOURCE_GROUP_DEV }} \
+              --query "masterKey" -o tsv 2>/dev/null || echo "")
+          fi
+
+          echo "Getting User Management function key..."
+          USER_MGMT_KEY=$(az functionapp keys list \
+            --name ${{ env.USER_MGMT_FUNCTION_DEV }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_DEV }} \
+            --query "functionKeys.default" -o tsv 2>/dev/null || echo "")
+
+          if [ -z "$USER_MGMT_KEY" ]; then
+            USER_MGMT_KEY=$(az functionapp keys list \
+              --name ${{ env.USER_MGMT_FUNCTION_DEV }} \
+              --resource-group ${{ env.AZURE_RESOURCE_GROUP_DEV }} \
+              --query "masterKey" -o tsv 2>/dev/null || echo "")
+          fi
+
+          # Build URIs
+          ALERT_MGMT_URI="https://${{ steps.deployment-outputs.outputs.alert_mgmt_hostname }}"
+          USER_MGMT_URI="https://${{ steps.deployment-outputs.outputs.user_mgmt_hostname }}"
+
+          echo "Updating App Configuration..."
+
+          # Update Alert Management settings
+          if [ -n "${{ steps.deployment-outputs.outputs.alert_mgmt_hostname }}" ]; then
+            az appconfig kv set \
+              --name ${{ env.APP_CONFIG_DEV }} \
+              --key "Alerts:Api:BaseUri" \
+              --value "$ALERT_MGMT_URI" \
+              --yes
+            echo "Set Alerts:Api:BaseUri = $ALERT_MGMT_URI"
+          fi
+
+          if [ -n "$ALERT_MGMT_KEY" ]; then
+            az appconfig kv set \
+              --name ${{ env.APP_CONFIG_DEV }} \
+              --key "Alerts:Api:FunctionKey" \
+              --value "$ALERT_MGMT_KEY" \
+              --yes
+            echo "Set Alerts:Api:FunctionKey = [REDACTED]"
+          fi
+
+          # Update User Management settings
+          if [ -n "${{ steps.deployment-outputs.outputs.user_mgmt_hostname }}" ]; then
+            az appconfig kv set \
+              --name ${{ env.APP_CONFIG_DEV }} \
+              --key "Usrm:Api:BaseUri" \
+              --value "$USER_MGMT_URI" \
+              --yes
+            echo "Set Usrm:Api:BaseUri = $USER_MGMT_URI"
+          fi
+
+          if [ -n "$USER_MGMT_KEY" ]; then
+            az appconfig kv set \
+              --name ${{ env.APP_CONFIG_DEV }} \
+              --key "Usrm:Api:FunctionKey" \
+              --value "$USER_MGMT_KEY" \
+              --yes
+            echo "Set Usrm:Api:FunctionKey = [REDACTED]"
+          fi
+
+          echo "App Configuration updated successfully!"
+
+      - name: Store Secrets in Key Vault and Configure App Config References
+        if: github.event.inputs.what_if != 'true'
+        run: |
+          echo "Retrieving connection strings and storing in Key Vault..."
+
+          # Get Communication Services connection string
+          COMM_CONN_STRING=$(az communication list-key \
+            --name ${{ env.COMM_SERVICES_DEV }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_DEV }} \
+            --query "primaryConnectionString" -o tsv 2>/dev/null || echo "")
+
+          # Get Notification Hub connection string
+          NOTIF_CONN_STRING=$(az notification-hub authorization-rule list-keys \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_DEV }} \
+            --namespace-name ${{ env.NOTIFICATION_HUB_NS_DEV }} \
+            --notification-hub-name ${{ env.NOTIFICATION_HUB_NAME }} \
+            --name DefaultFullSharedAccessSignature \
+            --query "primaryConnectionString" -o tsv 2>/dev/null || echo "")
+
+          # Build SQL connection string (Azure AD auth)
+          SQL_CONN_STRING="Server=tcp:${{ env.SQL_SERVER_DEV }}.database.windows.net,1433;Initial Catalog=${{ env.SQL_DATABASE_DEV }};Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;Authentication=Active Directory Default;"
+
+          # Get Static Web App hostname
+          SWA_HOSTNAME=$(az staticwebapp show \
+            --name ${{ env.STATIC_WEB_APP_DEV }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_DEV }} \
+            --query "defaultHostname" -o tsv 2>/dev/null || echo "")
+
+          # Get Email sender address from Communication Services
+          EMAIL_SENDER=$(az communication email domain list \
+            --email-service-name alert-one-domain \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_DEV }} \
+            --query "[0].fromSenderDomain" -o tsv 2>/dev/null || echo "DoNotReply@")
+
+          # Store secrets in Key Vault
+          if [ -n "$COMM_CONN_STRING" ]; then
+            az keyvault secret set \
+              --vault-name ${{ env.KEY_VAULT_DEV }} \
+              --name "AzureCommunications-ConnectionString" \
+              --value "$COMM_CONN_STRING" \
+              --only-show-errors
+            echo "Stored AzureCommunications-ConnectionString in Key Vault"
+          fi
+
+          if [ -n "$NOTIF_CONN_STRING" ]; then
+            az keyvault secret set \
+              --vault-name ${{ env.KEY_VAULT_DEV }} \
+              --name "AzureNotificationHubs-ConnectionString" \
+              --value "$NOTIF_CONN_STRING" \
+              --only-show-errors
+            echo "Stored AzureNotificationHubs-ConnectionString in Key Vault"
+          fi
+
+          az keyvault secret set \
+            --vault-name ${{ env.KEY_VAULT_DEV }} \
+            --name "AzureSqlServer-ConnectionString" \
+            --value "$SQL_CONN_STRING" \
+            --only-show-errors
+          echo "Stored AzureSqlServer-ConnectionString in Key Vault"
+
+          # Set App Configuration Key Vault references
+          KV_URI="https://${{ env.KEY_VAULT_DEV }}.vault.azure.net"
+
+          # AzureCommunications:ConnectionString (Key Vault reference)
+          az appconfig kv set-keyvault \
+            --name ${{ env.APP_CONFIG_DEV }} \
+            --key "AzureCommunications:ConnectionString" \
+            --secret-identifier "${KV_URI}/secrets/AzureCommunications-ConnectionString" \
+            --yes
+          echo "Set AzureCommunications:ConnectionString as Key Vault reference"
+
+          # AzureNotificationHubs:ConnectionString (Key Vault reference)
+          az appconfig kv set-keyvault \
+            --name ${{ env.APP_CONFIG_DEV }} \
+            --key "AzureNotificationHubs:ConnectionString" \
+            --secret-identifier "${KV_URI}/secrets/AzureNotificationHubs-ConnectionString" \
+            --yes
+          echo "Set AzureNotificationHubs:ConnectionString as Key Vault reference"
+
+          # AzureSqlServer:ConnectionString (Key Vault reference)
+          az appconfig kv set-keyvault \
+            --name ${{ env.APP_CONFIG_DEV }} \
+            --key "AzureSqlServer:ConnectionString" \
+            --secret-identifier "${KV_URI}/secrets/AzureSqlServer-ConnectionString" \
+            --yes
+          echo "Set AzureSqlServer:ConnectionString as Key Vault reference"
+
+          # Set regular App Configuration values
+          az appconfig kv set \
+            --name ${{ env.APP_CONFIG_DEV }} \
+            --key "AzureCommunications:MobileAppScheme" \
+            --value "${{ env.MOBILE_APP_SCHEME }}" \
+            --yes
+          echo "Set AzureCommunications:MobileAppScheme = ${{ env.MOBILE_APP_SCHEME }}"
+
+          az appconfig kv set \
+            --name ${{ env.APP_CONFIG_DEV }} \
+            --key "AzureCommunications:SenderAddress" \
+            --value "${EMAIL_SENDER}" \
+            --yes
+          echo "Set AzureCommunications:SenderAddress = ${EMAIL_SENDER}"
+
+          if [ -n "$SWA_HOSTNAME" ]; then
+            az appconfig kv set \
+              --name ${{ env.APP_CONFIG_DEV }} \
+              --key "AzureCommunications:WebAppBaseUrl" \
+              --value "https://${SWA_HOSTNAME}" \
+              --yes
+            echo "Set AzureCommunications:WebAppBaseUrl = https://${SWA_HOSTNAME}"
+          fi
+
+          az appconfig kv set \
+            --name ${{ env.APP_CONFIG_DEV }} \
+            --key "AzureNotificationHubs:HubName" \
+            --value "${{ env.NOTIFICATION_HUB_NAME }}" \
+            --yes
+          echo "Set AzureNotificationHubs:HubName = ${{ env.NOTIFICATION_HUB_NAME }}"
+
+          # JWT Settings for User Management
+          # Generate a secure JWT secret if not exists in Key Vault
+          JWT_SECRET=$(az keyvault secret show \
+            --vault-name ${{ env.KEY_VAULT_DEV }} \
+            --name "JwtSettings-usrm-Secret" \
+            --query "value" -o tsv 2>/dev/null || echo "")
+
+          if [ -z "$JWT_SECRET" ]; then
+            # Generate a new 256-bit secret
+            JWT_SECRET=$(openssl rand -base64 32)
+            az keyvault secret set \
+              --vault-name ${{ env.KEY_VAULT_DEV }} \
+              --name "JwtSettings-usrm-Secret" \
+              --value "$JWT_SECRET" \
+              --only-show-errors
+            echo "Generated and stored new JWT secret in Key Vault"
+          else
+            echo "JWT secret already exists in Key Vault"
+          fi
+
+          # Set JWT settings in App Configuration
+          az appconfig kv set \
+            --name ${{ env.APP_CONFIG_DEV }} \
+            --key "JwtSettings:usrm:Audience" \
+            --value "${{ env.JWT_AUDIENCE }}" \
+            --yes
+          echo "Set JwtSettings:usrm:Audience = ${{ env.JWT_AUDIENCE }}"
+
+          az appconfig kv set \
+            --name ${{ env.APP_CONFIG_DEV }} \
+            --key "JwtSettings:usrm:ExpiryMinutes" \
+            --value "${{ env.JWT_EXPIRY_MINUTES }}" \
+            --yes
+          echo "Set JwtSettings:usrm:ExpiryMinutes = ${{ env.JWT_EXPIRY_MINUTES }}"
+
+          az appconfig kv set \
+            --name ${{ env.APP_CONFIG_DEV }} \
+            --key "JwtSettings:usrm:Issuer" \
+            --value "${{ env.JWT_ISSUER }}" \
+            --yes
+          echo "Set JwtSettings:usrm:Issuer = ${{ env.JWT_ISSUER }}"
+
+          # JwtSettings:usrm:Secret (Key Vault reference)
+          az appconfig kv set-keyvault \
+            --name ${{ env.APP_CONFIG_DEV }} \
+            --key "JwtSettings:usrm:Secret" \
+            --secret-identifier "${KV_URI}/secrets/JwtSettings-usrm-Secret" \
+            --yes
+          echo "Set JwtSettings:usrm:Secret as Key Vault reference"
+
+          echo "All App Configuration entries created successfully!"
+
+  deploy-staging:
+    name: Deploy to Staging
+    needs: validate
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Ensure Resource Group Exists
+        run: |
+          az group create \
+            --name ${{ env.AZURE_RESOURCE_GROUP_STAGING }} \
+            --location ${{ env.AZURE_LOCATION }} \
+            --tags Environment=staging Application=AlertOne ManagedBy=GitHubActions \
+            || true
+
+      - name: What-If Analysis
+        if: github.event.inputs.what_if == 'true'
+        working-directory: IaC/bicep
+        run: |
+          az deployment group what-if \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_STAGING }} \
+            --template-file main.bicep \
+            --parameters parameters/staging.bicepparam \
+            --parameters deployAlertManagementFunction=${{ github.event.inputs.deploy_functions }} \
+            --parameters deployUserManagementFunction=${{ github.event.inputs.deploy_functions }} \
+            --parameters deployStaticWebApp=${{ github.event.inputs.deploy_static_web_app }}
+
+      - name: Deploy Infrastructure
+        if: github.event.inputs.what_if != 'true'
+        working-directory: IaC/bicep
+        run: |
+          az deployment group create \
+            --name "alertone-infra-$(date +%Y%m%d%H%M%S)" \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_STAGING }} \
+            --template-file main.bicep \
+            --parameters parameters/staging.bicepparam \
+            --parameters deployAlertManagementFunction=${{ github.event.inputs.deploy_functions }} \
+            --parameters deployUserManagementFunction=${{ github.event.inputs.deploy_functions }} \
+            --parameters deployStaticWebApp=${{ github.event.inputs.deploy_static_web_app }}
+
+      - name: Get Deployment Outputs
+        if: github.event.inputs.what_if != 'true'
+        id: deployment-outputs-staging
+        run: |
+          DEPLOYMENT_NAME=$(az deployment group list --resource-group ${{ env.AZURE_RESOURCE_GROUP_STAGING }} --query "[0].name" -o tsv)
+
+          ALERT_MGMT_HOSTNAME=$(az deployment group show \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_STAGING }} \
+            --name $DEPLOYMENT_NAME \
+            --query "properties.outputs.alertManagementFunctionHostName.value" -o tsv)
+
+          USER_MGMT_HOSTNAME=$(az deployment group show \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_STAGING }} \
+            --name $DEPLOYMENT_NAME \
+            --query "properties.outputs.userManagementFunctionHostName.value" -o tsv)
+
+          echo "alert_mgmt_hostname=$ALERT_MGMT_HOSTNAME" >> $GITHUB_OUTPUT
+          echo "user_mgmt_hostname=$USER_MGMT_HOSTNAME" >> $GITHUB_OUTPUT
+
+      - name: Update App Configuration with Function URIs and Keys
+        if: github.event.inputs.what_if != 'true'
+        run: |
+          ALERT_MGMT_KEY=$(az functionapp keys list \
+            --name ${{ env.ALERT_MGMT_FUNCTION_STAGING }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_STAGING }} \
+            --query "functionKeys.default" -o tsv 2>/dev/null || \
+            az functionapp keys list \
+              --name ${{ env.ALERT_MGMT_FUNCTION_STAGING }} \
+              --resource-group ${{ env.AZURE_RESOURCE_GROUP_STAGING }} \
+              --query "masterKey" -o tsv 2>/dev/null || echo "")
+
+          USER_MGMT_KEY=$(az functionapp keys list \
+            --name ${{ env.USER_MGMT_FUNCTION_STAGING }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_STAGING }} \
+            --query "functionKeys.default" -o tsv 2>/dev/null || \
+            az functionapp keys list \
+              --name ${{ env.USER_MGMT_FUNCTION_STAGING }} \
+              --resource-group ${{ env.AZURE_RESOURCE_GROUP_STAGING }} \
+              --query "masterKey" -o tsv 2>/dev/null || echo "")
+
+          ALERT_MGMT_URI="https://${{ steps.deployment-outputs-staging.outputs.alert_mgmt_hostname }}"
+          USER_MGMT_URI="https://${{ steps.deployment-outputs-staging.outputs.user_mgmt_hostname }}"
+
+          if [ -n "${{ steps.deployment-outputs-staging.outputs.alert_mgmt_hostname }}" ]; then
+            az appconfig kv set --name ${{ env.APP_CONFIG_STAGING }} --key "Alerts:Api:BaseUri" --value "$ALERT_MGMT_URI" --yes
+          fi
+          if [ -n "$ALERT_MGMT_KEY" ]; then
+            az appconfig kv set --name ${{ env.APP_CONFIG_STAGING }} --key "Alerts:Api:FunctionKey" --value "$ALERT_MGMT_KEY" --yes
+          fi
+          if [ -n "${{ steps.deployment-outputs-staging.outputs.user_mgmt_hostname }}" ]; then
+            az appconfig kv set --name ${{ env.APP_CONFIG_STAGING }} --key "Usrm:Api:BaseUri" --value "$USER_MGMT_URI" --yes
+          fi
+          if [ -n "$USER_MGMT_KEY" ]; then
+            az appconfig kv set --name ${{ env.APP_CONFIG_STAGING }} --key "Usrm:Api:FunctionKey" --value "$USER_MGMT_KEY" --yes
+          fi
+
+      - name: Store Secrets in Key Vault and Configure App Config References
+        if: github.event.inputs.what_if != 'true'
+        run: |
+          COMM_CONN_STRING=$(az communication list-key \
+            --name ${{ env.COMM_SERVICES_STAGING }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_STAGING }} \
+            --query "primaryConnectionString" -o tsv 2>/dev/null || echo "")
+
+          NOTIF_CONN_STRING=$(az notification-hub authorization-rule list-keys \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_STAGING }} \
+            --namespace-name ${{ env.NOTIFICATION_HUB_NS_STAGING }} \
+            --notification-hub-name ${{ env.NOTIFICATION_HUB_NAME }} \
+            --name DefaultFullSharedAccessSignature \
+            --query "primaryConnectionString" -o tsv 2>/dev/null || echo "")
+
+          SQL_CONN_STRING="Server=tcp:${{ env.SQL_SERVER_STAGING }}.database.windows.net,1433;Initial Catalog=${{ env.SQL_DATABASE_STAGING }};Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;Authentication=Active Directory Default;"
+
+          SWA_HOSTNAME=$(az staticwebapp show \
+            --name alert-one-wasm-staging-001 \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_STAGING }} \
+            --query "defaultHostname" -o tsv 2>/dev/null || echo "")
+
+          if [ -n "$COMM_CONN_STRING" ]; then
+            az keyvault secret set --vault-name ${{ env.KEY_VAULT_STAGING }} --name "AzureCommunications-ConnectionString" --value "$COMM_CONN_STRING" --only-show-errors
+          fi
+          if [ -n "$NOTIF_CONN_STRING" ]; then
+            az keyvault secret set --vault-name ${{ env.KEY_VAULT_STAGING }} --name "AzureNotificationHubs-ConnectionString" --value "$NOTIF_CONN_STRING" --only-show-errors
+          fi
+          az keyvault secret set --vault-name ${{ env.KEY_VAULT_STAGING }} --name "AzureSqlServer-ConnectionString" --value "$SQL_CONN_STRING" --only-show-errors
+
+          KV_URI="https://${{ env.KEY_VAULT_STAGING }}.vault.azure.net"
+          az appconfig kv set-keyvault --name ${{ env.APP_CONFIG_STAGING }} --key "AzureCommunications:ConnectionString" --secret-identifier "${KV_URI}/secrets/AzureCommunications-ConnectionString" --yes
+          az appconfig kv set-keyvault --name ${{ env.APP_CONFIG_STAGING }} --key "AzureNotificationHubs:ConnectionString" --secret-identifier "${KV_URI}/secrets/AzureNotificationHubs-ConnectionString" --yes
+          az appconfig kv set-keyvault --name ${{ env.APP_CONFIG_STAGING }} --key "AzureSqlServer:ConnectionString" --secret-identifier "${KV_URI}/secrets/AzureSqlServer-ConnectionString" --yes
+
+          az appconfig kv set --name ${{ env.APP_CONFIG_STAGING }} --key "AzureCommunications:MobileAppScheme" --value "${{ env.MOBILE_APP_SCHEME }}" --yes
+          az appconfig kv set --name ${{ env.APP_CONFIG_STAGING }} --key "AzureCommunications:SenderAddress" --value "DoNotReply@" --yes
+          if [ -n "$SWA_HOSTNAME" ]; then
+            az appconfig kv set --name ${{ env.APP_CONFIG_STAGING }} --key "AzureCommunications:WebAppBaseUrl" --value "https://${SWA_HOSTNAME}" --yes
+          fi
+          az appconfig kv set --name ${{ env.APP_CONFIG_STAGING }} --key "AzureNotificationHubs:HubName" --value "${{ env.NOTIFICATION_HUB_NAME }}" --yes
+
+          # JWT Settings for User Management
+          JWT_SECRET=$(az keyvault secret show --vault-name ${{ env.KEY_VAULT_STAGING }} --name "JwtSettings-usrm-Secret" --query "value" -o tsv 2>/dev/null || echo "")
+          if [ -z "$JWT_SECRET" ]; then
+            JWT_SECRET=$(openssl rand -base64 32)
+            az keyvault secret set --vault-name ${{ env.KEY_VAULT_STAGING }} --name "JwtSettings-usrm-Secret" --value "$JWT_SECRET" --only-show-errors
+          fi
+          az appconfig kv set --name ${{ env.APP_CONFIG_STAGING }} --key "JwtSettings:usrm:Audience" --value "${{ env.JWT_AUDIENCE }}" --yes
+          az appconfig kv set --name ${{ env.APP_CONFIG_STAGING }} --key "JwtSettings:usrm:ExpiryMinutes" --value "${{ env.JWT_EXPIRY_MINUTES }}" --yes
+          az appconfig kv set --name ${{ env.APP_CONFIG_STAGING }} --key "JwtSettings:usrm:Issuer" --value "${{ env.JWT_ISSUER }}" --yes
+          az appconfig kv set-keyvault --name ${{ env.APP_CONFIG_STAGING }} --key "JwtSettings:usrm:Secret" --secret-identifier "${KV_URI}/secrets/JwtSettings-usrm-Secret" --yes
+
+  deploy-prod:
+    name: Deploy to Production
+    needs: validate
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'prod'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Ensure Resource Group Exists
+        run: |
+          az group create \
+            --name ${{ env.AZURE_RESOURCE_GROUP_PROD }} \
+            --location ${{ env.AZURE_LOCATION }} \
+            --tags Environment=prod Application=AlertOne ManagedBy=GitHubActions \
+            || true
+
+      - name: What-If Analysis
+        if: github.event.inputs.what_if == 'true'
+        working-directory: IaC/bicep
+        run: |
+          az deployment group what-if \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_PROD }} \
+            --template-file main.bicep \
+            --parameters parameters/prod.bicepparam \
+            --parameters deployAlertManagementFunction=${{ github.event.inputs.deploy_functions }} \
+            --parameters deployUserManagementFunction=${{ github.event.inputs.deploy_functions }} \
+            --parameters deployStaticWebApp=${{ github.event.inputs.deploy_static_web_app }}
+
+      - name: Deploy Infrastructure
+        if: github.event.inputs.what_if != 'true'
+        working-directory: IaC/bicep
+        run: |
+          az deployment group create \
+            --name "alertone-infra-$(date +%Y%m%d%H%M%S)" \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_PROD }} \
+            --template-file main.bicep \
+            --parameters parameters/prod.bicepparam \
+            --parameters deployAlertManagementFunction=${{ github.event.inputs.deploy_functions }} \
+            --parameters deployUserManagementFunction=${{ github.event.inputs.deploy_functions }} \
+            --parameters deployStaticWebApp=${{ github.event.inputs.deploy_static_web_app }}
+
+      - name: Get Deployment Outputs
+        if: github.event.inputs.what_if != 'true'
+        id: deployment-outputs-prod
+        run: |
+          DEPLOYMENT_NAME=$(az deployment group list --resource-group ${{ env.AZURE_RESOURCE_GROUP_PROD }} --query "[0].name" -o tsv)
+
+          ALERT_MGMT_HOSTNAME=$(az deployment group show \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_PROD }} \
+            --name $DEPLOYMENT_NAME \
+            --query "properties.outputs.alertManagementFunctionHostName.value" -o tsv)
+
+          USER_MGMT_HOSTNAME=$(az deployment group show \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_PROD }} \
+            --name $DEPLOYMENT_NAME \
+            --query "properties.outputs.userManagementFunctionHostName.value" -o tsv)
+
+          echo "alert_mgmt_hostname=$ALERT_MGMT_HOSTNAME" >> $GITHUB_OUTPUT
+          echo "user_mgmt_hostname=$USER_MGMT_HOSTNAME" >> $GITHUB_OUTPUT
+
+      - name: Update App Configuration with Function URIs and Keys
+        if: github.event.inputs.what_if != 'true'
+        run: |
+          ALERT_MGMT_KEY=$(az functionapp keys list \
+            --name ${{ env.ALERT_MGMT_FUNCTION_PROD }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_PROD }} \
+            --query "functionKeys.default" -o tsv 2>/dev/null || \
+            az functionapp keys list \
+              --name ${{ env.ALERT_MGMT_FUNCTION_PROD }} \
+              --resource-group ${{ env.AZURE_RESOURCE_GROUP_PROD }} \
+              --query "masterKey" -o tsv 2>/dev/null || echo "")
+
+          USER_MGMT_KEY=$(az functionapp keys list \
+            --name ${{ env.USER_MGMT_FUNCTION_PROD }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_PROD }} \
+            --query "functionKeys.default" -o tsv 2>/dev/null || \
+            az functionapp keys list \
+              --name ${{ env.USER_MGMT_FUNCTION_PROD }} \
+              --resource-group ${{ env.AZURE_RESOURCE_GROUP_PROD }} \
+              --query "masterKey" -o tsv 2>/dev/null || echo "")
+
+          ALERT_MGMT_URI="https://${{ steps.deployment-outputs-prod.outputs.alert_mgmt_hostname }}"
+          USER_MGMT_URI="https://${{ steps.deployment-outputs-prod.outputs.user_mgmt_hostname }}"
+
+          if [ -n "${{ steps.deployment-outputs-prod.outputs.alert_mgmt_hostname }}" ]; then
+            az appconfig kv set --name ${{ env.APP_CONFIG_PROD }} --key "Alerts:Api:BaseUri" --value "$ALERT_MGMT_URI" --yes
+          fi
+          if [ -n "$ALERT_MGMT_KEY" ]; then
+            az appconfig kv set --name ${{ env.APP_CONFIG_PROD }} --key "Alerts:Api:FunctionKey" --value "$ALERT_MGMT_KEY" --yes
+          fi
+          if [ -n "${{ steps.deployment-outputs-prod.outputs.user_mgmt_hostname }}" ]; then
+            az appconfig kv set --name ${{ env.APP_CONFIG_PROD }} --key "Usrm:Api:BaseUri" --value "$USER_MGMT_URI" --yes
+          fi
+          if [ -n "$USER_MGMT_KEY" ]; then
+            az appconfig kv set --name ${{ env.APP_CONFIG_PROD }} --key "Usrm:Api:FunctionKey" --value "$USER_MGMT_KEY" --yes
+          fi
+
+      - name: Store Secrets in Key Vault and Configure App Config References
+        if: github.event.inputs.what_if != 'true'
+        run: |
+          COMM_CONN_STRING=$(az communication list-key \
+            --name ${{ env.COMM_SERVICES_PROD }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_PROD }} \
+            --query "primaryConnectionString" -o tsv 2>/dev/null || echo "")
+
+          NOTIF_CONN_STRING=$(az notification-hub authorization-rule list-keys \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_PROD }} \
+            --namespace-name ${{ env.NOTIFICATION_HUB_NS_PROD }} \
+            --notification-hub-name ${{ env.NOTIFICATION_HUB_NAME }} \
+            --name DefaultFullSharedAccessSignature \
+            --query "primaryConnectionString" -o tsv 2>/dev/null || echo "")
+
+          SQL_CONN_STRING="Server=tcp:${{ env.SQL_SERVER_PROD }}.database.windows.net,1433;Initial Catalog=${{ env.SQL_DATABASE_PROD }};Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;Authentication=Active Directory Default;"
+
+          SWA_HOSTNAME=$(az staticwebapp show \
+            --name alert-one-wasm-prod-001 \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_PROD }} \
+            --query "defaultHostname" -o tsv 2>/dev/null || echo "")
+
+          if [ -n "$COMM_CONN_STRING" ]; then
+            az keyvault secret set --vault-name ${{ env.KEY_VAULT_PROD }} --name "AzureCommunications-ConnectionString" --value "$COMM_CONN_STRING" --only-show-errors
+          fi
+          if [ -n "$NOTIF_CONN_STRING" ]; then
+            az keyvault secret set --vault-name ${{ env.KEY_VAULT_PROD }} --name "AzureNotificationHubs-ConnectionString" --value "$NOTIF_CONN_STRING" --only-show-errors
+          fi
+          az keyvault secret set --vault-name ${{ env.KEY_VAULT_PROD }} --name "AzureSqlServer-ConnectionString" --value "$SQL_CONN_STRING" --only-show-errors
+
+          KV_URI="https://${{ env.KEY_VAULT_PROD }}.vault.azure.net"
+          az appconfig kv set-keyvault --name ${{ env.APP_CONFIG_PROD }} --key "AzureCommunications:ConnectionString" --secret-identifier "${KV_URI}/secrets/AzureCommunications-ConnectionString" --yes
+          az appconfig kv set-keyvault --name ${{ env.APP_CONFIG_PROD }} --key "AzureNotificationHubs:ConnectionString" --secret-identifier "${KV_URI}/secrets/AzureNotificationHubs-ConnectionString" --yes
+          az appconfig kv set-keyvault --name ${{ env.APP_CONFIG_PROD }} --key "AzureSqlServer:ConnectionString" --secret-identifier "${KV_URI}/secrets/AzureSqlServer-ConnectionString" --yes
+
+          az appconfig kv set --name ${{ env.APP_CONFIG_PROD }} --key "AzureCommunications:MobileAppScheme" --value "${{ env.MOBILE_APP_SCHEME }}" --yes
+          az appconfig kv set --name ${{ env.APP_CONFIG_PROD }} --key "AzureCommunications:SenderAddress" --value "DoNotReply@" --yes
+          if [ -n "$SWA_HOSTNAME" ]; then
+            az appconfig kv set --name ${{ env.APP_CONFIG_PROD }} --key "AzureCommunications:WebAppBaseUrl" --value "https://${SWA_HOSTNAME}" --yes
+          fi
+          az appconfig kv set --name ${{ env.APP_CONFIG_PROD }} --key "AzureNotificationHubs:HubName" --value "${{ env.NOTIFICATION_HUB_NAME }}" --yes
+
+          # JWT Settings for User Management
+          JWT_SECRET=$(az keyvault secret show --vault-name ${{ env.KEY_VAULT_PROD }} --name "JwtSettings-usrm-Secret" --query "value" -o tsv 2>/dev/null || echo "")
+          if [ -z "$JWT_SECRET" ]; then
+            JWT_SECRET=$(openssl rand -base64 32)
+            az keyvault secret set --vault-name ${{ env.KEY_VAULT_PROD }} --name "JwtSettings-usrm-Secret" --value "$JWT_SECRET" --only-show-errors
+          fi
+          az appconfig kv set --name ${{ env.APP_CONFIG_PROD }} --key "JwtSettings:usrm:Audience" --value "${{ env.JWT_AUDIENCE }}" --yes
+          az appconfig kv set --name ${{ env.APP_CONFIG_PROD }} --key "JwtSettings:usrm:ExpiryMinutes" --value "${{ env.JWT_EXPIRY_MINUTES }}" --yes
+          az appconfig kv set --name ${{ env.APP_CONFIG_PROD }} --key "JwtSettings:usrm:Issuer" --value "${{ env.JWT_ISSUER }}" --yes
+          az appconfig kv set-keyvault --name ${{ env.APP_CONFIG_PROD }} --key "JwtSettings:usrm:Secret" --secret-identifier "${KV_URI}/secrets/JwtSettings-usrm-Secret" --yes
