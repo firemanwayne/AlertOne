@@ -413,7 +413,7 @@ module userManagementFunction 'modules/function-app.bicep' = if (deployUserManag
 var keyVaultSecretsUserRoleId = '4633458b-17de-408a-b874-0445c86b69e6'
 
 resource alertMgmtKeyVaultAccess 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deployAlertManagementFunction && deployKeyVault) {
-  name: guid(keyVault.outputs.id, alertManagementFunction.outputs.principalId, keyVaultSecretsUserRoleId)
+  name: guid(resourceGroup().id, keyVaultName, alertMgmtFunctionName, keyVaultSecretsUserRoleId)
   scope: resourceGroup()
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', keyVaultSecretsUserRoleId)
@@ -423,7 +423,7 @@ resource alertMgmtKeyVaultAccess 'Microsoft.Authorization/roleAssignments@2022-0
 }
 
 resource userMgmtKeyVaultAccess 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deployUserManagementFunction && deployKeyVault) {
-  name: guid(keyVault.outputs.id, userManagementFunction.outputs.principalId, keyVaultSecretsUserRoleId)
+  name: guid(resourceGroup().id, keyVaultName, userMgmtFunctionName, keyVaultSecretsUserRoleId)
   scope: resourceGroup()
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', keyVaultSecretsUserRoleId)

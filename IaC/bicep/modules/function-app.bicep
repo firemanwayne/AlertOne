@@ -120,6 +120,27 @@ var sqlConnectionSettings = !empty(keyVaultName) ? {
 
 var mergedAppSettings = union(isFlexConsumption ? flexAppSettings : baseAppSettings, insightsSettings, authSettings, sqlConnectionSettings, appSettings)
 
+// Convert merged app settings to array format for siteConfig
+var appSettingsArray = [for setting in items(mergedAppSettings): {
+  name: setting.key
+  value: setting.value
+}]
+
+// Additional settings for Flex Consumption
+var flexExtraSettings = [
+  {
+    name: 'DEPLOYMENT_STORAGE_CONNECTION_STRING'
+    value: storageAccountConnectionString
+  }
+  {
+    name: 'AzureWebJobsStorage__accountName'
+    value: storageAccountName
+  }
+]
+
+// Combined settings for Flex Consumption
+var flexAppSettingsArray = concat(flexExtraSettings, appSettingsArray)
+
 var appInsightsTags = !empty(appInsightsResourceId) ? {
   'hidden-link: /app-insights-resource-id': appInsightsResourceId
 } : {}
@@ -168,19 +189,7 @@ resource functionAppFlex 'Microsoft.Web/sites@2023-12-01' = if (isFlexConsumptio
         allowedOrigins: corsAllowedOrigins
         supportCredentials: corsSupportCredentials
       }
-      appSettings: union([
-        {
-          name: 'DEPLOYMENT_STORAGE_CONNECTION_STRING'
-          value: storageAccountConnectionString
-        }
-        {
-          name: 'AzureWebJobsStorage__accountName'
-          value: storageAccountName
-        }
-      ], [for setting in items(mergedAppSettings): {
-        name: setting.key
-        value: setting.value
-      }])
+      appSettings: flexAppSettingsArray
     }
   }
 }
@@ -212,10 +221,7 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = if (!isFlexConsumption) 
         allowedOrigins: corsAllowedOrigins
         supportCredentials: corsSupportCredentials
       }
-      appSettings: [for setting in items(mergedAppSettings): {
-        name: setting.key
-        value: setting.value
-      }]
+      appSettings: appSettingsArray
     }
   }
 }
