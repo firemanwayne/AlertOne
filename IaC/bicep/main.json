@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.29.47.4906",
-      "templateHash": "6957423047440381875"
+      "templateHash": "6839630475679991972"
     }
   },
   "parameters": {
@@ -1995,7 +1995,12 @@
           "isFlexConsumption": {
             "value": "[variables('isFlexConsumption')]"
           },
-          "keyVaultName": "[if(parameters('deployKeyVault'), createObject('value', tryGet(reference(resourceId('Microsoft.Resources/deployments', format('keyVault-{0}', uniqueString(resourceGroup().id))), '2022-09-01'), 'outputs').name.value), createObject('value', ''))]"
+          "keyVaultName": "[if(parameters('deployKeyVault'), createObject('value', tryGet(reference(resourceId('Microsoft.Resources/deployments', format('keyVault-{0}', uniqueString(resourceGroup().id))), '2022-09-01'), 'outputs').name.value), createObject('value', ''))]",
+          "appSettings": {
+            "value": {
+              "AppConfig__BaseUri": "[if(parameters('deployAppConfiguration'), reference(resourceId('Microsoft.Resources/deployments', format('appConfiguration-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.endpoint.value, '')]"
+            }
+          }
         },
         "template": {
           "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
@@ -2348,6 +2353,7 @@
         "[resourceId('Microsoft.Resources/deployments', format('alertMgmtAppInsights-{0}', uniqueString(resourceGroup().id)))]",
         "[resourceId('Microsoft.Resources/deployments', format('alertMgmtAppServicePlan-{0}', uniqueString(resourceGroup().id)))]",
         "[resourceId('Microsoft.Resources/deployments', format('alertMgmtStorageAccount-{0}', uniqueString(resourceGroup().id)))]",
+        "[resourceId('Microsoft.Resources/deployments', format('appConfiguration-{0}', uniqueString(resourceGroup().id)))]",
         "[resourceId('Microsoft.Resources/deployments', format('keyVault-{0}', uniqueString(resourceGroup().id)))]",
         "[resourceId('Microsoft.Resources/deployments', format('staticWebApp-{0}', uniqueString(resourceGroup().id)))]"
       ]
@@ -2830,7 +2836,12 @@
           "isFlexConsumption": {
             "value": "[variables('isFlexConsumption')]"
           },
-          "keyVaultName": "[if(parameters('deployKeyVault'), createObject('value', reference(resourceId('Microsoft.Resources/deployments', format('keyVault-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.name.value), createObject('value', ''))]"
+          "keyVaultName": "[if(parameters('deployKeyVault'), createObject('value', reference(resourceId('Microsoft.Resources/deployments', format('keyVault-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.name.value), createObject('value', ''))]",
+          "appSettings": {
+            "value": {
+              "AppConfig__BaseUri": "[if(parameters('deployAppConfiguration'), reference(resourceId('Microsoft.Resources/deployments', format('appConfiguration-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.endpoint.value, '')]"
+            }
+          }
         },
         "template": {
           "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
@@ -3180,6 +3191,7 @@
         }
       },
       "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', format('appConfiguration-{0}', uniqueString(resourceGroup().id)))]",
         "[resourceId('Microsoft.Resources/deployments', format('keyVault-{0}', uniqueString(resourceGroup().id)))]",
         "[resourceId('Microsoft.Resources/deployments', format('staticWebApp-{0}', uniqueString(resourceGroup().id)))]",
         "[resourceId('Microsoft.Resources/deployments', format('userMgmtAppInsights-{0}', uniqueString(resourceGroup().id)))]",

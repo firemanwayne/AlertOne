@@ -9,12 +9,21 @@ public static class ServiceRegistryExtensions
 {
     public static IConfigurationBuilder AddAppConfiguration(this IConfigurationBuilder builder)
     {
+        // Build preliminary config to get App Configuration endpoint
+        var preliminaryConfig = builder.Build();
+        var appConfigBaseUri = preliminaryConfig["AppConfig:BaseUri"];
+
+        if (string.IsNullOrWhiteSpace(appConfigBaseUri))
+        {
+            throw new InvalidOperationException("AppConfig:BaseUri is not configured. Set it as an environment variable or app setting.");
+        }
+
         var credential = new DefaultAzureCredential();
 
         builder.AddAzureAppConfiguration(options =>
         {
             options
-            .Connect(new Uri("https://alert-one-app-config-dev.azconfig.io"), credential)
+            .Connect(new Uri(appConfigBaseUri), credential)
             // Load all keys that start with `AzureNotificationHubs:` and have no label
             .Select(keyFilter: "AzureNotificationHubs:*", labelFilter: LabelFilter.Null)
             .Select(keyFilter: "AzureCommunications:*", labelFilter: LabelFilter.Null)

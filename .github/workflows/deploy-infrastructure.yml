@@ -351,6 +351,16 @@ jobs:
           echo "Set AzureSqlServer:ConnectionString as Key Vault reference"
 
           # Set regular App Configuration values
+
+          # AppConfig:BaseUri - self-referencing endpoint
+          APP_CONFIG_ENDPOINT=$(az appconfig show --name ${{ env.APP_CONFIG_DEV }} --query "endpoint" -o tsv)
+          az appconfig kv set \
+            --name ${{ env.APP_CONFIG_DEV }} \
+            --key "AppConfig:BaseUri" \
+            --value "$APP_CONFIG_ENDPOINT" \
+            --yes
+          echo "Set AppConfig:BaseUri = $APP_CONFIG_ENDPOINT"
+
           az appconfig kv set \
             --name ${{ env.APP_CONFIG_DEV }} \
             --key "AzureCommunications:MobileAppScheme" \
@@ -572,6 +582,10 @@ jobs:
           az appconfig kv set-keyvault --name ${{ env.APP_CONFIG_STAGING }} --key "AzureNotificationHubs:ConnectionString" --secret-identifier "${KV_URI}/secrets/AzureNotificationHubs-ConnectionString" --yes
           az appconfig kv set-keyvault --name ${{ env.APP_CONFIG_STAGING }} --key "AzureSqlServer:ConnectionString" --secret-identifier "${KV_URI}/secrets/AzureSqlServer-ConnectionString" --yes
 
+          # AppConfig:BaseUri - self-referencing endpoint
+          APP_CONFIG_ENDPOINT=$(az appconfig show --name ${{ env.APP_CONFIG_STAGING }} --query "endpoint" -o tsv)
+          az appconfig kv set --name ${{ env.APP_CONFIG_STAGING }} --key "AppConfig:BaseUri" --value "$APP_CONFIG_ENDPOINT" --yes
+
           az appconfig kv set --name ${{ env.APP_CONFIG_STAGING }} --key "AzureCommunications:MobileAppScheme" --value "${{ env.MOBILE_APP_SCHEME }}" --yes
           az appconfig kv set --name ${{ env.APP_CONFIG_STAGING }} --key "AzureCommunications:SenderAddress" --value "DoNotReply@" --yes
           if [ -n "$SWA_HOSTNAME" ]; then
@@ -728,6 +742,10 @@ jobs:
           az appconfig kv set-keyvault --name ${{ env.APP_CONFIG_PROD }} --key "AzureCommunications:ConnectionString" --secret-identifier "${KV_URI}/secrets/AzureCommunications-ConnectionString" --yes
           az appconfig kv set-keyvault --name ${{ env.APP_CONFIG_PROD }} --key "AzureNotificationHubs:ConnectionString" --secret-identifier "${KV_URI}/secrets/AzureNotificationHubs-ConnectionString" --yes
           az appconfig kv set-keyvault --name ${{ env.APP_CONFIG_PROD }} --key "AzureSqlServer:ConnectionString" --secret-identifier "${KV_URI}/secrets/AzureSqlServer-ConnectionString" --yes
+
+          # AppConfig:BaseUri - self-referencing endpoint
+          APP_CONFIG_ENDPOINT=$(az appconfig show --name ${{ env.APP_CONFIG_PROD }} --query "endpoint" -o tsv)
+          az appconfig kv set --name ${{ env.APP_CONFIG_PROD }} --key "AppConfig:BaseUri" --value "$APP_CONFIG_ENDPOINT" --yes
 
           az appconfig kv set --name ${{ env.APP_CONFIG_PROD }} --key "AzureCommunications:MobileAppScheme" --value "${{ env.MOBILE_APP_SCHEME }}" --yes
           az appconfig kv set --name ${{ env.APP_CONFIG_PROD }} --key "AzureCommunications:SenderAddress" --value "DoNotReply@" --yes

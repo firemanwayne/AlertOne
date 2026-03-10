@@ -170,6 +170,10 @@ var corsAllowedOrigins = [
   staticWebAppHostname
 ]
 
+// App Configuration endpoint for function apps
+#disable-next-line BCP318
+var appConfigEndpoint = deployAppConfiguration ? appConfiguration.outputs.endpoint : ''
+
 // ============================================================================
 // SQL Server and Database
 // ============================================================================
@@ -341,6 +345,9 @@ module alertManagementFunction 'modules/function-app.bicep' = if (deployAlertMan
     corsSupportCredentials: true
     isFlexConsumption: isFlexConsumption
     keyVaultName: deployKeyVault ? keyVault.?outputs.name : ''
+    appSettings: {
+      AppConfig__BaseUri: appConfigEndpoint
+    }
   }
   dependsOn: [
 #disable-next-line no-unnecessary-dependson
@@ -351,6 +358,8 @@ module alertManagementFunction 'modules/function-app.bicep' = if (deployAlertMan
     alertMgmtAppInsights
 #disable-next-line no-unnecessary-dependson
     keyVault
+#disable-next-line no-unnecessary-dependson
+    appConfiguration
   ]
 }
 
@@ -414,6 +423,9 @@ module userManagementFunction 'modules/function-app.bicep' = if (deployUserManag
     isFlexConsumption: isFlexConsumption
     #disable-next-line BCP318
     keyVaultName: deployKeyVault ? keyVault.outputs.name : ''
+    appSettings: {
+      AppConfig__BaseUri: appConfigEndpoint
+    }
   }
   dependsOn: [
 #disable-next-line no-unnecessary-dependson
@@ -424,6 +436,8 @@ module userManagementFunction 'modules/function-app.bicep' = if (deployUserManag
     userMgmtAppInsights
 #disable-next-line no-unnecessary-dependson
     keyVault
+#disable-next-line no-unnecessary-dependson
+    appConfiguration
   ]
 }
 
