@@ -4,7 +4,6 @@ using AlertManagement.Infrastructure.Data;
 using Azure.AppConfig;
 using Azure.NotificationHubs;
 using Microsoft.Azure.Functions.Worker.Builder;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -33,13 +32,13 @@ builder
 
 var host = builder.Build();
 
-// Apply database migrations on startup
-await ApplyMigrationsAsync(host);
+// Ensure Cosmos DB database and containers exist
+await EnsureDatabaseCreatedAsync(host);
 
 await host
     .RunAsync();
 
-static async Task ApplyMigrationsAsync(IHost host)
+static async Task EnsureDatabaseCreatedAsync(IHost host)
 {
     using var scope = host.Services.CreateScope();
 
@@ -49,19 +48,19 @@ static async Task ApplyMigrationsAsync(IHost host)
 
     try
     {
-        logger.LogInformation("Applying database migrations...");
+        logger.LogInformation("Ensuring Cosmos DB database and containers exist...");
 
         var context = services.GetRequiredService<AlertDbContext>();
 
         await context
             .Database
-            .MigrateAsync();
+            .EnsureCreatedAsync();
 
-        logger.LogInformation("Database migrations applied successfully");
+        logger.LogInformation("Cosmos DB database and containers verified successfully");
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "An error occurred while applying database migrations");
+        logger.LogError(ex, "An error occurred while ensuring Cosmos DB database exists");
         throw;
     }
 }

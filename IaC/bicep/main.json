@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.29.47.4906",
-      "templateHash": "5809489067900901944"
+      "version": "0.41.2.15936",
+      "templateHash": "1741149650689835749"
     }
   },
   "parameters": {
@@ -271,7 +271,7 @@
       "name": "[guid(resourceGroup().id, variables('alertMgmtStorageAccountName'), variables('alertMgmtFunctionName'), variables('storageBlobDataOwnerRoleId'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('storageBlobDataOwnerRoleId'))]",
-        "principalId": "[reference(resourceId('Microsoft.Resources/deployments', format('alertManagementFunction-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.principalId.value]",
+        "principalId": "[reference(resourceId('Microsoft.Resources/deployments', format('alertManagementFunction-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.principalId.value]",
         "principalType": "ServicePrincipal"
       },
       "dependsOn": [
@@ -285,7 +285,7 @@
       "name": "[guid(resourceGroup().id, variables('userMgmtStorageAccountName'), variables('userMgmtFunctionName'), variables('storageBlobDataOwnerRoleId'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('storageBlobDataOwnerRoleId'))]",
-        "principalId": "[reference(resourceId('Microsoft.Resources/deployments', format('userManagementFunction-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.principalId.value]",
+        "principalId": "[reference(resourceId('Microsoft.Resources/deployments', format('userManagementFunction-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.principalId.value]",
         "principalType": "ServicePrincipal"
       },
       "dependsOn": [
@@ -299,7 +299,7 @@
       "name": "[guid(resourceGroup().id, variables('keyVaultName'), variables('alertMgmtFunctionName'), variables('keyVaultSecretsUserRoleId'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('keyVaultSecretsUserRoleId'))]",
-        "principalId": "[reference(resourceId('Microsoft.Resources/deployments', format('alertManagementFunction-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.principalId.value]",
+        "principalId": "[reference(resourceId('Microsoft.Resources/deployments', format('alertManagementFunction-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.principalId.value]",
         "principalType": "ServicePrincipal"
       },
       "dependsOn": [
@@ -313,7 +313,7 @@
       "name": "[guid(resourceGroup().id, variables('keyVaultName'), variables('userMgmtFunctionName'), variables('keyVaultSecretsUserRoleId'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('keyVaultSecretsUserRoleId'))]",
-        "principalId": "[reference(resourceId('Microsoft.Resources/deployments', format('userManagementFunction-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.principalId.value]",
+        "principalId": "[reference(resourceId('Microsoft.Resources/deployments', format('userManagementFunction-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.principalId.value]",
         "principalType": "ServicePrincipal"
       },
       "dependsOn": [
@@ -341,7 +341,7 @@
       "name": "[guid(resourceGroup().id, variables('appConfigurationName'), variables('alertMgmtFunctionName'), variables('appConfigDataReaderRoleId'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('appConfigDataReaderRoleId'))]",
-        "principalId": "[reference(resourceId('Microsoft.Resources/deployments', format('alertManagementFunction-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.principalId.value]",
+        "principalId": "[reference(resourceId('Microsoft.Resources/deployments', format('alertManagementFunction-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.principalId.value]",
         "principalType": "ServicePrincipal"
       },
       "dependsOn": [
@@ -355,7 +355,7 @@
       "name": "[guid(resourceGroup().id, variables('appConfigurationName'), variables('userMgmtFunctionName'), variables('appConfigDataReaderRoleId'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('appConfigDataReaderRoleId'))]",
-        "principalId": "[reference(resourceId('Microsoft.Resources/deployments', format('userManagementFunction-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.principalId.value]",
+        "principalId": "[reference(resourceId('Microsoft.Resources/deployments', format('userManagementFunction-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.principalId.value]",
         "principalType": "ServicePrincipal"
       },
       "dependsOn": [
@@ -365,7 +365,7 @@
     {
       "condition": "[and(and(parameters('deploySqlServer'), not(empty(parameters('sqlAzureAdAdminLogin')))), not(empty(parameters('sqlAzureAdAdminObjectId'))))]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "[format('sqlServer-{0}', uniqueString(resourceGroup().id))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -404,8 +404,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.29.47.4906",
-              "templateHash": "11511520513158146272"
+              "version": "0.41.2.15936",
+              "templateHash": "2509350826341783952"
             }
           },
           "parameters": {
@@ -553,7 +553,7 @@
     {
       "condition": "[and(and(parameters('deploySqlServer'), not(empty(parameters('sqlAzureAdAdminLogin')))), not(empty(parameters('sqlAzureAdAdminObjectId'))))]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "[format('sqlDatabase-{0}', uniqueString(resourceGroup().id))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -601,8 +601,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.29.47.4906",
-              "templateHash": "6165336926676636985"
+              "version": "0.41.2.15936",
+              "templateHash": "7087788378445515375"
             }
           },
           "parameters": {
@@ -783,7 +783,7 @@
     {
       "condition": "[parameters('deployAppConfiguration')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "[format('appConfiguration-{0}', uniqueString(resourceGroup().id))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -810,8 +810,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.29.47.4906",
-              "templateHash": "15515700913366102736"
+              "version": "0.41.2.15936",
+              "templateHash": "16377519482222113626"
             }
           },
           "parameters": {
@@ -924,7 +924,7 @@
     {
       "condition": "[parameters('deployKeyVault')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "[format('keyVault-{0}', uniqueString(resourceGroup().id))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -960,8 +960,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.29.47.4906",
-              "templateHash": "15122131216886743973"
+              "version": "0.41.2.15936",
+              "templateHash": "17166005326980912353"
             }
           },
           "parameters": {
@@ -1123,7 +1123,7 @@
     {
       "condition": "[parameters('deployCommunicationServices')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "[format('emailServices-{0}', uniqueString(resourceGroup().id))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -1150,8 +1150,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.29.47.4906",
-              "templateHash": "14297112478806976615"
+              "version": "0.41.2.15936",
+              "templateHash": "17409769355054845159"
             }
           },
           "parameters": {
@@ -1254,7 +1254,7 @@
     {
       "condition": "[parameters('deployCommunicationServices')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "[format('communicationServices-{0}', uniqueString(resourceGroup().id))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -1274,7 +1274,7 @@
           "enableSystemAssignedIdentity": {
             "value": true
           },
-          "linkedDomains": "[if(parameters('deployCommunicationServices'), createObject('value', createArray(reference(resourceId('Microsoft.Resources/deployments', format('emailServices-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.azureManagedDomainId.value)), createObject('value', createArray()))]"
+          "linkedDomains": "[if(parameters('deployCommunicationServices'), createObject('value', createArray(reference(resourceId('Microsoft.Resources/deployments', format('emailServices-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.azureManagedDomainId.value)), createObject('value', createArray()))]"
         },
         "template": {
           "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
@@ -1282,8 +1282,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.29.47.4906",
-              "templateHash": "15540769165020606617"
+              "version": "0.41.2.15936",
+              "templateHash": "14508933930440115247"
             }
           },
           "parameters": {
@@ -1386,7 +1386,7 @@
     {
       "condition": "[parameters('deployNotificationHub')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "[format('notificationHub-{0}', uniqueString(resourceGroup().id))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -1416,8 +1416,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.29.47.4906",
-              "templateHash": "2826190092530724647"
+              "version": "0.41.2.15936",
+              "templateHash": "12133493757213010785"
             }
           },
           "parameters": {
@@ -1549,7 +1549,7 @@
     {
       "condition": "[parameters('deployAlertManagementFunction')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "[format('alertMgmtStorageAccount-{0}', uniqueString(resourceGroup().id))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -1576,8 +1576,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.29.47.4906",
-              "templateHash": "11799874353899747264"
+              "version": "0.41.2.15936",
+              "templateHash": "9672610519051045104"
             }
           },
           "parameters": {
@@ -1712,7 +1712,7 @@
     {
       "condition": "[parameters('deployAlertManagementFunction')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "[format('alertMgmtAppServicePlan-{0}', uniqueString(resourceGroup().id))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -1742,8 +1742,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.29.47.4906",
-              "templateHash": "3619622788601372831"
+              "version": "0.41.2.15936",
+              "templateHash": "17061341676033379173"
             }
           },
           "parameters": {
@@ -1839,7 +1839,7 @@
     {
       "condition": "[parameters('deployAlertManagementFunction')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "[format('alertMgmtAppInsights-{0}', uniqueString(resourceGroup().id))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -1864,8 +1864,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.29.47.4906",
-              "templateHash": "9598626941977206408"
+              "version": "0.41.2.15936",
+              "templateHash": "4192508968695264566"
             }
           },
           "parameters": {
@@ -1971,7 +1971,7 @@
     {
       "condition": "[parameters('deployAlertManagementFunction')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "[format('alertManagementFunction-{0}', uniqueString(resourceGroup().id))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -1989,22 +1989,22 @@
             "value": "[union(variables('tags'), createObject('Service', 'AlertManagement'))]"
           },
           "appServicePlanId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('alertMgmtAppServicePlan-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.id.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('alertMgmtAppServicePlan-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.id.value]"
           },
           "storageAccountConnectionString": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('alertMgmtStorageAccount-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.connectionString.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('alertMgmtStorageAccount-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.connectionString.value]"
           },
           "storageAccountName": {
-            "value": "[tryGet(reference(resourceId('Microsoft.Resources/deployments', format('alertMgmtStorageAccount-{0}', uniqueString(resourceGroup().id))), '2022-09-01'), 'outputs').name.value]"
+            "value": "[tryGet(if(parameters('deployAlertManagementFunction'), reference(resourceId('Microsoft.Resources/deployments', format('alertMgmtStorageAccount-{0}', uniqueString(resourceGroup().id))), '2025-04-01'), null()), 'outputs', 'name', 'value')]"
           },
           "deploymentsContainerUrl": {
-            "value": "[tryGet(reference(resourceId('Microsoft.Resources/deployments', format('alertMgmtStorageAccount-{0}', uniqueString(resourceGroup().id))), '2022-09-01'), 'outputs').deploymentsContainerUrl.value]"
+            "value": "[tryGet(if(parameters('deployAlertManagementFunction'), reference(resourceId('Microsoft.Resources/deployments', format('alertMgmtStorageAccount-{0}', uniqueString(resourceGroup().id))), '2025-04-01'), null()), 'outputs', 'deploymentsContainerUrl', 'value')]"
           },
           "appInsightsConnectionString": {
-            "value": "[tryGet(reference(resourceId('Microsoft.Resources/deployments', format('alertMgmtAppInsights-{0}', uniqueString(resourceGroup().id))), '2022-09-01'), 'outputs').connectionString.value]"
+            "value": "[tryGet(if(parameters('deployAlertManagementFunction'), reference(resourceId('Microsoft.Resources/deployments', format('alertMgmtAppInsights-{0}', uniqueString(resourceGroup().id))), '2025-04-01'), null()), 'outputs', 'connectionString', 'value')]"
           },
           "appInsightsResourceId": {
-            "value": "[tryGet(reference(resourceId('Microsoft.Resources/deployments', format('alertMgmtAppInsights-{0}', uniqueString(resourceGroup().id))), '2022-09-01'), 'outputs').id.value]"
+            "value": "[tryGet(if(parameters('deployAlertManagementFunction'), reference(resourceId('Microsoft.Resources/deployments', format('alertMgmtAppInsights-{0}', uniqueString(resourceGroup().id))), '2025-04-01'), null()), 'outputs', 'id', 'value')]"
           },
           "dotnetVersion": {
             "value": "v9.0"
@@ -2015,7 +2015,7 @@
           "corsAllowedOrigins": {
             "value": [
               "https://localhost:7183",
-              "[if(parameters('deployStaticWebApp'), format('https://{0}', reference(resourceId('Microsoft.Resources/deployments', format('staticWebApp-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.defaultHostName.value), '')]"
+              "[if(parameters('deployStaticWebApp'), format('https://{0}', reference(resourceId('Microsoft.Resources/deployments', format('staticWebApp-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.defaultHostName.value), '')]"
             ]
           },
           "corsSupportCredentials": {
@@ -2024,10 +2024,10 @@
           "isFlexConsumption": {
             "value": "[variables('isFlexConsumption')]"
           },
-          "keyVaultName": "[if(parameters('deployKeyVault'), createObject('value', tryGet(reference(resourceId('Microsoft.Resources/deployments', format('keyVault-{0}', uniqueString(resourceGroup().id))), '2022-09-01'), 'outputs').name.value), createObject('value', ''))]",
+          "keyVaultName": "[if(parameters('deployKeyVault'), createObject('value', tryGet(if(parameters('deployKeyVault'), reference(resourceId('Microsoft.Resources/deployments', format('keyVault-{0}', uniqueString(resourceGroup().id))), '2025-04-01'), null()), 'outputs', 'name', 'value')), createObject('value', ''))]",
           "appSettings": {
             "value": {
-              "AppConfig__BaseUri": "[if(parameters('deployAppConfiguration'), reference(resourceId('Microsoft.Resources/deployments', format('appConfiguration-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.endpoint.value, '')]"
+              "AppConfig__BaseUri": "[if(parameters('deployAppConfiguration'), reference(resourceId('Microsoft.Resources/deployments', format('appConfiguration-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.endpoint.value, '')]"
             }
           }
         },
@@ -2037,8 +2037,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.29.47.4906",
-              "templateHash": "4019775017380997760"
+              "version": "0.41.2.15936",
+              "templateHash": "4947919898266957084"
             }
           },
           "parameters": {
@@ -2255,8 +2255,8 @@
                 "value": "[parameters('storageAccountConnectionString')]"
               },
               {
-                "name": "AzureWebJobsStorage__accountName",
-                "value": "[parameters('storageAccountName')]"
+                "name": "AzureWebJobsStorage",
+                "value": "[parameters('storageAccountConnectionString')]"
               }
             ],
             "flexAppSettingsArray": "[concat(variables('flexExtraSettings'), variables('appSettingsArray'))]",
@@ -2390,7 +2390,7 @@
     {
       "condition": "[parameters('deployUserManagementFunction')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "[format('userMgmtStorageAccount-{0}', uniqueString(resourceGroup().id))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -2417,8 +2417,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.29.47.4906",
-              "templateHash": "11799874353899747264"
+              "version": "0.41.2.15936",
+              "templateHash": "9672610519051045104"
             }
           },
           "parameters": {
@@ -2553,7 +2553,7 @@
     {
       "condition": "[parameters('deployUserManagementFunction')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "[format('userMgmtAppServicePlan-{0}', uniqueString(resourceGroup().id))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -2583,8 +2583,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.29.47.4906",
-              "templateHash": "3619622788601372831"
+              "version": "0.41.2.15936",
+              "templateHash": "17061341676033379173"
             }
           },
           "parameters": {
@@ -2680,7 +2680,7 @@
     {
       "condition": "[parameters('deployUserManagementFunction')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "[format('userMgmtAppInsights-{0}', uniqueString(resourceGroup().id))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -2705,8 +2705,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.29.47.4906",
-              "templateHash": "9598626941977206408"
+              "version": "0.41.2.15936",
+              "templateHash": "4192508968695264566"
             }
           },
           "parameters": {
@@ -2812,7 +2812,7 @@
     {
       "condition": "[parameters('deployUserManagementFunction')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "[format('userManagementFunction-{0}', uniqueString(resourceGroup().id))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -2830,22 +2830,22 @@
             "value": "[union(variables('tags'), createObject('Service', 'UserManagement'))]"
           },
           "appServicePlanId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('userMgmtAppServicePlan-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.id.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('userMgmtAppServicePlan-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.id.value]"
           },
           "storageAccountConnectionString": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('userMgmtStorageAccount-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.connectionString.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('userMgmtStorageAccount-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.connectionString.value]"
           },
           "storageAccountName": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('userMgmtStorageAccount-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.name.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('userMgmtStorageAccount-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.name.value]"
           },
           "deploymentsContainerUrl": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('userMgmtStorageAccount-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.deploymentsContainerUrl.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('userMgmtStorageAccount-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.deploymentsContainerUrl.value]"
           },
           "appInsightsConnectionString": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('userMgmtAppInsights-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.connectionString.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('userMgmtAppInsights-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.connectionString.value]"
           },
           "appInsightsResourceId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('userMgmtAppInsights-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.id.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('userMgmtAppInsights-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.id.value]"
           },
           "dotnetVersion": {
             "value": "v9.0"
@@ -2856,7 +2856,7 @@
           "corsAllowedOrigins": {
             "value": [
               "https://localhost:7183",
-              "[if(parameters('deployStaticWebApp'), format('https://{0}', reference(resourceId('Microsoft.Resources/deployments', format('staticWebApp-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.defaultHostName.value), '')]"
+              "[if(parameters('deployStaticWebApp'), format('https://{0}', reference(resourceId('Microsoft.Resources/deployments', format('staticWebApp-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.defaultHostName.value), '')]"
             ]
           },
           "corsSupportCredentials": {
@@ -2865,10 +2865,10 @@
           "isFlexConsumption": {
             "value": "[variables('isFlexConsumption')]"
           },
-          "keyVaultName": "[if(parameters('deployKeyVault'), createObject('value', reference(resourceId('Microsoft.Resources/deployments', format('keyVault-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.name.value), createObject('value', ''))]",
+          "keyVaultName": "[if(parameters('deployKeyVault'), createObject('value', reference(resourceId('Microsoft.Resources/deployments', format('keyVault-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.name.value), createObject('value', ''))]",
           "appSettings": {
             "value": {
-              "AppConfig__BaseUri": "[if(parameters('deployAppConfiguration'), reference(resourceId('Microsoft.Resources/deployments', format('appConfiguration-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.endpoint.value, '')]"
+              "AppConfig__BaseUri": "[if(parameters('deployAppConfiguration'), reference(resourceId('Microsoft.Resources/deployments', format('appConfiguration-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.endpoint.value, '')]"
             }
           }
         },
@@ -2878,8 +2878,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.29.47.4906",
-              "templateHash": "4019775017380997760"
+              "version": "0.41.2.15936",
+              "templateHash": "4947919898266957084"
             }
           },
           "parameters": {
@@ -3096,8 +3096,8 @@
                 "value": "[parameters('storageAccountConnectionString')]"
               },
               {
-                "name": "AzureWebJobsStorage__accountName",
-                "value": "[parameters('storageAccountName')]"
+                "name": "AzureWebJobsStorage",
+                "value": "[parameters('storageAccountConnectionString')]"
               }
             ],
             "flexAppSettingsArray": "[concat(variables('flexExtraSettings'), variables('appSettingsArray'))]",
@@ -3231,7 +3231,7 @@
     {
       "condition": "[parameters('deployStaticWebApp')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "[format('staticWebApp-{0}', uniqueString(resourceGroup().id))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -3270,8 +3270,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.29.47.4906",
-              "templateHash": "10865996754638373731"
+              "version": "0.41.2.15936",
+              "templateHash": "14898918472787064417"
             }
           },
           "parameters": {
@@ -3424,133 +3424,133 @@
       "metadata": {
         "description": "SQL Server name"
       },
-      "value": "[if(and(parameters('deploySqlServer'), not(empty(parameters('sqlAzureAdAdminLogin')))), reference(resourceId('Microsoft.Resources/deployments', format('sqlServer-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.name.value, '')]"
+      "value": "[if(and(parameters('deploySqlServer'), not(empty(parameters('sqlAzureAdAdminLogin')))), reference(resourceId('Microsoft.Resources/deployments', format('sqlServer-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.name.value, '')]"
     },
     "sqlServerFqdn": {
       "type": "string",
       "metadata": {
         "description": "SQL Server FQDN"
       },
-      "value": "[if(and(parameters('deploySqlServer'), not(empty(parameters('sqlAzureAdAdminLogin')))), reference(resourceId('Microsoft.Resources/deployments', format('sqlServer-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.fullyQualifiedDomainName.value, '')]"
+      "value": "[if(and(parameters('deploySqlServer'), not(empty(parameters('sqlAzureAdAdminLogin')))), reference(resourceId('Microsoft.Resources/deployments', format('sqlServer-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.fullyQualifiedDomainName.value, '')]"
     },
     "sqlDatabaseName": {
       "type": "string",
       "metadata": {
         "description": "SQL Database name"
       },
-      "value": "[if(and(parameters('deploySqlServer'), not(empty(parameters('sqlAzureAdAdminLogin')))), reference(resourceId('Microsoft.Resources/deployments', format('sqlDatabase-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.name.value, '')]"
+      "value": "[if(and(parameters('deploySqlServer'), not(empty(parameters('sqlAzureAdAdminLogin')))), reference(resourceId('Microsoft.Resources/deployments', format('sqlDatabase-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.name.value, '')]"
     },
     "appConfigurationName": {
       "type": "string",
       "metadata": {
         "description": "App Configuration name"
       },
-      "value": "[if(parameters('deployAppConfiguration'), reference(resourceId('Microsoft.Resources/deployments', format('appConfiguration-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.name.value, '')]"
+      "value": "[if(parameters('deployAppConfiguration'), reference(resourceId('Microsoft.Resources/deployments', format('appConfiguration-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.name.value, '')]"
     },
     "appConfigurationEndpoint": {
       "type": "string",
       "metadata": {
         "description": "App Configuration endpoint"
       },
-      "value": "[if(parameters('deployAppConfiguration'), reference(resourceId('Microsoft.Resources/deployments', format('appConfiguration-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.endpoint.value, '')]"
+      "value": "[if(parameters('deployAppConfiguration'), reference(resourceId('Microsoft.Resources/deployments', format('appConfiguration-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.endpoint.value, '')]"
     },
     "keyVaultName": {
       "type": "string",
       "metadata": {
         "description": "Key Vault name"
       },
-      "value": "[if(parameters('deployKeyVault'), reference(resourceId('Microsoft.Resources/deployments', format('keyVault-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.name.value, '')]"
+      "value": "[if(parameters('deployKeyVault'), reference(resourceId('Microsoft.Resources/deployments', format('keyVault-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.name.value, '')]"
     },
     "keyVaultUri": {
       "type": "string",
       "metadata": {
         "description": "Key Vault URI"
       },
-      "value": "[if(parameters('deployKeyVault'), reference(resourceId('Microsoft.Resources/deployments', format('keyVault-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.vaultUri.value, '')]"
+      "value": "[if(parameters('deployKeyVault'), reference(resourceId('Microsoft.Resources/deployments', format('keyVault-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.vaultUri.value, '')]"
     },
     "communicationServicesName": {
       "type": "string",
       "metadata": {
         "description": "Communication Services name"
       },
-      "value": "[if(parameters('deployCommunicationServices'), reference(resourceId('Microsoft.Resources/deployments', format('communicationServices-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.name.value, '')]"
+      "value": "[if(parameters('deployCommunicationServices'), reference(resourceId('Microsoft.Resources/deployments', format('communicationServices-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.name.value, '')]"
     },
     "communicationServicesHostName": {
       "type": "string",
       "metadata": {
         "description": "Communication Services hostname"
       },
-      "value": "[if(parameters('deployCommunicationServices'), reference(resourceId('Microsoft.Resources/deployments', format('communicationServices-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.hostName.value, '')]"
+      "value": "[if(parameters('deployCommunicationServices'), reference(resourceId('Microsoft.Resources/deployments', format('communicationServices-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.hostName.value, '')]"
     },
     "notificationHubNamespaceName": {
       "type": "string",
       "metadata": {
         "description": "Notification Hub Namespace name"
       },
-      "value": "[if(parameters('deployNotificationHub'), reference(resourceId('Microsoft.Resources/deployments', format('notificationHub-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.namespaceName.value, '')]"
+      "value": "[if(parameters('deployNotificationHub'), reference(resourceId('Microsoft.Resources/deployments', format('notificationHub-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.namespaceName.value, '')]"
     },
     "notificationHubName": {
       "type": "string",
       "metadata": {
         "description": "Notification Hub name"
       },
-      "value": "[if(parameters('deployNotificationHub'), reference(resourceId('Microsoft.Resources/deployments', format('notificationHub-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.hubName.value, '')]"
+      "value": "[if(parameters('deployNotificationHub'), reference(resourceId('Microsoft.Resources/deployments', format('notificationHub-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.hubName.value, '')]"
     },
     "alertManagementFunctionName": {
       "type": "string",
       "metadata": {
         "description": "Alert Management Function App name"
       },
-      "value": "[if(parameters('deployAlertManagementFunction'), reference(resourceId('Microsoft.Resources/deployments', format('alertManagementFunction-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.name.value, '')]"
+      "value": "[if(parameters('deployAlertManagementFunction'), reference(resourceId('Microsoft.Resources/deployments', format('alertManagementFunction-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.name.value, '')]"
     },
     "alertManagementFunctionHostName": {
       "type": "string",
       "metadata": {
         "description": "Alert Management Function App hostname"
       },
-      "value": "[if(parameters('deployAlertManagementFunction'), reference(resourceId('Microsoft.Resources/deployments', format('alertManagementFunction-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.defaultHostName.value, '')]"
+      "value": "[if(parameters('deployAlertManagementFunction'), reference(resourceId('Microsoft.Resources/deployments', format('alertManagementFunction-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.defaultHostName.value, '')]"
     },
     "alertManagementFunctionPrincipalId": {
       "type": "string",
       "metadata": {
         "description": "Alert Management Function App principal ID"
       },
-      "value": "[if(parameters('deployAlertManagementFunction'), reference(resourceId('Microsoft.Resources/deployments', format('alertManagementFunction-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.principalId.value, '')]"
+      "value": "[if(parameters('deployAlertManagementFunction'), reference(resourceId('Microsoft.Resources/deployments', format('alertManagementFunction-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.principalId.value, '')]"
     },
     "userManagementFunctionName": {
       "type": "string",
       "metadata": {
         "description": "User Management Function App name"
       },
-      "value": "[if(parameters('deployUserManagementFunction'), reference(resourceId('Microsoft.Resources/deployments', format('userManagementFunction-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.name.value, '')]"
+      "value": "[if(parameters('deployUserManagementFunction'), reference(resourceId('Microsoft.Resources/deployments', format('userManagementFunction-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.name.value, '')]"
     },
     "userManagementFunctionHostName": {
       "type": "string",
       "metadata": {
         "description": "User Management Function App hostname"
       },
-      "value": "[if(parameters('deployUserManagementFunction'), reference(resourceId('Microsoft.Resources/deployments', format('userManagementFunction-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.defaultHostName.value, '')]"
+      "value": "[if(parameters('deployUserManagementFunction'), reference(resourceId('Microsoft.Resources/deployments', format('userManagementFunction-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.defaultHostName.value, '')]"
     },
     "userManagementFunctionPrincipalId": {
       "type": "string",
       "metadata": {
         "description": "User Management Function App principal ID"
       },
-      "value": "[if(parameters('deployUserManagementFunction'), reference(resourceId('Microsoft.Resources/deployments', format('userManagementFunction-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.principalId.value, '')]"
+      "value": "[if(parameters('deployUserManagementFunction'), reference(resourceId('Microsoft.Resources/deployments', format('userManagementFunction-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.principalId.value, '')]"
     },
     "staticWebAppName": {
       "type": "string",
       "metadata": {
         "description": "Static Web App name"
       },
-      "value": "[if(parameters('deployStaticWebApp'), reference(resourceId('Microsoft.Resources/deployments', format('staticWebApp-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.name.value, '')]"
+      "value": "[if(parameters('deployStaticWebApp'), reference(resourceId('Microsoft.Resources/deployments', format('staticWebApp-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.name.value, '')]"
     },
     "staticWebAppHostName": {
       "type": "string",
       "metadata": {
         "description": "Static Web App hostname"
       },
-      "value": "[if(parameters('deployStaticWebApp'), reference(resourceId('Microsoft.Resources/deployments', format('staticWebApp-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.defaultHostName.value, '')]"
+      "value": "[if(parameters('deployStaticWebApp'), reference(resourceId('Microsoft.Resources/deployments', format('staticWebApp-{0}', uniqueString(resourceGroup().id))), '2025-04-01').outputs.defaultHostName.value, '')]"
     }
   }
 }

@@ -1,6 +1,7 @@
 using AlertManagement.Core.Interfaces;
 using AlertManagement.Infrastructure.Data;
 using AlertManagement.Infrastructure.Services;
+using Azure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,18 +30,18 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetValue<string>("AzureSqlServer:ConnectionString");
+        var cosmosEndpoint = configuration.GetValue<string>("CosmosDb:Endpoint");
+        var cosmosDatabase = configuration.GetValue<string>("CosmosDb:DatabaseName");
 
-        ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
+        ArgumentException.ThrowIfNullOrWhiteSpace(cosmosEndpoint, "CosmosDb:Endpoint");
+        ArgumentException.ThrowIfNullOrWhiteSpace(cosmosDatabase, "CosmosDb:DatabaseName");
 
-        services
-            .AddDbContext<AlertDbContext>(options =>
+        services.AddDbContext<AlertDbContext>(options =>
         {
-            options
-            .UseAzureSql(
-                connectionString,
-                b => b.MigrationsAssembly("AlertManagement.Infrastructure"));
-
+            options.UseCosmos(
+                cosmosEndpoint,
+                new DefaultAzureCredential(),
+                cosmosDatabase);
         });
 
         return services;

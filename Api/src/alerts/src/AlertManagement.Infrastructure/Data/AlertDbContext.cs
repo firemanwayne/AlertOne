@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 namespace AlertManagement.Infrastructure.Data;
 
 /// <summary>
-/// Database context for alert management
+/// Database context for alert management using Cosmos DB
 /// </summary>
 public sealed class AlertDbContext(DbContextOptions<AlertDbContext> options) : DbContext(options)
 {
@@ -20,58 +20,66 @@ public sealed class AlertDbContext(DbContextOptions<AlertDbContext> options) : D
 
         builder.Entity<Alert>(entity =>
         {
-            entity.ToTable("Alerts");
+            entity.ToContainer("alerts");
+            entity.HasPartitionKey(e => e.AlertTypeId);
+            entity.HasNoDiscriminator();
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.CreatedBy).HasMaxLength(256).IsRequired();
-            entity.Property(e => e.UpdatedBy).HasMaxLength(256);
-            entity.Property(e => e.RescindedBy).HasMaxLength(256);
-            entity.HasOne(e => e.AlertType).WithMany().HasForeignKey(e => e.AlertTypeId).OnDelete(DeleteBehavior.Restrict);
-            entity.HasOne(e => e.AlertStatusLevel).WithMany().HasForeignKey(e => e.AlertStatusLevelId).OnDelete(DeleteBehavior.Restrict);
+            entity.Property(e => e.Id).ToJsonProperty("id");
+            entity.Property(e => e.CreatedBy).IsRequired();
+            // Navigation properties are not supported in Cosmos - we'll handle relationships manually
+            entity.Ignore(e => e.AlertType);
+            entity.Ignore(e => e.AlertStatusLevel);
         });
 
         builder.Entity<AlertType>(entity =>
         {
-            entity.ToTable("AlertTypes");
+            entity.ToContainer("alert-types");
+            entity.HasPartitionKey(e => e.Id);
+            entity.HasNoDiscriminator();
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Name).HasMaxLength(256).IsRequired();
-            entity.Property(e => e.Description).HasMaxLength(1024).IsRequired();
-            entity.Property(e => e.BackgroundColor).HasMaxLength(50).IsRequired();
-            entity.Property(e => e.TextColor).HasMaxLength(50).IsRequired();
-            entity.HasIndex(e => e.Name).IsUnique();
+            entity.Property(e => e.Id).ToJsonProperty("id");
+            entity.Property(e => e.Name).IsRequired();
+            entity.Property(e => e.Description).IsRequired();
+            entity.Property(e => e.BackgroundColor).IsRequired();
+            entity.Property(e => e.TextColor).IsRequired();
+            // Navigation properties are not supported in Cosmos
+            entity.Ignore(e => e.AlertTypeUsers);
         });
 
         builder.Entity<AlertTypeUser>(entity =>
         {
-            entity.ToTable("AlertTypeUsers");
-            entity.HasKey(e => new { e.AlertTypeId, e.UserId });
-            entity.HasOne(e => e.AlertType)
-            .WithMany(t => t.AlertTypeUsers)
-            .HasForeignKey(e => e.AlertTypeId).OnDelete(DeleteBehavior.Cascade);
+            entity.ToContainer("alert-type-users");
+            entity.HasPartitionKey(e => e.AlertTypeId);
+            entity.HasNoDiscriminator();
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ToJsonProperty("id");
+            // Navigation properties are not supported in Cosmos
+            entity.Ignore(e => e.AlertType);
         });
 
         builder.Entity<AlertStatusLevel>(entity =>
         {
-            entity.ToTable("AlertStatusLevels");
+            entity.ToContainer("alert-status-levels");
+            entity.HasPartitionKey(e => e.Id);
+            entity.HasNoDiscriminator();
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Name).HasMaxLength(256).IsRequired();
-            entity.Property(e => e.Description).HasMaxLength(1024).IsRequired();
-            entity.Property(e => e.BackgroundColor).HasMaxLength(50).IsRequired();
-            entity.Property(e => e.TextColor).HasMaxLength(50).IsRequired();
-            entity.HasIndex(e => e.Name).IsUnique();
+            entity.Property(e => e.Id).ToJsonProperty("id");
+            entity.Property(e => e.Name).IsRequired();
+            entity.Property(e => e.Description).IsRequired();
+            entity.Property(e => e.BackgroundColor).IsRequired();
+            entity.Property(e => e.TextColor).IsRequired();
         });
 
         builder.Entity<AlertHistory>(entity =>
         {
-            entity.ToTable("AlertHistories");
+            entity.ToContainer("alert-history");
+            entity.HasPartitionKey(e => e.AlertId);
+            entity.HasNoDiscriminator();
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.EventType).HasMaxLength(50).IsRequired();
-            entity.Property(e => e.UpdatedBy).HasMaxLength(256).IsRequired();
-            entity.Property(e => e.Notes).HasMaxLength(1024);
-            entity.HasOne(e => e.Alert)
-                .WithMany()
-                .HasForeignKey(e => e.AlertId)
-                .OnDelete(DeleteBehavior.Cascade);
-            entity.HasIndex(e => e.AlertId);
+            entity.Property(e => e.Id).ToJsonProperty("id");
+            entity.Property(e => e.EventType).IsRequired();
+            // Navigation properties are not supported in Cosmos
+            entity.Ignore(e => e.Alert);
         });
     }
 }

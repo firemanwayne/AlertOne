@@ -1,18 +1,22 @@
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace UserManagement.Infrastructure.Identity;
 
 /// <summary>
-/// Database context for the application with Identity
+/// Database context for the application with Identity using Cosmos DB
 /// </summary>
-public sealed class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
+public sealed class ApplicationDbContext : DbContext
 {
+    public DbSet<ApplicationUser> Users => Set<ApplicationUser>();
+    public DbSet<IdentityRole<Guid>> Roles => Set<IdentityRole<Guid>>();
+    public DbSet<IdentityUserRole<Guid>> UserRoles => Set<IdentityUserRole<Guid>>();
+    public DbSet<IdentityUserClaim<Guid>> UserClaims => Set<IdentityUserClaim<Guid>>();
+    public DbSet<IdentityUserLogin<Guid>> UserLogins => Set<IdentityUserLogin<Guid>>();
+    public DbSet<IdentityRoleClaim<Guid>> RoleClaims => Set<IdentityRoleClaim<Guid>>();
+    public DbSet<IdentityUserToken<Guid>> UserTokens => Set<IdentityUserToken<Guid>>();
     public DbSet<UserDevice> UserDevices => Set<UserDevice>();
-
     public DbSet<UserInvitationEntity> UserInvitations => Set<UserInvitationEntity>();
-
     public DbSet<UserSettings> UserSettings => Set<UserSettings>();
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
@@ -23,123 +27,124 @@ public sealed class ApplicationDbContext : IdentityDbContext<ApplicationUser, Id
     {
         base.OnModelCreating(builder);
 
-        // Customize Identity table names
+        // Configure ApplicationUser
         builder.Entity<ApplicationUser>(entity =>
         {
-            entity.ToTable("Users");
-            entity.Property(e => e.FirstName).HasMaxLength(100).IsRequired();
-            entity.Property(e => e.LastName).HasMaxLength(100).IsRequired();
-            entity.Property(e => e.Email).HasMaxLength(256).IsRequired();
+            entity.ToContainer("users");
+            entity.HasPartitionKey(e => e.Id);
+            entity.HasNoDiscriminator();
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ToJsonProperty("id");
+            entity.Property(e => e.FirstName).IsRequired();
+            entity.Property(e => e.LastName).IsRequired();
+            entity.Property(e => e.Email).IsRequired();
             entity.Property(e => e.CreatedAt).IsRequired();
-            entity.HasIndex(e => e.Email).IsUnique();
         });
 
+        // Configure IdentityRole
         builder.Entity<IdentityRole<Guid>>(entity =>
         {
-            entity.ToTable("Roles");
+            entity.ToContainer("roles");
+            entity.HasPartitionKey(e => e.Id);
+            entity.HasNoDiscriminator();
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ToJsonProperty("id");
         });
 
+        // Configure IdentityUserRole
         builder.Entity<IdentityUserRole<Guid>>(entity =>
         {
-            entity.ToTable("UserRoles");
+            entity.ToContainer("user-roles");
+            entity.HasPartitionKey(e => e.UserId);
+            entity.HasNoDiscriminator();
+            // Composite key for user-role relationship
+            entity.HasKey(e => new { e.UserId, e.RoleId });
         });
 
+        // Configure IdentityUserClaim
         builder.Entity<IdentityUserClaim<Guid>>(entity =>
         {
-            entity.ToTable("UserClaims");
+            entity.ToContainer("user-claims");
+            entity.HasPartitionKey(e => e.UserId);
+            entity.HasNoDiscriminator();
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ToJsonProperty("id");
         });
 
+        // Configure IdentityUserLogin
         builder.Entity<IdentityUserLogin<Guid>>(entity =>
         {
-            entity.ToTable("UserLogins");
+            entity.ToContainer("user-logins");
+            entity.HasPartitionKey(e => e.UserId);
+            entity.HasNoDiscriminator();
+            entity.HasKey(e => new { e.LoginProvider, e.ProviderKey });
         });
 
+        // Configure IdentityRoleClaim
         builder.Entity<IdentityRoleClaim<Guid>>(entity =>
         {
-            entity.ToTable("RoleClaims");
+            entity.ToContainer("role-claims");
+            entity.HasPartitionKey(e => e.RoleId);
+            entity.HasNoDiscriminator();
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ToJsonProperty("id");
         });
 
+        // Configure IdentityUserToken
         builder.Entity<IdentityUserToken<Guid>>(entity =>
         {
-            entity.ToTable("UserTokens");
+            entity.ToContainer("user-tokens");
+            entity.HasPartitionKey(e => e.UserId);
+            entity.HasNoDiscriminator();
+            entity.HasKey(e => new { e.UserId, e.LoginProvider, e.Name });
         });
 
         // Configure UserDevice
         builder.Entity<UserDevice>(entity =>
         {
-            entity.ToTable("UserDevices");
+            entity.ToContainer("user-devices");
+            entity.HasPartitionKey(e => e.UserId);
+            entity.HasNoDiscriminator();
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.DeviceId).HasMaxLength(256).IsRequired();
-            entity.Property(e => e.DeviceName).HasMaxLength(256).IsRequired();
-            entity.Property(e => e.Platform).HasMaxLength(50).IsRequired();
-            entity.Property(e => e.AppVersion).HasMaxLength(50);
-            entity.Property(e => e.UserAgent).HasMaxLength(512);
+            entity.Property(e => e.Id).ToJsonProperty("id");
+            entity.Property(e => e.DeviceId).IsRequired();
+            entity.Property(e => e.DeviceName).IsRequired();
+            entity.Property(e => e.Platform).IsRequired();
             entity.Property(e => e.RefreshToken).IsRequired();
             entity.Property(e => e.RefreshTokenExpiryTime).IsRequired();
-            entity.Property(e => e.PushNotificationToken).HasMaxLength(512);
-            entity.Property(e => e.IpAddress).HasMaxLength(45);
-            entity.Property(e => e.Location).HasMaxLength(256);
-            entity.HasIndex(e => e.UserId);
-            entity.HasIndex(e => e.DeviceId);
-            entity.HasIndex(e => e.RefreshToken).IsUnique();
-            entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            // Navigation properties are not supported in Cosmos
+            entity.Ignore(e => e.User);
         });
 
         // Configure UserInvitation
         builder.Entity<UserInvitationEntity>(entity =>
         {
-            entity.ToTable("UserInvitations");
+            entity.ToContainer("user-invitations");
+            entity.HasPartitionKey(e => e.Email);
+            entity.HasNoDiscriminator();
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Email).HasMaxLength(256).IsRequired();
-            entity.Property(e => e.ActivationCode).HasMaxLength(10).IsRequired();
-            entity.Property(e => e.InvitedBy).HasMaxLength(256).IsRequired();
+            entity.Property(e => e.Id).ToJsonProperty("id");
+            entity.Property(e => e.Email).IsRequired();
+            entity.Property(e => e.ActivationCode).IsRequired();
+            entity.Property(e => e.InvitedBy).IsRequired();
             entity.Property(e => e.InvitedAt).IsRequired();
             entity.Property(e => e.ExpiresAt).IsRequired();
-            entity.HasIndex(e => e.Email);
-            entity.HasIndex(e => e.ActivationCode).IsUnique();
         });
 
         // Configure UserSettings
         builder.Entity<UserSettings>(entity =>
         {
-            entity.ToTable("UserSettings");
+            entity.ToContainer("user-settings");
+            entity.HasPartitionKey(e => e.UserId);
+            entity.HasNoDiscriminator();
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Id).HasMaxLength(36).IsRequired();
+            entity.Property(e => e.Id).ToJsonProperty("id");
             entity.Property(e => e.ReceiveEmailNotifications).IsRequired();
             entity.Property(e => e.ReceivePushNotifications).IsRequired();
-            entity.Property(e => e.PreferredTheme).HasMaxLength(50);
-            entity.Property(e => e.CreatedBy).HasMaxLength(256);
-            entity.Property(e => e.UpdatedBy).HasMaxLength(256);
             entity.Property(e => e.CreatedDate).IsRequired();
             entity.Property(e => e.UpdatedDate).IsRequired();
-            entity.HasIndex(e => e.UserId).IsUnique();
-            entity.HasOne(e => e.User).WithOne().HasForeignKey<UserSettings>(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            // Navigation properties are not supported in Cosmos
+            entity.Ignore(e => e.User);
         });
-
-        // Seed initial roles
-        SeedRoles(builder);
-    }
-
-    private static void SeedRoles(ModelBuilder builder)
-    {
-        var adminRoleId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
-        var userRoleId = Guid.Parse("b2c3d4e5-f6a7-8901-bcde-f12345678901");
-
-        builder.Entity<IdentityRole<Guid>>().HasData(
-            new IdentityRole<Guid>
-            {
-                Id = adminRoleId,
-                Name = "Admin",
-                NormalizedName = "ADMIN",
-                ConcurrencyStamp = adminRoleId.ToString()
-            },
-            new IdentityRole<Guid>
-            {
-                Id = userRoleId,
-                Name = "User",
-                NormalizedName = "USER",
-                ConcurrencyStamp = userRoleId.ToString()
-            }
-        );
     }
 }

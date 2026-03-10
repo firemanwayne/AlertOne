@@ -13,6 +13,11 @@ param deployStaticWebApp = true
 param deployAlertManagementFunction = true
 param deployUserManagementFunction = true
 param deployAppConfiguration = true
+param deploySqlServer = false
+param deployCosmosDb = true
+param deployKeyVault = true
+param deployCommunicationServices = true
+param deployNotificationHub = true
 param appConfigurationSku = 'standard'
 
 // SKU parameters

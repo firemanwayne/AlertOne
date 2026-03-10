@@ -138,8 +138,8 @@ var flexExtraSettings = [
     value: storageAccountConnectionString
   }
   {
-    name: 'AzureWebJobsStorage__accountName'
-    value: storageAccountName
+    name: 'AzureWebJobsStorage'
+    value: storageAccountConnectionString
   }
 ]
 

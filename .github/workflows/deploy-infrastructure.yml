@@ -282,8 +282,7 @@ jobs:
             --name DefaultFullSharedAccessSignature \
             --query "primaryConnectionString" -o tsv 2>/dev/null || echo "")
 
-          # Build SQL connection string (Azure AD auth)
-          SQL_CONN_STRING="Server=tcp:${{ env.SQL_SERVER_DEV }}.database.windows.net,1433;Initial Catalog=${{ env.SQL_DATABASE_DEV }};Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;Authentication=Active Directory Default;"
+          # Note: Cosmos DB uses managed identity via RBAC - no connection string needed
 
           # Get Static Web App hostname
           SWA_HOSTNAME=$(az staticwebapp show \
@@ -316,12 +315,7 @@ jobs:
             echo "Stored AzureNotificationHubs-ConnectionString in Key Vault"
           fi
 
-          az keyvault secret set \
-            --vault-name ${{ env.KEY_VAULT_DEV }} \
-            --name "AzureSqlServer-ConnectionString" \
-            --value "$SQL_CONN_STRING" \
-            --only-show-errors
-          echo "Stored AzureSqlServer-ConnectionString in Key Vault"
+          # Note: Cosmos DB uses managed identity - no secrets needed
 
           # Set App Configuration Key Vault references
           KV_URI="https://${{ env.KEY_VAULT_DEV }}.vault.azure.net"
@@ -342,13 +336,7 @@ jobs:
             --yes
           echo "Set AzureNotificationHubs:ConnectionString as Key Vault reference"
 
-          # AzureSqlServer:ConnectionString (Key Vault reference)
-          az appconfig kv set-keyvault \
-            --name ${{ env.APP_CONFIG_DEV }} \
-            --key "AzureSqlServer:ConnectionString" \
-            --secret-identifier "${KV_URI}/secrets/AzureSqlServer-ConnectionString" \
-            --yes
-          echo "Set AzureSqlServer:ConnectionString as Key Vault reference"
+          # Note: Cosmos DB uses managed identity via RBAC - no App Config reference needed
 
           # Set regular App Configuration values
 
@@ -442,6 +430,37 @@ jobs:
           echo "Set JwtSettings:usrm:Secret as Key Vault reference"
 
           echo "All App Configuration entries created successfully!"
+
+      - name: Configure Cosmos DB Settings in App Configuration
+        if: github.event.inputs.what_if != 'true'
+        run: |
+          echo "Configuring Cosmos DB settings in App Configuration..."
+
+          # Get Cosmos DB endpoint
+          COSMOS_ENDPOINT=$(az cosmosdb show \
+            --name alertone-cosmos-dev-001 \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_DEV }} \
+            --query "documentEndpoint" -o tsv 2>/dev/null || echo "")
+
+          COSMOS_DATABASE="alertone-db"
+
+          if [ -n "$COSMOS_ENDPOINT" ]; then
+            az appconfig kv set \
+              --name ${{ env.APP_CONFIG_DEV }} \
+              --key "CosmosDb:Endpoint" \
+              --value "$COSMOS_ENDPOINT" \
+              --yes
+            echo "Set CosmosDb:Endpoint = $COSMOS_ENDPOINT"
+
+            az appconfig kv set \
+              --name ${{ env.APP_CONFIG_DEV }} \
+              --key "CosmosDb:DatabaseName" \
+              --value "$COSMOS_DATABASE" \
+              --yes
+            echo "Set CosmosDb:DatabaseName = $COSMOS_DATABASE"
+          fi
+
+          echo "Cosmos DB configuration completed successfully!"
 
   deploy-staging:
     name: Deploy to Staging
@@ -562,7 +581,7 @@ jobs:
             --name DefaultFullSharedAccessSignature \
             --query "primaryConnectionString" -o tsv 2>/dev/null || echo "")
 
-          SQL_CONN_STRING="Server=tcp:${{ env.SQL_SERVER_STAGING }}.database.windows.net,1433;Initial Catalog=${{ env.SQL_DATABASE_STAGING }};Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;Authentication=Active Directory Default;"
+          # Note: Cosmos DB uses managed identity via RBAC - no connection string needed
 
           SWA_HOSTNAME=$(az staticwebapp show \
             --name ${{ env.STATIC_WEB_APP_STAGING }} \
@@ -575,12 +594,10 @@ jobs:
           if [ -n "$NOTIF_CONN_STRING" ]; then
             az keyvault secret set --vault-name ${{ env.KEY_VAULT_STAGING }} --name "AzureNotificationHubs-ConnectionString" --value "$NOTIF_CONN_STRING" --only-show-errors
           fi
-          az keyvault secret set --vault-name ${{ env.KEY_VAULT_STAGING }} --name "AzureSqlServer-ConnectionString" --value "$SQL_CONN_STRING" --only-show-errors
 
           KV_URI="https://${{ env.KEY_VAULT_STAGING }}.vault.azure.net"
           az appconfig kv set-keyvault --name ${{ env.APP_CONFIG_STAGING }} --key "AzureCommunications:ConnectionString" --secret-identifier "${KV_URI}/secrets/AzureCommunications-ConnectionString" --yes
           az appconfig kv set-keyvault --name ${{ env.APP_CONFIG_STAGING }} --key "AzureNotificationHubs:ConnectionString" --secret-identifier "${KV_URI}/secrets/AzureNotificationHubs-ConnectionString" --yes
-          az appconfig kv set-keyvault --name ${{ env.APP_CONFIG_STAGING }} --key "AzureSqlServer:ConnectionString" --secret-identifier "${KV_URI}/secrets/AzureSqlServer-ConnectionString" --yes
 
           # AppConfig:BaseUri - self-referencing endpoint
           APP_CONFIG_ENDPOINT=$(az appconfig show --name ${{ env.APP_CONFIG_STAGING }} --query "endpoint" -o tsv)
@@ -603,6 +620,25 @@ jobs:
           az appconfig kv set --name ${{ env.APP_CONFIG_STAGING }} --key "JwtSettings:usrm:ExpiryMinutes" --value "${{ env.JWT_EXPIRY_MINUTES }}" --yes
           az appconfig kv set --name ${{ env.APP_CONFIG_STAGING }} --key "JwtSettings:usrm:Issuer" --value "${{ env.JWT_ISSUER }}" --yes
           az appconfig kv set-keyvault --name ${{ env.APP_CONFIG_STAGING }} --key "JwtSettings:usrm:Secret" --secret-identifier "${KV_URI}/secrets/JwtSettings-usrm-Secret" --yes
+
+      - name: Configure Cosmos DB Settings in App Configuration
+        if: github.event.inputs.what_if != 'true'
+        run: |
+          echo "Configuring Cosmos DB settings in App Configuration..."
+
+          COSMOS_ENDPOINT=$(az cosmosdb show \
+            --name alertone-cosmos-staging-001 \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_STAGING }} \
+            --query "documentEndpoint" -o tsv 2>/dev/null || echo "")
+
+          COSMOS_DATABASE="alertone-db"
+
+          if [ -n "$COSMOS_ENDPOINT" ]; then
+            az appconfig kv set --name ${{ env.APP_CONFIG_STAGING }} --key "CosmosDb:Endpoint" --value "$COSMOS_ENDPOINT" --yes
+            az appconfig kv set --name ${{ env.APP_CONFIG_STAGING }} --key "CosmosDb:DatabaseName" --value "$COSMOS_DATABASE" --yes
+          fi
+
+          echo "Cosmos DB configuration completed successfully!"
 
   deploy-prod:
     name: Deploy to Production
@@ -723,7 +759,7 @@ jobs:
             --name DefaultFullSharedAccessSignature \
             --query "primaryConnectionString" -o tsv 2>/dev/null || echo "")
 
-          SQL_CONN_STRING="Server=tcp:${{ env.SQL_SERVER_PROD }}.database.windows.net,1433;Initial Catalog=${{ env.SQL_DATABASE_PROD }};Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;Authentication=Active Directory Default;"
+          # Note: Cosmos DB uses managed identity via RBAC - no connection string needed
 
           SWA_HOSTNAME=$(az staticwebapp show \
             --name ${{ env.STATIC_WEB_APP_PROD }} \
@@ -736,12 +772,10 @@ jobs:
           if [ -n "$NOTIF_CONN_STRING" ]; then
             az keyvault secret set --vault-name ${{ env.KEY_VAULT_PROD }} --name "AzureNotificationHubs-ConnectionString" --value "$NOTIF_CONN_STRING" --only-show-errors
           fi
-          az keyvault secret set --vault-name ${{ env.KEY_VAULT_PROD }} --name "AzureSqlServer-ConnectionString" --value "$SQL_CONN_STRING" --only-show-errors
 
           KV_URI="https://${{ env.KEY_VAULT_PROD }}.vault.azure.net"
           az appconfig kv set-keyvault --name ${{ env.APP_CONFIG_PROD }} --key "AzureCommunications:ConnectionString" --secret-identifier "${KV_URI}/secrets/AzureCommunications-ConnectionString" --yes
           az appconfig kv set-keyvault --name ${{ env.APP_CONFIG_PROD }} --key "AzureNotificationHubs:ConnectionString" --secret-identifier "${KV_URI}/secrets/AzureNotificationHubs-ConnectionString" --yes
-          az appconfig kv set-keyvault --name ${{ env.APP_CONFIG_PROD }} --key "AzureSqlServer:ConnectionString" --secret-identifier "${KV_URI}/secrets/AzureSqlServer-ConnectionString" --yes
 
           # AppConfig:BaseUri - self-referencing endpoint
           APP_CONFIG_ENDPOINT=$(az appconfig show --name ${{ env.APP_CONFIG_PROD }} --query "endpoint" -o tsv)
@@ -764,6 +798,25 @@ jobs:
           az appconfig kv set --name ${{ env.APP_CONFIG_PROD }} --key "JwtSettings:usrm:ExpiryMinutes" --value "${{ env.JWT_EXPIRY_MINUTES }}" --yes
           az appconfig kv set --name ${{ env.APP_CONFIG_PROD }} --key "JwtSettings:usrm:Issuer" --value "${{ env.JWT_ISSUER }}" --yes
           az appconfig kv set-keyvault --name ${{ env.APP_CONFIG_PROD }} --key "JwtSettings:usrm:Secret" --secret-identifier "${KV_URI}/secrets/JwtSettings-usrm-Secret" --yes
+
+      - name: Configure Cosmos DB Settings in App Configuration
+        if: github.event.inputs.what_if != 'true'
+        run: |
+          echo "Configuring Cosmos DB settings in App Configuration..."
+
+          COSMOS_ENDPOINT=$(az cosmosdb show \
+            --name alertone-cosmos-prod-001 \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP_PROD }} \
+            --query "documentEndpoint" -o tsv 2>/dev/null || echo "")
+
+          COSMOS_DATABASE="alertone-db"
+
+          if [ -n "$COSMOS_ENDPOINT" ]; then
+            az appconfig kv set --name ${{ env.APP_CONFIG_PROD }} --key "CosmosDb:Endpoint" --value "$COSMOS_ENDPOINT" --yes
+            az appconfig kv set --name ${{ env.APP_CONFIG_PROD }} --key "CosmosDb:DatabaseName" --value "$COSMOS_DATABASE" --yes
+          fi
+
+          echo "Cosmos DB configuration completed successfully!"
 
   # ============================================================================
   # Deploy Application Code - Dev

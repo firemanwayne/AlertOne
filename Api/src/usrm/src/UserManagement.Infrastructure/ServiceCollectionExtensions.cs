@@ -1,3 +1,4 @@
+using Azure.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -25,7 +26,7 @@ public static class ServiceCollectionExtensions
         // Configure database
         services.AddDatabase(configuration);
 
-        // Configure Identity
+        // Configure Identity with custom stores for Cosmos DB
         services.AddIdentityCore<ApplicationUser>(options =>
         {
             // Password settings
@@ -45,7 +46,8 @@ public static class ServiceCollectionExtensions
             options.Lockout.AllowedForNewUsers = true;
         })
         .AddRoles<IdentityRole<Guid>>()
-        .AddEntityFrameworkStores<ApplicationDbContext>()
+        .AddUserStore<CosmosUserStore>()
+        .AddRoleStore<CosmosRoleStore>()
         .AddSignInManager<SignInManager<ApplicationUser>>()
         .AddDefaultTokenProviders();
 
@@ -66,15 +68,18 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetValue<string>("AzureSqlServer:ConnectionString");
+        var cosmosEndpoint = configuration.GetValue<string>("CosmosDb:Endpoint");
+        var cosmosDatabase = configuration.GetValue<string>("CosmosDb:DatabaseName");
 
-        ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
+        ArgumentException.ThrowIfNullOrWhiteSpace(cosmosEndpoint, "CosmosDb:Endpoint");
+        ArgumentException.ThrowIfNullOrWhiteSpace(cosmosDatabase, "CosmosDb:DatabaseName");
 
         services.AddDbContext<ApplicationDbContext>(options =>
         {
-            options.UseAzureSql(
-                connectionString,
-                b => b.MigrationsAssembly("UserManagement.Infrastructure"));
+            options.UseCosmos(
+                cosmosEndpoint,
+                new DefaultAzureCredential(),
+                cosmosDatabase);
         });
 
         return services;

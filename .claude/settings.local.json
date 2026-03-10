@@ -48,7 +48,8 @@
       "Bash(az appservice plan list:*)",
       "Bash(az sql db show:*)",
       "Bash(az storage account:*)",
-      "Bash(az bicep build:*)"
+      "Bash(az bicep build:*)",
+      "Bash(ls -la \"J:\\\\source\\\\firemanwayne\\\\AlertOne\\\\Api\\\\src\\\\alerts\\\\src\"\" && echo \"---\" && ls -la \"J:sourcefiremanwayneAlertOneApisrcusrmsrc\"\")"
     ]
   }
 }

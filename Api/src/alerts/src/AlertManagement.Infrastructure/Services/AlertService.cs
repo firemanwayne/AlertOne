@@ -13,10 +13,7 @@ namespace AlertManagement.Infrastructure.Services;
 /// <summary>
 /// Service for alert management operations
 /// </summary>
-internal sealed class AlertService(
-    AlertDbContext context,
-    ILogger<AlertService> logger,
-    IPushNotificationService pushNotificationService) : IAlertService
+internal sealed class AlertService(AlertDbContext context, ILogger<AlertService> logger, IPushNotificationService pushNotificationService) : IAlertService
 {
     private const string EventTypeCreated = "Created";
     private const string EventTypeRescinded = "Rescinded";
@@ -26,15 +23,34 @@ internal sealed class AlertService(
     {
         logger.LogInformation("Getting all alerts");
 
-        var alerts = await context
-            .Alerts
-            .Include(a => a.AlertType)
-            .ThenInclude(t => t.AlertTypeUsers)
-            .Include(a => a.AlertStatusLevel)
+        var alerts = await context.Alerts
             .OrderByDescending(a => a.CreatedDate)
             .ToListAsync(cancellationToken);
 
-        var responses = alerts.Select(MapToResponse);
+        // Fetch related data separately (Cosmos doesn't support Include)
+        var alertTypeIds = alerts
+            .Select(a => a.AlertTypeId)
+            .Distinct()
+            .ToList();
+
+        var statusLevelIds = alerts
+            .Select(a => a.AlertStatusLevelId)
+            .Distinct()
+            .ToList();
+
+        var alertTypes = await context.AlertTypes
+            .Where(t => alertTypeIds.Contains(t.Id))
+            .ToListAsync(cancellationToken);
+
+        var statusLevels = await context.AlertStatusLevels
+            .Where(s => statusLevelIds.Contains(s.Id))
+            .ToListAsync(cancellationToken);
+
+        var alertTypeUsers = await context.AlertTypeUsers
+            .Where(u => alertTypeIds.Contains(u.AlertTypeId))
+            .ToListAsync(cancellationToken);
+
+        var responses = alerts.Select(alert => MapToResponse(alert, alertTypes, statusLevels, alertTypeUsers));
 
         return Result.Success(responses);
     }
@@ -43,18 +59,25 @@ internal sealed class AlertService(
     {
         logger.LogInformation("Getting active alert");
 
-        var alert = await context.Alerts
-            .Include(a => a.AlertType)
-            .ThenInclude(t => t.AlertTypeUsers)
-            .Include(a => a.AlertStatusLevel)
-            .FirstOrDefaultAsync(a => a.IsActive, cancellationToken);
+        var alert = await context.Alerts.FirstOrDefaultAsync(a => a.IsActive, cancellationToken);
 
         if (alert is null)
         {
             return Result.Success<AlertResponse?>(null);
         }
 
-        return Result.Success<AlertResponse?>(MapToResponse(alert));
+        var alertType = await context.AlertTypes.FirstOrDefaultAsync(t => t.Id == alert.AlertTypeId, cancellationToken);
+        var statusLevel = await context.AlertStatusLevels.FirstOrDefaultAsync(s => s.Id == alert.AlertStatusLevelId, cancellationToken);
+        var alertTypeUsers = await context.AlertTypeUsers
+            .Where(u => u.AlertTypeId == alert.AlertTypeId)
+            .ToListAsync(cancellationToken);
+
+        if (alertType is null || statusLevel is null)
+        {
+            return Result.Success<AlertResponse?>(null);
+        }
+
+        return Result.Success<AlertResponse?>(MapToResponse(alert, alertType, statusLevel, alertTypeUsers));
     }
 
     public async Task<Result<AlertResponse>> CreateAsync(CreateAlertRequest request, CancellationToken cancellationToken = default)
@@ -63,36 +86,30 @@ internal sealed class AlertService(
 
         if (string.IsNullOrWhiteSpace(request.CreatedBy))
         {
-            return Result.Failure<AlertResponse>(
-                Error.Validation("Alert.CreatedByRequired", "CreatedBy is required"));
+            return Result.Failure<AlertResponse>(Error.Validation("Alert.CreatedByRequired", "CreatedBy is required"));
         }
 
-        var alertType = await context
-            .AlertTypes
-            .Include(t => t.AlertTypeUsers)
-            .FirstOrDefaultAsync(t => t.Id == request.AlertTypeId, cancellationToken);
+        var alertType = await context.AlertTypes.FirstOrDefaultAsync(t => t.Id == request.AlertTypeId, cancellationToken);
 
         if (alertType is null)
         {
-            return Result.Failure<AlertResponse>(
-                Error.NotFound("AlertType.NotFound", $"Alert type with ID {request.AlertTypeId} not found"));
+            return Result.Failure<AlertResponse>(Error.NotFound("AlertType.NotFound", $"Alert type with ID {request.AlertTypeId} not found"));
         }
 
+        var alertTypeUsers = await context.AlertTypeUsers
+            .Where(u => u.AlertTypeId == request.AlertTypeId)
+            .ToListAsync(cancellationToken);
+
         // Automatically use the default status level
-        var statusLevel = await context
-            .AlertStatusLevels
-            .FirstOrDefaultAsync(s => s.IsDefault, cancellationToken);
+        var statusLevel = await context.AlertStatusLevels.FirstOrDefaultAsync(s => s.IsDefault, cancellationToken);
 
         if (statusLevel is null)
         {
-            return Result.Failure<AlertResponse>(
-                Error.NotFound("AlertStatusLevel.DefaultNotFound", "No default alert status level has been configured"));
+            return Result.Failure<AlertResponse>(Error.NotFound("AlertStatusLevel.DefaultNotFound", "No default alert status level has been configured"));
         }
 
         // Deactivate any currently active alert
-        var activeAlert = await context
-            .Alerts
-            .FirstOrDefaultAsync(a => a.IsActive, cancellationToken);
+        var activeAlert = await context.Alerts.FirstOrDefaultAsync(a => a.IsActive, cancellationToken);
 
         if (activeAlert is not null)
         {
@@ -132,13 +149,10 @@ internal sealed class AlertService(
 
         logger.LogInformation("Alert {AlertId} created successfully", alert.Id);
 
-        alert.AlertType = alertType;
-        alert.AlertStatusLevel = statusLevel;
-
         // Send push notifications if the status level has SendNotifications enabled
-        await SendNotificationsAsync(alert, alertType, statusLevel, EventTypeCreated, cancellationToken);
+        await SendNotificationsAsync(alert, alertType, statusLevel, alertTypeUsers, EventTypeCreated, cancellationToken);
 
-        return Result.Success(MapToResponse(alert));
+        return Result.Success(MapToResponse(alert, alertType, statusLevel, alertTypeUsers));
     }
 
     public async Task<Result> RescindAsync(string id, RescindAlertRequest request, CancellationToken cancellationToken = default)
@@ -147,33 +161,29 @@ internal sealed class AlertService(
 
         if (string.IsNullOrWhiteSpace(request.RescindedBy))
         {
-            return Result.Failure(
-                Error.Validation("Alert.RescindedByRequired", "RescindedBy is required"));
+            return Result.Failure(Error.Validation("Alert.RescindedByRequired", "RescindedBy is required"));
         }
 
-        var alert = await context
-            .Alerts
-            .Include(a => a.AlertType)
-            .ThenInclude(t => t.AlertTypeUsers)
-            .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
+        var alert = await context.Alerts.FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
 
         if (alert is null)
         {
             logger.LogWarning("Alert not found: {AlertId}", id);
-            return Result.Failure(
-                Error.NotFound("Alert.NotFound", $"Alert with ID {id} not found"));
+            return Result.Failure(Error.NotFound("Alert.NotFound", $"Alert with ID {id} not found"));
         }
 
         if (!alert.IsActive)
         {
-            return Result.Failure(
-                Error.Validation("Alert.NotActive", "Alert is not currently active and cannot be rescinded"));
+            return Result.Failure(Error.Validation("Alert.NotActive", "Alert is not currently active and cannot be rescinded"));
         }
 
+        var alertType = await context.AlertTypes.FirstOrDefaultAsync(t => t.Id == alert.AlertTypeId, cancellationToken);
+        var alertTypeUsers = await context.AlertTypeUsers
+            .Where(u => u.AlertTypeId == alert.AlertTypeId)
+            .ToListAsync(cancellationToken);
+
         // Find the canceled status level if one exists
-        var canceledStatusLevel = await context
-            .AlertStatusLevels
-            .FirstOrDefaultAsync(s => s.IsCanceled, cancellationToken);
+        var canceledStatusLevel = await context.AlertStatusLevels.FirstOrDefaultAsync(s => s.IsCanceled, cancellationToken);
 
         var now = DateTime.UtcNow;
 
@@ -199,18 +209,16 @@ internal sealed class AlertService(
             Notes = null
         };
 
-        context
-            .AlertHistories
-            .Add(historyEntry);
+        context.AlertHistories.Add(historyEntry);
 
         await context.SaveChangesAsync(cancellationToken);
 
         logger.LogInformation("Alert {AlertId} rescinded successfully by {RescindedBy}", id, request.RescindedBy);
 
         // Send push notifications if the canceled status level has SendNotifications enabled
-        if (canceledStatusLevel is not null)
+        if (canceledStatusLevel is not null && alertType is not null)
         {
-            await SendNotificationsAsync(alert, alert.AlertType, canceledStatusLevel, EventTypeRescinded, cancellationToken);
+            await SendNotificationsAsync(alert, alertType, canceledStatusLevel, alertTypeUsers, EventTypeRescinded, cancellationToken);
         }
 
         return Result.Success();
@@ -222,38 +230,33 @@ internal sealed class AlertService(
 
         if (string.IsNullOrWhiteSpace(request.UpdatedBy))
         {
-            return Result
-                .Failure<AlertResponse>(
-                Error.Validation("Alert.UpdatedByRequired", "UpdatedBy is required"));
+            return Result.Failure<AlertResponse>(Error.Validation("Alert.UpdatedByRequired", "UpdatedBy is required"));
         }
 
-        var alert = await context
-            .Alerts
-            .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
+        var alert = await context.Alerts.FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
 
         if (alert is null)
         {
             logger.LogWarning("Alert not found: {AlertId}", id);
-
-            return Result
-                .Failure<AlertResponse>(Error.NotFound("Alert.NotFound", $"Alert with ID {id} not found"));
+            return Result.Failure<AlertResponse>(Error.NotFound("Alert.NotFound", $"Alert with ID {id} not found"));
         }
 
         if (!alert.IsActive)
         {
-            return Result.Failure<AlertResponse>(
-                Error.Validation("Alert.NotActive", "Alert is not currently active and cannot have its status updated"));
+            return Result.Failure<AlertResponse>(Error.Validation("Alert.NotActive", "Alert is not currently active and cannot have its status updated"));
         }
 
-        var statusLevel = await context
-            .AlertStatusLevels
-            .FirstOrDefaultAsync(s => s.Id == request.AlertStatusLevelId, cancellationToken);
+        var statusLevel = await context.AlertStatusLevels.FirstOrDefaultAsync(s => s.Id == request.AlertStatusLevelId, cancellationToken);
 
         if (statusLevel is null)
         {
-            return Result.Failure<AlertResponse>(
-                Error.NotFound("AlertStatusLevel.NotFound", $"Alert status level with ID {request.AlertStatusLevelId} not found"));
+            return Result.Failure<AlertResponse>(Error.NotFound("AlertStatusLevel.NotFound", $"Alert status level with ID {request.AlertStatusLevelId} not found"));
         }
+
+        var alertType = await context.AlertTypes.FirstOrDefaultAsync(t => t.Id == alert.AlertTypeId, cancellationToken);
+        var alertTypeUsers = await context.AlertTypeUsers
+            .Where(u => u.AlertTypeId == alert.AlertTypeId)
+            .ToListAsync(cancellationToken);
 
         var now = DateTime.UtcNow;
 
@@ -277,59 +280,54 @@ internal sealed class AlertService(
 
         logger.LogInformation("Alert {AlertId} status updated to {StatusLevelId} by {UpdatedBy}", id, request.AlertStatusLevelId, request.UpdatedBy);
 
-        var updatedAlert = await context
-            .Alerts
-            .Include(a => a.AlertType)
-            .ThenInclude(t => t.AlertTypeUsers)
-            .Include(a => a.AlertStatusLevel)
-            .FirstAsync(a => a.Id == id, cancellationToken);
-
         // Send push notifications if the new status level has SendNotifications enabled
-        await SendNotificationsAsync(updatedAlert, updatedAlert.AlertType, statusLevel, EventTypeStatusUpdated, cancellationToken);
+        if (alertType is not null)
+        {
+            await SendNotificationsAsync(alert, alertType, statusLevel, alertTypeUsers, EventTypeStatusUpdated, cancellationToken);
+        }
 
-        return Result.Success(MapToResponse(updatedAlert));
+        return Result.Success(MapToResponse(alert, alertType!, statusLevel, alertTypeUsers));
     }
 
     public async Task<Result<AlertResponse>> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting alert {AlertId}", id);
 
-        var alert = await context
-            .Alerts
-            .Include(a => a.AlertType)
-            .ThenInclude(t => t.AlertTypeUsers)
-            .Include(a => a.AlertStatusLevel)
-            .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
+        var alert = await context.Alerts.FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
 
         if (alert is null)
         {
             logger.LogWarning("Alert not found: {AlertId}", id);
-
-            return Result.Failure<AlertResponse>(
-                Error.NotFound("Alert.NotFound", $"Alert with ID {id} not found"));
+            return Result.Failure<AlertResponse>(Error.NotFound("Alert.NotFound", $"Alert with ID {id} not found"));
         }
 
-        return Result.Success(MapToResponse(alert));
+        var alertType = await context.AlertTypes.FirstOrDefaultAsync(t => t.Id == alert.AlertTypeId, cancellationToken);
+        var statusLevel = await context.AlertStatusLevels.FirstOrDefaultAsync(s => s.Id == alert.AlertStatusLevelId, cancellationToken);
+        var alertTypeUsers = await context.AlertTypeUsers
+            .Where(u => u.AlertTypeId == alert.AlertTypeId)
+            .ToListAsync(cancellationToken);
+
+        if (alertType is null || statusLevel is null)
+        {
+            return Result.Failure<AlertResponse>(Error.Internal("Alert.DataInconsistency", "Related data not found"));
+        }
+
+        return Result.Success(MapToResponse(alert, alertType, statusLevel, alertTypeUsers));
     }
 
     public async Task<Result<IEnumerable<AlertHistoryResponse>>> GetHistoryAsync(string alertId, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting history for alert {AlertId}", alertId);
 
-        var alertExists = await context
-            .Alerts
-            .AnyAsync(a => a.Id == alertId, cancellationToken);
+        var alertExists = await context.Alerts.AnyAsync(a => a.Id == alertId, cancellationToken);
 
         if (!alertExists)
         {
             logger.LogWarning("Alert not found when fetching history: {AlertId}", alertId);
-
-            return Result
-                .Failure<IEnumerable<AlertHistoryResponse>>(Error.NotFound("Alert.NotFound", $"Alert with ID {alertId} not found"));
+            return Result.Failure<IEnumerable<AlertHistoryResponse>>(Error.NotFound("Alert.NotFound", $"Alert with ID {alertId} not found"));
         }
 
-        var history = await context
-            .AlertHistories
+        var history = await context.AlertHistories
             .Where(h => h.AlertId == alertId)
             .OrderByDescending(h => h.UpdatedDate)
             .ToListAsync(cancellationToken);
@@ -342,11 +340,20 @@ internal sealed class AlertService(
     private static AlertHistoryResponse MapHistoryToResponse(AlertHistory history) =>
         new(history.Id, history.AlertId, history.EventType, history.CreatedBy, history.CreatedDate, history.Notes);
 
-    private static AlertResponse MapToResponse(Alert alert)
+    private static AlertResponse MapToResponse(Alert alert, IEnumerable<AlertType> alertTypes, IEnumerable<AlertStatusLevel> statusLevels, IEnumerable<AlertTypeUser> alertTypeUsers)
     {
-        var alertType = alert.AlertType;
+        var alertType = alertTypes.First(t => t.Id == alert.AlertTypeId);
+        var statusLevel = statusLevels.First(s => s.Id == alert.AlertStatusLevelId);
+        var typeUsers = alertTypeUsers
+            .Where(u => u.AlertTypeId == alert.AlertTypeId)
+            .ToList();
 
-        var notifyUserIds = alertType.AlertTypeUsers
+        return MapToResponse(alert, alertType, statusLevel, typeUsers);
+    }
+
+    private static AlertResponse MapToResponse(Alert alert, AlertType alertType, AlertStatusLevel statusLevel, IEnumerable<AlertTypeUser> alertTypeUsers)
+    {
+        var notifyUserIds = alertTypeUsers
             .Select(u => u.UserId)
             .ToList();
 
@@ -359,8 +366,6 @@ internal sealed class AlertService(
             notifyUserIds,
             alertType.CreatedDate,
             alertType.UpdatedDate);
-
-        var statusLevel = alert.AlertStatusLevel;
 
         var statusLevelResponse = new AlertStatusLevelResponse(
             statusLevel.Id,
@@ -387,7 +392,7 @@ internal sealed class AlertService(
             alert.RescindedBy);
     }
 
-    private async Task SendNotificationsAsync(Alert alert, AlertType alertType, AlertStatusLevel statusLevel, string eventType, CancellationToken cancellationToken)
+    private async Task SendNotificationsAsync(Alert alert, AlertType alertType, AlertStatusLevel statusLevel, IEnumerable<AlertTypeUser> alertTypeUsers, string eventType, CancellationToken cancellationToken)
     {
         if (!statusLevel.SendNotifications)
         {
@@ -395,8 +400,7 @@ internal sealed class AlertService(
             return;
         }
 
-        var userIds = alertType
-            .AlertTypeUsers
+        var userIds = alertTypeUsers
             .Select(u => u.UserId)
             .ToList();
 

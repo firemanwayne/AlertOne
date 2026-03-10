@@ -48,7 +48,10 @@ param deployUserManagementFunction bool = true
 param deployAppConfiguration bool = true
 
 @description('Deploy SQL Server and Database')
-param deploySqlServer bool = true
+param deploySqlServer bool = false
+
+@description('Deploy Cosmos DB')
+param deployCosmosDb bool = true
 
 @description('Deploy Key Vault')
 param deployKeyVault bool = true
@@ -141,6 +144,8 @@ var isFlexConsumption = appServicePlanSku == 'FC1'
 // Resource naming - all globally unique names include environment and instance
 var sqlServerName = 'alert-one-sql-${environment}-${instance}'
 var sqlDatabaseName = 'alert-one-db-${environment}-${instance}'
+var cosmosDbAccountName = 'alertone-cosmos-${environment}-${instance}'
+var cosmosDbDatabaseName = 'alertone-db'
 var appConfigurationName = 'alert-one-appconfig-${environment}-${instance}'
 var keyVaultName = 'alertone-kv-${environment}-${instance}'
 var communicationServicesName = 'alert-one-comm-${environment}-${instance}'
@@ -210,6 +215,22 @@ module sqlDatabase 'modules/sql-database.bicep' = if (deploySqlServer && !empty(
   dependsOn: [
     sqlServer
   ]
+}
+
+// ============================================================================
+// Cosmos DB
+// ============================================================================
+
+module cosmosDb 'modules/cosmos-db.bicep' = if (deployCosmosDb) {
+  name: 'cosmosDb-${uniqueString(resourceGroup().id)}'
+  params: {
+    name: cosmosDbAccountName
+    location: location
+    tags: tags
+    capacityMode: 'Serverless'
+    databaseName: cosmosDbDatabaseName
+    defaultConsistencyLevel: 'Session'
+  }
 }
 
 // ============================================================================
@@ -545,6 +566,45 @@ resource userMgmtAppConfigAccess 'Microsoft.Authorization/roleAssignments@2022-0
 }
 
 // ============================================================================
+// Cosmos DB Role Assignments for Function Apps
+// ============================================================================
+
+// Cosmos DB Built-in Data Contributor role ID
+var cosmosDbDataContributorRoleId = '00000000-0000-0000-0000-000000000002'
+
+resource cosmosDbAccountRef 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' existing = if (deployCosmosDb) {
+  name: cosmosDbAccountName
+}
+
+resource alertMgmtCosmosDbAccess 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@2024-05-15' = if (deployAlertManagementFunction && deployCosmosDb) {
+  name: guid(cosmosDbAccountName, alertMgmtFunctionName, cosmosDbDataContributorRoleId)
+  parent: cosmosDbAccountRef
+  properties: {
+    roleDefinitionId: '${cosmosDbAccountRef.id}/sqlRoleDefinitions/${cosmosDbDataContributorRoleId}'
+    #disable-next-line BCP318
+    principalId: alertManagementFunction.outputs.principalId
+    scope: cosmosDbAccountRef.id
+  }
+  dependsOn: [
+    cosmosDb
+  ]
+}
+
+resource userMgmtCosmosDbAccess 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@2024-05-15' = if (deployUserManagementFunction && deployCosmosDb) {
+  name: guid(cosmosDbAccountName, userMgmtFunctionName, cosmosDbDataContributorRoleId)
+  parent: cosmosDbAccountRef
+  properties: {
+    roleDefinitionId: '${cosmosDbAccountRef.id}/sqlRoleDefinitions/${cosmosDbDataContributorRoleId}'
+    #disable-next-line BCP318
+    principalId: userManagementFunction.outputs.principalId
+    scope: cosmosDbAccountRef.id
+  }
+  dependsOn: [
+    cosmosDb
+  ]
+}
+
+// ============================================================================
 // Static Web App
 // ============================================================================
 
@@ -649,3 +709,16 @@ output staticWebAppName string = deployStaticWebApp ? staticWebApp.outputs.name 
 @description('Static Web App hostname')
 #disable-next-line BCP318
 output staticWebAppHostName string = deployStaticWebApp ? staticWebApp.outputs.defaultHostName : ''
+
+// Cosmos DB
+@description('Cosmos DB account name')
+#disable-next-line BCP318
+output cosmosDbAccountName string = deployCosmosDb ? cosmosDb.outputs.name : ''
+
+@description('Cosmos DB endpoint')
+#disable-next-line BCP318
+output cosmosDbEndpoint string = deployCosmosDb ? cosmosDb.outputs.endpoint : ''
+
+@description('Cosmos DB database name')
+#disable-next-line BCP318
+output cosmosDbDatabaseName string = deployCosmosDb ? cosmosDb.outputs.databaseName : ''
