@@ -408,6 +408,33 @@ module userManagementFunction 'modules/function-app.bicep' = if (deployUserManag
 }
 
 // ============================================================================
+// Storage Account Role Assignments for Function Apps (Flex Consumption)
+// ============================================================================
+
+// Storage Blob Data Owner role ID
+var storageBlobDataOwnerRoleId = 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
+
+resource alertMgmtStorageAccess 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deployAlertManagementFunction && isFlexConsumption) {
+  name: guid(resourceGroup().id, alertMgmtStorageAccountName, alertMgmtFunctionName, storageBlobDataOwnerRoleId)
+  scope: resourceGroup()
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageBlobDataOwnerRoleId)
+    principalId: alertManagementFunction.outputs.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource userMgmtStorageAccess 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deployUserManagementFunction && isFlexConsumption) {
+  name: guid(resourceGroup().id, userMgmtStorageAccountName, userMgmtFunctionName, storageBlobDataOwnerRoleId)
+  scope: resourceGroup()
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageBlobDataOwnerRoleId)
+    principalId: userManagementFunction.outputs.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// ============================================================================
 // Key Vault Role Assignments for Function Apps
 // ============================================================================
 
