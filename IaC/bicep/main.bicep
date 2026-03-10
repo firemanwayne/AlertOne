@@ -516,6 +516,35 @@ resource deployingPrincipalKeyVaultAccess 'Microsoft.Authorization/roleAssignmen
 }
 
 // ============================================================================
+// App Configuration Role Assignments for Function Apps
+// ============================================================================
+
+// App Configuration Data Reader role ID
+var appConfigDataReaderRoleId = '516239f1-63e1-4d78-a4de-a74fb236a071'
+
+resource alertMgmtAppConfigAccess 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deployAlertManagementFunction && deployAppConfiguration) {
+  name: guid(resourceGroup().id, appConfigurationName, alertMgmtFunctionName, appConfigDataReaderRoleId)
+  scope: resourceGroup()
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', appConfigDataReaderRoleId)
+    #disable-next-line BCP318
+    principalId: alertManagementFunction.outputs.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource userMgmtAppConfigAccess 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deployUserManagementFunction && deployAppConfiguration) {
+  name: guid(resourceGroup().id, appConfigurationName, userMgmtFunctionName, appConfigDataReaderRoleId)
+  scope: resourceGroup()
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', appConfigDataReaderRoleId)
+    #disable-next-line BCP318
+    principalId: userManagementFunction.outputs.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// ============================================================================
 // Static Web App
 // ============================================================================
 
