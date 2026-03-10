@@ -38,9 +38,9 @@ permissions:
 
 env:
   # Resource groups per environment
-  AZURE_RESOURCE_GROUP_DEV: 'alert-one-rg-dev'
-  AZURE_RESOURCE_GROUP_STAGING: 'alert-one-rg-staging'
-  AZURE_RESOURCE_GROUP_PROD: 'alert-one-rg-prod'
+  AZURE_RESOURCE_GROUP_DEV: 'alert-one-rg-dev-eastus2'
+  AZURE_RESOURCE_GROUP_STAGING: 'alert-one-rg-staging-eastus2'
+  AZURE_RESOURCE_GROUP_PROD: 'alert-one-rg-prod-eastus2'
   AZURE_LOCATION: 'eastus2'
   INSTANCE: '001'
   # Function App names by environment
