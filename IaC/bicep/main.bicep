@@ -31,6 +31,9 @@ param sqlAzureAdAdminLogin string = ''
 @description('Azure AD administrator object ID for SQL Server')
 param sqlAzureAdAdminObjectId string = ''
 
+@description('Object ID of the deploying principal (service principal) for Key Vault access')
+param deployingPrincipalId string = ''
+
 // Deployment toggles
 @description('Deploy Static Web App')
 param deployStaticWebApp bool = true
@@ -480,6 +483,22 @@ resource userMgmtKeyVaultAccess 'Microsoft.Authorization/roleAssignments@2022-04
     principalId: userManagementFunction.outputs.principalId
     principalType: 'ServicePrincipal'
   }
+}
+
+// Key Vault Secrets Officer role ID - for deploying principal to write secrets
+var keyVaultSecretsOfficerRoleId = 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7'
+
+resource deployingPrincipalKeyVaultAccess 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deployKeyVault && !empty(deployingPrincipalId)) {
+  name: guid(resourceGroup().id, keyVaultName, deployingPrincipalId, keyVaultSecretsOfficerRoleId)
+  scope: resourceGroup()
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', keyVaultSecretsOfficerRoleId)
+    principalId: deployingPrincipalId
+    principalType: 'ServicePrincipal'
+  }
+  dependsOn: [
+    keyVault
+  ]
 }
 
 // ============================================================================

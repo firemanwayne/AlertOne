@@ -10,6 +10,9 @@ param branch = 'master'
 param sqlAzureAdAdminLogin = 'admin@wdavis2002gmailcom.onmicrosoft.com'
 param sqlAzureAdAdminObjectId = '532dd4be-5499-4444-a7ea-bee09411b9b6'
 
+// Deploying principal (GitHub Actions service principal)
+param deployingPrincipalId = '1f766ee6-03e9-499f-9156-b671c0b3222b'
+
 // Deployment toggles
 param deployStaticWebApp = true
 param deployAlertManagementFunction = true

@@ -23,6 +23,9 @@
     "sqlAzureAdAdminObjectId": {
       "value": "532dd4be-5499-4444-a7ea-bee09411b9b6"
     },
+    "deployingPrincipalId": {
+      "value": "1f766ee6-03e9-499f-9156-b671c0b3222b"
+    },
     "deployStaticWebApp": {
       "value": true
     },

@@ -5,6 +5,10 @@ param location = 'eastus2'
 param instance = '001'
 param repositoryUrl = 'https://github.com/firemanwayne/AlertOne'
 param branch = 'master'
+
+// Deploying principal (GitHub Actions service principal)
+param deployingPrincipalId = '1f766ee6-03e9-499f-9156-b671c0b3222b'
+
 param deployStaticWebApp = true
 param deployAlertManagementFunction = true
 param deployUserManagementFunction = true

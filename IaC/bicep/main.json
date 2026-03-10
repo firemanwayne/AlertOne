@@ -1,0 +1,3515 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.29.47.4906",
+      "templateHash": "6957423047440381875"
+    }
+  },
+  "parameters": {
+    "environment": {
+      "type": "string",
+      "defaultValue": "dev",
+      "allowedValues": [
+        "dev",
+        "staging",
+        "prod"
+      ],
+      "metadata": {
+        "description": "Environment name"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Primary location for resources"
+      }
+    },
+    "instance": {
+      "type": "string",
+      "defaultValue": "001",
+      "metadata": {
+        "description": "Instance number for resources"
+      }
+    },
+    "repositoryUrl": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "GitHub repository URL for Static Web App"
+      }
+    },
+    "branch": {
+      "type": "string",
+      "defaultValue": "master",
+      "metadata": {
+        "description": "GitHub branch for Static Web App"
+      }
+    },
+    "sqlAzureAdAdminLogin": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Azure AD administrator login for SQL Server"
+      }
+    },
+    "sqlAzureAdAdminObjectId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Azure AD administrator object ID for SQL Server"
+      }
+    },
+    "deployingPrincipalId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Object ID of the deploying principal (service principal) for Key Vault access"
+      }
+    },
+    "deployStaticWebApp": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Deploy Static Web App"
+      }
+    },
+    "deployAlertManagementFunction": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Deploy Alert Management Function App"
+      }
+    },
+    "deployUserManagementFunction": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Deploy User Management Function App"
+      }
+    },
+    "deployAppConfiguration": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Deploy App Configuration"
+      }
+    },
+    "deploySqlServer": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Deploy SQL Server and Database"
+      }
+    },
+    "deployKeyVault": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Deploy Key Vault"
+      }
+    },
+    "deployCommunicationServices": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Deploy Communication Services"
+      }
+    },
+    "deployNotificationHub": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Deploy Notification Hub"
+      }
+    },
+    "appConfigurationSku": {
+      "type": "string",
+      "defaultValue": "free",
+      "allowedValues": [
+        "free",
+        "standard"
+      ],
+      "metadata": {
+        "description": "App Configuration SKU"
+      }
+    },
+    "appServicePlanSku": {
+      "type": "string",
+      "defaultValue": "FC1",
+      "allowedValues": [
+        "Y1",
+        "FC1",
+        "EP1",
+        "EP2",
+        "EP3"
+      ],
+      "metadata": {
+        "description": "App Service Plan SKU for Function Apps"
+      }
+    },
+    "sqlDatabaseSkuName": {
+      "type": "string",
+      "defaultValue": "GP_S_Gen5_1",
+      "metadata": {
+        "description": "SQL Database SKU name"
+      }
+    },
+    "sqlDatabaseSkuTier": {
+      "type": "string",
+      "defaultValue": "GeneralPurpose",
+      "allowedValues": [
+        "Basic",
+        "Standard",
+        "GeneralPurpose"
+      ],
+      "metadata": {
+        "description": "SQL Database SKU tier"
+      }
+    },
+    "sqlDatabaseSkuFamily": {
+      "type": "string",
+      "defaultValue": "Gen5",
+      "metadata": {
+        "description": "SQL Database SKU family"
+      }
+    },
+    "sqlDatabaseSkuCapacity": {
+      "type": "int",
+      "defaultValue": 1,
+      "metadata": {
+        "description": "SQL Database SKU capacity"
+      }
+    },
+    "staticWebAppSku": {
+      "type": "string",
+      "defaultValue": "Standard",
+      "allowedValues": [
+        "Free",
+        "Standard"
+      ],
+      "metadata": {
+        "description": "Static Web App SKU"
+      }
+    },
+    "keyVaultSku": {
+      "type": "string",
+      "defaultValue": "standard",
+      "allowedValues": [
+        "standard",
+        "premium"
+      ],
+      "metadata": {
+        "description": "Key Vault SKU"
+      }
+    },
+    "notificationHubSku": {
+      "type": "string",
+      "defaultValue": "Free",
+      "allowedValues": [
+        "Free",
+        "Basic",
+        "Standard"
+      ],
+      "metadata": {
+        "description": "Notification Hub SKU"
+      }
+    },
+    "storageAccountSku": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_GRS",
+        "Standard_RAGRS",
+        "Standard_ZRS",
+        "Premium_LRS"
+      ],
+      "metadata": {
+        "description": "Storage Account SKU"
+      }
+    }
+  },
+  "variables": {
+    "tags": {
+      "Environment": "[parameters('environment')]",
+      "Application": "AlertOne",
+      "ManagedBy": "Bicep"
+    },
+    "isFlexConsumption": "[equals(parameters('appServicePlanSku'), 'FC1')]",
+    "sqlServerName": "[format('alert-one-sql-{0}-{1}', parameters('environment'), parameters('instance'))]",
+    "sqlDatabaseName": "[format('alert-one-db-{0}-{1}', parameters('environment'), parameters('instance'))]",
+    "appConfigurationName": "[format('alert-one-appconfig-{0}-{1}', parameters('environment'), parameters('instance'))]",
+    "keyVaultName": "[format('alertone-kv-{0}-{1}', parameters('environment'), parameters('instance'))]",
+    "communicationServicesName": "[format('alert-one-comm-{0}-{1}', parameters('environment'), parameters('instance'))]",
+    "emailServicesName": "[format('alert-one-email-{0}-{1}', parameters('environment'), parameters('instance'))]",
+    "notificationHubNamespaceName": "[format('alertone-nhub-{0}-{1}', parameters('environment'), parameters('instance'))]",
+    "notificationHubName": "[format('alertone-hub-{0}-{1}', parameters('environment'), parameters('instance'))]",
+    "staticWebAppName": "[format('alert-one-swa-{0}-{1}', parameters('environment'), parameters('instance'))]",
+    "alertMgmtFunctionName": "[format('alertone-alrtmg-{0}-{1}', parameters('environment'), parameters('instance'))]",
+    "userMgmtFunctionName": "[format('alertone-usrm-{0}-{1}', parameters('environment'), parameters('instance'))]",
+    "alertMgmtAppServicePlanName": "[format('asp-alrtmg-{0}-{1}', parameters('environment'), parameters('instance'))]",
+    "userMgmtAppServicePlanName": "[format('asp-usrm-{0}-{1}', parameters('environment'), parameters('instance'))]",
+    "alertMgmtStorageAccountName": "[format('stalrtmg{0}{1}', parameters('environment'), take(uniqueString(resourceGroup().id), 4))]",
+    "userMgmtStorageAccountName": "[format('stusrm{0}{1}', parameters('environment'), take(uniqueString(resourceGroup().id), 4))]",
+    "alertMgmtAppInsightsName": "[variables('alertMgmtFunctionName')]",
+    "userMgmtAppInsightsName": "[variables('userMgmtFunctionName')]",
+    "staticWebAppLocation": "eastus2",
+    "storageBlobDataOwnerRoleId": "b7e6dc6d-f1e8-4753-8033-0f276bb0955b",
+    "keyVaultSecretsUserRoleId": "4633458b-17de-408a-b874-0445c86b69e6",
+    "keyVaultSecretsOfficerRoleId": "b86a8fe4-44ce-4948-aee5-eccb2c155cd7"
+  },
+  "resources": [
+    {
+      "condition": "[and(parameters('deployAlertManagementFunction'), variables('isFlexConsumption'))]",
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(resourceGroup().id, variables('alertMgmtStorageAccountName'), variables('alertMgmtFunctionName'), variables('storageBlobDataOwnerRoleId'))]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('storageBlobDataOwnerRoleId'))]",
+        "principalId": "[reference(resourceId('Microsoft.Resources/deployments', format('alertManagementFunction-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.principalId.value]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', format('alertManagementFunction-{0}', uniqueString(resourceGroup().id)))]"
+      ]
+    },
+    {
+      "condition": "[and(parameters('deployUserManagementFunction'), variables('isFlexConsumption'))]",
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(resourceGroup().id, variables('userMgmtStorageAccountName'), variables('userMgmtFunctionName'), variables('storageBlobDataOwnerRoleId'))]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('storageBlobDataOwnerRoleId'))]",
+        "principalId": "[reference(resourceId('Microsoft.Resources/deployments', format('userManagementFunction-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.principalId.value]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', format('userManagementFunction-{0}', uniqueString(resourceGroup().id)))]"
+      ]
+    },
+    {
+      "condition": "[and(parameters('deployAlertManagementFunction'), parameters('deployKeyVault'))]",
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(resourceGroup().id, variables('keyVaultName'), variables('alertMgmtFunctionName'), variables('keyVaultSecretsUserRoleId'))]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('keyVaultSecretsUserRoleId'))]",
+        "principalId": "[reference(resourceId('Microsoft.Resources/deployments', format('alertManagementFunction-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.principalId.value]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', format('alertManagementFunction-{0}', uniqueString(resourceGroup().id)))]"
+      ]
+    },
+    {
+      "condition": "[and(parameters('deployUserManagementFunction'), parameters('deployKeyVault'))]",
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(resourceGroup().id, variables('keyVaultName'), variables('userMgmtFunctionName'), variables('keyVaultSecretsUserRoleId'))]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('keyVaultSecretsUserRoleId'))]",
+        "principalId": "[reference(resourceId('Microsoft.Resources/deployments', format('userManagementFunction-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.principalId.value]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', format('userManagementFunction-{0}', uniqueString(resourceGroup().id)))]"
+      ]
+    },
+    {
+      "condition": "[and(parameters('deployKeyVault'), not(empty(parameters('deployingPrincipalId'))))]",
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(resourceGroup().id, variables('keyVaultName'), parameters('deployingPrincipalId'), variables('keyVaultSecretsOfficerRoleId'))]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('keyVaultSecretsOfficerRoleId'))]",
+        "principalId": "[parameters('deployingPrincipalId')]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', format('keyVault-{0}', uniqueString(resourceGroup().id)))]"
+      ]
+    },
+    {
+      "condition": "[and(and(parameters('deploySqlServer'), not(empty(parameters('sqlAzureAdAdminLogin')))), not(empty(parameters('sqlAzureAdAdminObjectId'))))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('sqlServer-{0}', uniqueString(resourceGroup().id))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[variables('sqlServerName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[variables('tags')]"
+          },
+          "azureAdAdminLogin": {
+            "value": "[parameters('sqlAzureAdAdminLogin')]"
+          },
+          "azureAdAdminObjectId": {
+            "value": "[parameters('sqlAzureAdAdminObjectId')]"
+          },
+          "azureAdOnlyAuthentication": {
+            "value": true
+          },
+          "minimalTlsVersion": {
+            "value": "1.2"
+          },
+          "publicNetworkAccess": {
+            "value": "Enabled"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.29.47.4906",
+              "templateHash": "11511520513158146272"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the SQL Server"
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Location for the SQL Server"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Tags for the resource"
+              }
+            },
+            "azureAdAdminLogin": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure AD administrator login"
+              }
+            },
+            "azureAdAdminObjectId": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure AD administrator object ID (SID)"
+              }
+            },
+            "azureAdAdminPrincipalType": {
+              "type": "string",
+              "defaultValue": "User",
+              "allowedValues": [
+                "User",
+                "Group",
+                "Application"
+              ],
+              "metadata": {
+                "description": "Azure AD administrator principal type"
+              }
+            },
+            "azureAdTenantId": {
+              "type": "string",
+              "defaultValue": "[subscription().tenantId]",
+              "metadata": {
+                "description": "Azure AD tenant ID"
+              }
+            },
+            "azureAdOnlyAuthentication": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Enable Azure AD only authentication"
+              }
+            },
+            "minimalTlsVersion": {
+              "type": "string",
+              "defaultValue": "1.2",
+              "allowedValues": [
+                "1.0",
+                "1.1",
+                "1.2"
+              ],
+              "metadata": {
+                "description": "Minimum TLS version"
+              }
+            },
+            "publicNetworkAccess": {
+              "type": "string",
+              "defaultValue": "Enabled",
+              "allowedValues": [
+                "Enabled",
+                "Disabled"
+              ],
+              "metadata": {
+                "description": "Public network access"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Sql/servers",
+              "apiVersion": "2023-08-01-preview",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "minimalTlsVersion": "[parameters('minimalTlsVersion')]",
+                "publicNetworkAccess": "[parameters('publicNetworkAccess')]",
+                "administrators": {
+                  "administratorType": "ActiveDirectory",
+                  "azureADOnlyAuthentication": "[parameters('azureAdOnlyAuthentication')]",
+                  "login": "[parameters('azureAdAdminLogin')]",
+                  "principalType": "[parameters('azureAdAdminPrincipalType')]",
+                  "sid": "[parameters('azureAdAdminObjectId')]",
+                  "tenantId": "[parameters('azureAdTenantId')]"
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Sql/servers/firewallRules",
+              "apiVersion": "2023-08-01-preview",
+              "name": "[format('{0}/{1}', parameters('name'), 'AllowAllWindowsAzureIps')]",
+              "properties": {
+                "startIpAddress": "0.0.0.0",
+                "endIpAddress": "0.0.0.0"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('name'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the SQL Server"
+              },
+              "value": "[resourceId('Microsoft.Sql/servers', parameters('name'))]"
+            },
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the SQL Server"
+              },
+              "value": "[parameters('name')]"
+            },
+            "fullyQualifiedDomainName": {
+              "type": "string",
+              "metadata": {
+                "description": "The fully qualified domain name of the SQL Server"
+              },
+              "value": "[reference(resourceId('Microsoft.Sql/servers', parameters('name')), '2023-08-01-preview').fullyQualifiedDomainName]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "condition": "[and(and(parameters('deploySqlServer'), not(empty(parameters('sqlAzureAdAdminLogin')))), not(empty(parameters('sqlAzureAdAdminObjectId'))))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('sqlDatabase-{0}', uniqueString(resourceGroup().id))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[variables('sqlDatabaseName')]"
+          },
+          "sqlServerName": {
+            "value": "[variables('sqlServerName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[variables('tags')]"
+          },
+          "skuName": {
+            "value": "[parameters('sqlDatabaseSkuName')]"
+          },
+          "skuTier": {
+            "value": "[parameters('sqlDatabaseSkuTier')]"
+          },
+          "skuFamily": {
+            "value": "[parameters('sqlDatabaseSkuFamily')]"
+          },
+          "skuCapacity": {
+            "value": "[parameters('sqlDatabaseSkuCapacity')]"
+          },
+          "autoPauseDelay": {
+            "value": 60
+          },
+          "minCapacity": {
+            "value": "1"
+          },
+          "requestedBackupStorageRedundancy": {
+            "value": "Local"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.29.47.4906",
+              "templateHash": "6165336926676636985"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the SQL Database"
+              }
+            },
+            "sqlServerName": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the SQL Server"
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Location for the SQL Database"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Tags for the resource"
+              }
+            },
+            "skuName": {
+              "type": "string",
+              "defaultValue": "GP_S_Gen5_1",
+              "allowedValues": [
+                "Basic",
+                "S0",
+                "S1",
+                "S2",
+                "GP_S_Gen5_1",
+                "GP_S_Gen5_2",
+                "GP_Gen5_2",
+                "GP_Gen5_4"
+              ],
+              "metadata": {
+                "description": "SKU name for the database"
+              }
+            },
+            "skuTier": {
+              "type": "string",
+              "defaultValue": "GeneralPurpose",
+              "allowedValues": [
+                "Basic",
+                "Standard",
+                "GeneralPurpose"
+              ],
+              "metadata": {
+                "description": "SKU tier for the database"
+              }
+            },
+            "skuFamily": {
+              "type": "string",
+              "defaultValue": "Gen5",
+              "metadata": {
+                "description": "SKU family (for vCore-based)"
+              }
+            },
+            "skuCapacity": {
+              "type": "int",
+              "defaultValue": 1,
+              "metadata": {
+                "description": "SKU capacity (vCores or DTUs)"
+              }
+            },
+            "maxSizeBytes": {
+              "type": "int",
+              "defaultValue": 38654705664,
+              "metadata": {
+                "description": "Max size in bytes (default 36GB)"
+              }
+            },
+            "autoPauseDelay": {
+              "type": "int",
+              "defaultValue": 60,
+              "metadata": {
+                "description": "Auto-pause delay in minutes (-1 to disable)"
+              }
+            },
+            "minCapacity": {
+              "type": "string",
+              "defaultValue": "1",
+              "metadata": {
+                "description": "Minimum capacity for serverless"
+              }
+            },
+            "collation": {
+              "type": "string",
+              "defaultValue": "SQL_Latin1_General_CP1_CI_AS",
+              "metadata": {
+                "description": "Collation for the database"
+              }
+            },
+            "requestedBackupStorageRedundancy": {
+              "type": "string",
+              "defaultValue": "Local",
+              "allowedValues": [
+                "Local",
+                "Zone",
+                "Geo",
+                "GeoZone"
+              ],
+              "metadata": {
+                "description": "Backup storage redundancy"
+              }
+            },
+            "zoneRedundant": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Zone redundancy"
+              }
+            }
+          },
+          "variables": {
+            "isServerless": "[contains(parameters('skuName'), '_S_')]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Sql/servers/databases",
+              "apiVersion": "2023-08-01-preview",
+              "name": "[format('{0}/{1}', parameters('sqlServerName'), parameters('name'))]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "sku": {
+                "name": "[parameters('skuName')]",
+                "tier": "[parameters('skuTier')]",
+                "family": "[parameters('skuFamily')]",
+                "capacity": "[parameters('skuCapacity')]"
+              },
+              "properties": {
+                "collation": "[parameters('collation')]",
+                "maxSizeBytes": "[parameters('maxSizeBytes')]",
+                "autoPauseDelay": "[if(variables('isServerless'), parameters('autoPauseDelay'), null())]",
+                "minCapacity": "[if(variables('isServerless'), json(parameters('minCapacity')), null())]",
+                "requestedBackupStorageRedundancy": "[parameters('requestedBackupStorageRedundancy')]",
+                "zoneRedundant": "[parameters('zoneRedundant')]",
+                "readScale": "Disabled"
+              }
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the SQL Database"
+              },
+              "value": "[resourceId('Microsoft.Sql/servers/databases', parameters('sqlServerName'), parameters('name'))]"
+            },
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the SQL Database"
+              },
+              "value": "[parameters('name')]"
+            },
+            "connectionStringTemplate": {
+              "type": "string",
+              "metadata": {
+                "description": "Connection string template (requires authentication)"
+              },
+              "value": "[format('Server=tcp:{0},1433;Initial Catalog={1};Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;', reference(resourceId('Microsoft.Sql/servers', parameters('sqlServerName')), '2023-08-01-preview').fullyQualifiedDomainName, parameters('name'))]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', format('sqlServer-{0}', uniqueString(resourceGroup().id)))]"
+      ]
+    },
+    {
+      "condition": "[parameters('deployAppConfiguration')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('appConfiguration-{0}', uniqueString(resourceGroup().id))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[variables('appConfigurationName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[variables('tags')]"
+          },
+          "sku": {
+            "value": "[parameters('appConfigurationSku')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.29.47.4906",
+              "templateHash": "15515700913366102736"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the App Configuration store"
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Location for the App Configuration store"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Tags for the resource"
+              }
+            },
+            "sku": {
+              "type": "string",
+              "defaultValue": "free",
+              "allowedValues": [
+                "free",
+                "standard"
+              ],
+              "metadata": {
+                "description": "SKU for the App Configuration store"
+              }
+            },
+            "enablePurgeProtection": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Enable purge protection"
+              }
+            },
+            "softDeleteRetentionInDays": {
+              "type": "int",
+              "defaultValue": 7,
+              "minValue": 1,
+              "maxValue": 7,
+              "metadata": {
+                "description": "Soft delete retention in days"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.AppConfiguration/configurationStores",
+              "apiVersion": "2023-03-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "sku": {
+                "name": "[parameters('sku')]"
+              },
+              "properties": {
+                "enablePurgeProtection": "[if(equals(parameters('sku'), 'standard'), parameters('enablePurgeProtection'), false())]",
+                "softDeleteRetentionInDays": "[if(equals(parameters('sku'), 'standard'), parameters('softDeleteRetentionInDays'), 0)]",
+                "disableLocalAuth": false,
+                "publicNetworkAccess": "Enabled"
+              }
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the App Configuration store"
+              },
+              "value": "[resourceId('Microsoft.AppConfiguration/configurationStores', parameters('name'))]"
+            },
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the App Configuration store"
+              },
+              "value": "[parameters('name')]"
+            },
+            "endpoint": {
+              "type": "string",
+              "metadata": {
+                "description": "The endpoint of the App Configuration store"
+              },
+              "value": "[reference(resourceId('Microsoft.AppConfiguration/configurationStores', parameters('name')), '2023-03-01').endpoint]"
+            },
+            "connectionString": {
+              "type": "string",
+              "metadata": {
+                "description": "The primary connection string"
+              },
+              "value": "[listKeys(resourceId('Microsoft.AppConfiguration/configurationStores', parameters('name')), '2023-03-01').value[0].connectionString]"
+            },
+            "readOnlyConnectionString": {
+              "type": "string",
+              "metadata": {
+                "description": "The primary read-only connection string"
+              },
+              "value": "[listKeys(resourceId('Microsoft.AppConfiguration/configurationStores', parameters('name')), '2023-03-01').value[2].connectionString]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "condition": "[parameters('deployKeyVault')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('keyVault-{0}', uniqueString(resourceGroup().id))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[variables('keyVaultName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[variables('tags')]"
+          },
+          "sku": {
+            "value": "[parameters('keyVaultSku')]"
+          },
+          "enableRbacAuthorization": {
+            "value": true
+          },
+          "enableSoftDelete": {
+            "value": true
+          },
+          "softDeleteRetentionInDays": {
+            "value": 90
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.29.47.4906",
+              "templateHash": "15122131216886743973"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Key Vault"
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Location for the Key Vault"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Tags for the resource"
+              }
+            },
+            "sku": {
+              "type": "string",
+              "defaultValue": "standard",
+              "allowedValues": [
+                "standard",
+                "premium"
+              ],
+              "metadata": {
+                "description": "SKU for the Key Vault"
+              }
+            },
+            "tenantId": {
+              "type": "string",
+              "defaultValue": "[subscription().tenantId]",
+              "metadata": {
+                "description": "Tenant ID for the Key Vault"
+              }
+            },
+            "enableRbacAuthorization": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Enable RBAC authorization (recommended)"
+              }
+            },
+            "enableSoftDelete": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Enable soft delete"
+              }
+            },
+            "softDeleteRetentionInDays": {
+              "type": "int",
+              "defaultValue": 90,
+              "minValue": 7,
+              "maxValue": 90,
+              "metadata": {
+                "description": "Soft delete retention in days"
+              }
+            },
+            "enablePurgeProtection": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Enable purge protection"
+              }
+            },
+            "publicNetworkAccess": {
+              "type": "string",
+              "defaultValue": "Enabled",
+              "allowedValues": [
+                "Enabled",
+                "Disabled"
+              ],
+              "metadata": {
+                "description": "Public network access"
+              }
+            },
+            "enabledForDeployment": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Enable for deployment (VMs)"
+              }
+            },
+            "enabledForDiskEncryption": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Enable for disk encryption"
+              }
+            },
+            "enabledForTemplateDeployment": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Enable for template deployment"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.KeyVault/vaults",
+              "apiVersion": "2023-07-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "sku": {
+                  "family": "A",
+                  "name": "[parameters('sku')]"
+                },
+                "tenantId": "[parameters('tenantId')]",
+                "enableRbacAuthorization": "[parameters('enableRbacAuthorization')]",
+                "enableSoftDelete": "[parameters('enableSoftDelete')]",
+                "softDeleteRetentionInDays": "[parameters('softDeleteRetentionInDays')]",
+                "enablePurgeProtection": "[if(parameters('enablePurgeProtection'), true(), null())]",
+                "enabledForDeployment": "[parameters('enabledForDeployment')]",
+                "enabledForDiskEncryption": "[parameters('enabledForDiskEncryption')]",
+                "enabledForTemplateDeployment": "[parameters('enabledForTemplateDeployment')]",
+                "publicNetworkAccess": "[parameters('publicNetworkAccess')]",
+                "networkAcls": {
+                  "bypass": "AzureServices",
+                  "defaultAction": "Allow"
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the Key Vault"
+              },
+              "value": "[resourceId('Microsoft.KeyVault/vaults', parameters('name'))]"
+            },
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the Key Vault"
+              },
+              "value": "[parameters('name')]"
+            },
+            "vaultUri": {
+              "type": "string",
+              "metadata": {
+                "description": "The URI of the Key Vault"
+              },
+              "value": "[reference(resourceId('Microsoft.KeyVault/vaults', parameters('name')), '2023-07-01').vaultUri]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "condition": "[parameters('deployCommunicationServices')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('emailServices-{0}', uniqueString(resourceGroup().id))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[variables('emailServicesName')]"
+          },
+          "tags": {
+            "value": "[variables('tags')]"
+          },
+          "dataLocation": {
+            "value": "United States"
+          },
+          "createAzureManagedDomain": {
+            "value": true
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.29.47.4906",
+              "templateHash": "14297112478806976615"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Email Services resource"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Tags for the resource"
+              }
+            },
+            "dataLocation": {
+              "type": "string",
+              "defaultValue": "United States",
+              "allowedValues": [
+                "United States",
+                "Europe",
+                "UK",
+                "Australia"
+              ],
+              "metadata": {
+                "description": "Data location for the Email Services"
+              }
+            },
+            "createAzureManagedDomain": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Create an Azure Managed Domain"
+              }
+            }
+          },
+          "variables": {
+            "location": "global"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Communication/emailServices",
+              "apiVersion": "2023-04-01",
+              "name": "[parameters('name')]",
+              "location": "[variables('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "dataLocation": "[parameters('dataLocation')]"
+              }
+            },
+            {
+              "condition": "[parameters('createAzureManagedDomain')]",
+              "type": "Microsoft.Communication/emailServices/domains",
+              "apiVersion": "2023-04-01",
+              "name": "[format('{0}/{1}', parameters('name'), 'AzureManagedDomain')]",
+              "location": "[variables('location')]",
+              "properties": {
+                "domainManagement": "AzureManaged",
+                "userEngagementTracking": "Disabled"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Communication/emailServices', parameters('name'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the Email Services"
+              },
+              "value": "[resourceId('Microsoft.Communication/emailServices', parameters('name'))]"
+            },
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the Email Services"
+              },
+              "value": "[parameters('name')]"
+            },
+            "azureManagedDomainId": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the Azure Managed Domain"
+              },
+              "value": "[if(parameters('createAzureManagedDomain'), resourceId('Microsoft.Communication/emailServices/domains', parameters('name'), 'AzureManagedDomain'), '')]"
+            },
+            "azureManagedDomainFromSenderDomain": {
+              "type": "string",
+              "metadata": {
+                "description": "The from sender domain for the Azure Managed Domain"
+              },
+              "value": "[if(parameters('createAzureManagedDomain'), reference(resourceId('Microsoft.Communication/emailServices/domains', parameters('name'), 'AzureManagedDomain'), '2023-04-01').fromSenderDomain, '')]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "condition": "[parameters('deployCommunicationServices')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('communicationServices-{0}', uniqueString(resourceGroup().id))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[variables('communicationServicesName')]"
+          },
+          "tags": {
+            "value": "[variables('tags')]"
+          },
+          "dataLocation": {
+            "value": "United States"
+          },
+          "enableSystemAssignedIdentity": {
+            "value": true
+          },
+          "linkedDomains": "[if(parameters('deployCommunicationServices'), createObject('value', createArray(reference(resourceId('Microsoft.Resources/deployments', format('emailServices-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.azureManagedDomainId.value)), createObject('value', createArray()))]"
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.29.47.4906",
+              "templateHash": "15540769165020606617"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Communication Services resource"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Tags for the resource"
+              }
+            },
+            "dataLocation": {
+              "type": "string",
+              "defaultValue": "United States",
+              "allowedValues": [
+                "United States",
+                "Europe",
+                "UK",
+                "Australia",
+                "Japan",
+                "Brazil"
+              ],
+              "metadata": {
+                "description": "Data location for the Communication Services"
+              }
+            },
+            "enableSystemAssignedIdentity": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Enable system-assigned managed identity"
+              }
+            },
+            "linkedDomains": {
+              "type": "array",
+              "defaultValue": [],
+              "metadata": {
+                "description": "Resource IDs of linked email domains"
+              }
+            }
+          },
+          "variables": {
+            "location": "global"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Communication/communicationServices",
+              "apiVersion": "2023-04-01",
+              "name": "[parameters('name')]",
+              "location": "[variables('location')]",
+              "tags": "[parameters('tags')]",
+              "identity": "[if(parameters('enableSystemAssignedIdentity'), createObject('type', 'SystemAssigned'), null())]",
+              "properties": {
+                "dataLocation": "[parameters('dataLocation')]",
+                "linkedDomains": "[parameters('linkedDomains')]"
+              }
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the Communication Services"
+              },
+              "value": "[resourceId('Microsoft.Communication/communicationServices', parameters('name'))]"
+            },
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the Communication Services"
+              },
+              "value": "[parameters('name')]"
+            },
+            "hostName": {
+              "type": "string",
+              "metadata": {
+                "description": "The hostname of the Communication Services"
+              },
+              "value": "[reference(resourceId('Microsoft.Communication/communicationServices', parameters('name')), '2023-04-01').hostName]"
+            },
+            "principalId": {
+              "type": "string",
+              "metadata": {
+                "description": "The principal ID of the managed identity"
+              },
+              "value": "[if(parameters('enableSystemAssignedIdentity'), reference(resourceId('Microsoft.Communication/communicationServices', parameters('name')), '2023-04-01', 'full').identity.principalId, '')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', format('emailServices-{0}', uniqueString(resourceGroup().id)))]"
+      ]
+    },
+    {
+      "condition": "[parameters('deployNotificationHub')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('notificationHub-{0}', uniqueString(resourceGroup().id))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "namespaceName": {
+            "value": "[variables('notificationHubNamespaceName')]"
+          },
+          "hubName": {
+            "value": "[variables('notificationHubName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[variables('tags')]"
+          },
+          "sku": {
+            "value": "[parameters('notificationHubSku')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.29.47.4906",
+              "templateHash": "2826190092530724647"
+            }
+          },
+          "parameters": {
+            "namespaceName": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Notification Hub Namespace"
+              }
+            },
+            "hubName": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Notification Hub"
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Location for the Notification Hub"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Tags for the resource"
+              }
+            },
+            "sku": {
+              "type": "string",
+              "defaultValue": "Free",
+              "allowedValues": [
+                "Free",
+                "Basic",
+                "Standard"
+              ],
+              "metadata": {
+                "description": "SKU for the Notification Hub Namespace"
+              }
+            },
+            "publicNetworkAccess": {
+              "type": "string",
+              "defaultValue": "Enabled",
+              "allowedValues": [
+                "Enabled",
+                "Disabled"
+              ],
+              "metadata": {
+                "description": "Public network access"
+              }
+            },
+            "zoneRedundancy": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Zone redundancy"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.NotificationHubs/namespaces",
+              "apiVersion": "2023-10-01-preview",
+              "name": "[parameters('namespaceName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "sku": {
+                "name": "[parameters('sku')]"
+              },
+              "properties": {
+                "namespaceType": "NotificationHub",
+                "publicNetworkAccess": "[parameters('publicNetworkAccess')]",
+                "zoneRedundancy": "[if(parameters('zoneRedundancy'), 'Enabled', 'Disabled')]"
+              }
+            },
+            {
+              "type": "Microsoft.NotificationHubs/namespaces/notificationHubs",
+              "apiVersion": "2023-10-01-preview",
+              "name": "[format('{0}/{1}', parameters('namespaceName'), parameters('hubName'))]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {},
+              "dependsOn": [
+                "[resourceId('Microsoft.NotificationHubs/namespaces', parameters('namespaceName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "namespaceId": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the Notification Hub Namespace"
+              },
+              "value": "[resourceId('Microsoft.NotificationHubs/namespaces', parameters('namespaceName'))]"
+            },
+            "namespaceName": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the Notification Hub Namespace"
+              },
+              "value": "[parameters('namespaceName')]"
+            },
+            "hubId": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the Notification Hub"
+              },
+              "value": "[resourceId('Microsoft.NotificationHubs/namespaces/notificationHubs', parameters('namespaceName'), parameters('hubName'))]"
+            },
+            "hubName": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the Notification Hub"
+              },
+              "value": "[parameters('hubName')]"
+            },
+            "serviceBusEndpoint": {
+              "type": "string",
+              "metadata": {
+                "description": "The Service Bus endpoint"
+              },
+              "value": "[reference(resourceId('Microsoft.NotificationHubs/namespaces', parameters('namespaceName')), '2023-10-01-preview').serviceBusEndpoint]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "condition": "[parameters('deployAlertManagementFunction')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('alertMgmtStorageAccount-{0}', uniqueString(resourceGroup().id))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[variables('alertMgmtStorageAccountName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[union(variables('tags'), createObject('Service', 'AlertManagement'))]"
+          },
+          "sku": {
+            "value": "[parameters('storageAccountSku')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.29.47.4906",
+              "templateHash": "11799874353899747264"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the storage account"
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Location for the storage account"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Tags for the resource"
+              }
+            },
+            "sku": {
+              "type": "string",
+              "defaultValue": "Standard_LRS",
+              "allowedValues": [
+                "Standard_LRS",
+                "Standard_GRS",
+                "Standard_RAGRS",
+                "Standard_ZRS",
+                "Premium_LRS"
+              ],
+              "metadata": {
+                "description": "Storage account SKU"
+              }
+            },
+            "kind": {
+              "type": "string",
+              "defaultValue": "StorageV2",
+              "allowedValues": [
+                "Storage",
+                "StorageV2",
+                "BlobStorage"
+              ],
+              "metadata": {
+                "description": "Storage account kind"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Storage/storageAccounts",
+              "apiVersion": "2023-05-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "sku": {
+                "name": "[parameters('sku')]"
+              },
+              "kind": "[parameters('kind')]",
+              "properties": {
+                "supportsHttpsTrafficOnly": true,
+                "minimumTlsVersion": "TLS1_2",
+                "allowBlobPublicAccess": false,
+                "networkAcls": {
+                  "defaultAction": "Allow",
+                  "bypass": "AzureServices"
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Storage/storageAccounts/blobServices",
+              "apiVersion": "2023-05-01",
+              "name": "[format('{0}/{1}', parameters('name'), 'default')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('name'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+              "apiVersion": "2023-05-01",
+              "name": "[format('{0}/{1}/{2}', parameters('name'), 'default', 'deployments')]",
+              "properties": {
+                "publicAccess": "None"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('name'), 'default')]"
+              ]
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the storage account"
+              },
+              "value": "[resourceId('Microsoft.Storage/storageAccounts', parameters('name'))]"
+            },
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the storage account"
+              },
+              "value": "[parameters('name')]"
+            },
+            "connectionString": {
+              "type": "string",
+              "metadata": {
+                "description": "The primary connection string for the storage account"
+              },
+              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', parameters('name'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('name')), '2023-05-01').keys[0].value)]"
+            },
+            "blobEndpoint": {
+              "type": "string",
+              "metadata": {
+                "description": "The primary blob endpoint"
+              },
+              "value": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('name')), '2023-05-01').primaryEndpoints.blob]"
+            },
+            "deploymentsContainerUrl": {
+              "type": "string",
+              "metadata": {
+                "description": "The deployments container URL for Flex Consumption"
+              },
+              "value": "[format('{0}deployments', reference(resourceId('Microsoft.Storage/storageAccounts', parameters('name')), '2023-05-01').primaryEndpoints.blob)]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "condition": "[parameters('deployAlertManagementFunction')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('alertMgmtAppServicePlan-{0}', uniqueString(resourceGroup().id))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[variables('alertMgmtAppServicePlanName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[union(variables('tags'), createObject('Service', 'AlertManagement'))]"
+          },
+          "sku": {
+            "value": "[parameters('appServicePlanSku')]"
+          },
+          "operatingSystem": {
+            "value": "Linux"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.29.47.4906",
+              "templateHash": "3619622788601372831"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the App Service Plan"
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Location for the App Service Plan"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Tags for the resource"
+              }
+            },
+            "sku": {
+              "type": "string",
+              "defaultValue": "FC1",
+              "allowedValues": [
+                "Y1",
+                "FC1",
+                "EP1",
+                "EP2",
+                "EP3"
+              ],
+              "metadata": {
+                "description": "The SKU of the App Service Plan"
+              }
+            },
+            "operatingSystem": {
+              "type": "string",
+              "defaultValue": "Linux",
+              "allowedValues": [
+                "Windows",
+                "Linux"
+              ],
+              "metadata": {
+                "description": "Operating system for the plan"
+              }
+            }
+          },
+          "variables": {
+            "isConsumption": "[equals(parameters('sku'), 'Y1')]",
+            "isFlexConsumption": "[equals(parameters('sku'), 'FC1')]",
+            "isLinux": "[equals(parameters('operatingSystem'), 'Linux')]",
+            "skuTier": "[if(variables('isConsumption'), 'Dynamic', if(variables('isFlexConsumption'), 'FlexConsumption', 'ElasticPremium'))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Web/serverfarms",
+              "apiVersion": "2023-12-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "kind": "[if(variables('isLinux'), 'linux', 'functionapp')]",
+              "sku": {
+                "name": "[parameters('sku')]",
+                "tier": "[variables('skuTier')]"
+              },
+              "properties": {
+                "reserved": "[variables('isLinux')]",
+                "maximumElasticWorkerCount": "[if(or(variables('isConsumption'), variables('isFlexConsumption')), null(), 20)]"
+              }
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the App Service Plan"
+              },
+              "value": "[resourceId('Microsoft.Web/serverfarms', parameters('name'))]"
+            },
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the App Service Plan"
+              },
+              "value": "[parameters('name')]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "condition": "[parameters('deployAlertManagementFunction')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('alertMgmtAppInsights-{0}', uniqueString(resourceGroup().id))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[variables('alertMgmtAppInsightsName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[union(variables('tags'), createObject('Service', 'AlertManagement'))]"
+          },
+          "retentionInDays": "[if(equals(parameters('environment'), 'prod'), createObject('value', 90), createObject('value', 90))]"
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.29.47.4906",
+              "templateHash": "9598626941977206408"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Application Insights resource"
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Location for the Application Insights resource"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Tags for the resource"
+              }
+            },
+            "workspaceResourceId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Resource ID of the Log Analytics Workspace (optional)"
+              }
+            },
+            "applicationType": {
+              "type": "string",
+              "defaultValue": "web",
+              "allowedValues": [
+                "web",
+                "other"
+              ],
+              "metadata": {
+                "description": "Application type"
+              }
+            },
+            "retentionInDays": {
+              "type": "int",
+              "defaultValue": 90,
+              "minValue": 30,
+              "maxValue": 730,
+              "metadata": {
+                "description": "Retention period in days"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Insights/components",
+              "apiVersion": "2020-02-02",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "kind": "web",
+              "properties": {
+                "Application_Type": "[parameters('applicationType')]",
+                "RetentionInDays": "[parameters('retentionInDays')]",
+                "WorkspaceResourceId": "[if(not(empty(parameters('workspaceResourceId'))), parameters('workspaceResourceId'), null())]",
+                "IngestionMode": "[if(not(empty(parameters('workspaceResourceId'))), 'LogAnalytics', 'ApplicationInsights')]",
+                "publicNetworkAccessForIngestion": "Enabled",
+                "publicNetworkAccessForQuery": "Enabled"
+              }
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the Application Insights"
+              },
+              "value": "[resourceId('Microsoft.Insights/components', parameters('name'))]"
+            },
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the Application Insights"
+              },
+              "value": "[parameters('name')]"
+            },
+            "instrumentationKey": {
+              "type": "string",
+              "metadata": {
+                "description": "The instrumentation key"
+              },
+              "value": "[reference(resourceId('Microsoft.Insights/components', parameters('name')), '2020-02-02').InstrumentationKey]"
+            },
+            "connectionString": {
+              "type": "string",
+              "metadata": {
+                "description": "The connection string"
+              },
+              "value": "[reference(resourceId('Microsoft.Insights/components', parameters('name')), '2020-02-02').ConnectionString]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "condition": "[parameters('deployAlertManagementFunction')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('alertManagementFunction-{0}', uniqueString(resourceGroup().id))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[variables('alertMgmtFunctionName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[union(variables('tags'), createObject('Service', 'AlertManagement'))]"
+          },
+          "appServicePlanId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('alertMgmtAppServicePlan-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.id.value]"
+          },
+          "storageAccountConnectionString": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('alertMgmtStorageAccount-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.connectionString.value]"
+          },
+          "storageAccountName": {
+            "value": "[tryGet(reference(resourceId('Microsoft.Resources/deployments', format('alertMgmtStorageAccount-{0}', uniqueString(resourceGroup().id))), '2022-09-01'), 'outputs').name.value]"
+          },
+          "deploymentsContainerUrl": {
+            "value": "[tryGet(reference(resourceId('Microsoft.Resources/deployments', format('alertMgmtStorageAccount-{0}', uniqueString(resourceGroup().id))), '2022-09-01'), 'outputs').deploymentsContainerUrl.value]"
+          },
+          "appInsightsConnectionString": {
+            "value": "[tryGet(reference(resourceId('Microsoft.Resources/deployments', format('alertMgmtAppInsights-{0}', uniqueString(resourceGroup().id))), '2022-09-01'), 'outputs').connectionString.value]"
+          },
+          "appInsightsResourceId": {
+            "value": "[tryGet(reference(resourceId('Microsoft.Resources/deployments', format('alertMgmtAppInsights-{0}', uniqueString(resourceGroup().id))), '2022-09-01'), 'outputs').id.value]"
+          },
+          "dotnetVersion": {
+            "value": "v9.0"
+          },
+          "operatingSystem": {
+            "value": "Linux"
+          },
+          "corsAllowedOrigins": {
+            "value": [
+              "https://localhost:7183",
+              "[if(parameters('deployStaticWebApp'), format('https://{0}', reference(resourceId('Microsoft.Resources/deployments', format('staticWebApp-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.defaultHostName.value), '')]"
+            ]
+          },
+          "corsSupportCredentials": {
+            "value": true
+          },
+          "isFlexConsumption": {
+            "value": "[variables('isFlexConsumption')]"
+          },
+          "keyVaultName": "[if(parameters('deployKeyVault'), createObject('value', tryGet(reference(resourceId('Microsoft.Resources/deployments', format('keyVault-{0}', uniqueString(resourceGroup().id))), '2022-09-01'), 'outputs').name.value), createObject('value', ''))]"
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.29.47.4906",
+              "templateHash": "4019775017380997760"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Function App"
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Location for the Function App"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Tags for the resource"
+              }
+            },
+            "appServicePlanId": {
+              "type": "string",
+              "metadata": {
+                "description": "Resource ID of the App Service Plan"
+              }
+            },
+            "storageAccountConnectionString": {
+              "type": "securestring",
+              "metadata": {
+                "description": "Connection string for the storage account"
+              }
+            },
+            "storageAccountName": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Storage account name for Flex Consumption"
+              }
+            },
+            "deploymentsContainerUrl": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Deployments blob container URL for Flex Consumption"
+              }
+            },
+            "appInsightsInstrumentationKey": {
+              "type": "securestring",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Application Insights Instrumentation Key"
+              }
+            },
+            "appInsightsConnectionString": {
+              "type": "securestring",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Application Insights Connection String"
+              }
+            },
+            "appInsightsResourceId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Application Insights Resource ID (for tagging)"
+              }
+            },
+            "dotnetVersion": {
+              "type": "string",
+              "defaultValue": "v9.0",
+              "allowedValues": [
+                "v8.0",
+                "v9.0"
+              ],
+              "metadata": {
+                "description": ".NET version for the function app"
+              }
+            },
+            "operatingSystem": {
+              "type": "string",
+              "defaultValue": "Linux",
+              "allowedValues": [
+                "Windows",
+                "Linux"
+              ],
+              "metadata": {
+                "description": "Operating system for the function app"
+              }
+            },
+            "corsAllowedOrigins": {
+              "type": "array",
+              "defaultValue": [],
+              "metadata": {
+                "description": "CORS allowed origins"
+              }
+            },
+            "corsSupportCredentials": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "CORS support credentials"
+              }
+            },
+            "containerSize": {
+              "type": "int",
+              "defaultValue": 1536,
+              "metadata": {
+                "description": "Container size in MB"
+              }
+            },
+            "functionAppScaleLimit": {
+              "type": "int",
+              "defaultValue": 100,
+              "metadata": {
+                "description": "Function app scale limit"
+              }
+            },
+            "appSettings": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Additional app settings"
+              }
+            },
+            "isFlexConsumption": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Whether this is a Flex Consumption plan"
+              }
+            },
+            "maximumInstanceCount": {
+              "type": "int",
+              "defaultValue": 100,
+              "metadata": {
+                "description": "Maximum instance count for Flex Consumption"
+              }
+            },
+            "instanceMemoryMB": {
+              "type": "int",
+              "defaultValue": 2048,
+              "allowedValues": [
+                2048,
+                4096
+              ],
+              "metadata": {
+                "description": "Instance memory in MB for Flex Consumption"
+              }
+            },
+            "aadAuthSecret": {
+              "type": "securestring",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Azure AD authentication secret"
+              }
+            },
+            "aadAllowedTenants": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Allowed Azure AD tenant IDs"
+              }
+            },
+            "keyVaultName": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Key Vault name for secret references"
+              }
+            },
+            "sqlConnectionStringSecretName": {
+              "type": "string",
+              "defaultValue": "AzureSqlServer-ConnectionString",
+              "metadata": {
+                "description": "SQL Server connection string secret name in Key Vault"
+              }
+            }
+          },
+          "variables": {
+            "copy": [
+              {
+                "name": "appSettingsArray",
+                "count": "[length(items(variables('mergedAppSettings')))]",
+                "input": {
+                  "name": "[items(variables('mergedAppSettings'))[copyIndex('appSettingsArray')].key]",
+                  "value": "[items(variables('mergedAppSettings'))[copyIndex('appSettingsArray')].value]"
+                }
+              }
+            ],
+            "isLinux": "[equals(parameters('operatingSystem'), 'Linux')]",
+            "kind": "[if(parameters('isFlexConsumption'), 'functionapp,linux', if(variables('isLinux'), 'functionapp,linux', 'functionapp'))]",
+            "flexRuntimeVersion": "[replace(parameters('dotnetVersion'), 'v', '')]",
+            "baseAppSettings": {
+              "AzureWebJobsStorage": "[parameters('storageAccountConnectionString')]",
+              "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "[parameters('storageAccountConnectionString')]",
+              "WEBSITE_CONTENTSHARE": "[toLower(parameters('name'))]",
+              "FUNCTIONS_EXTENSION_VERSION": "~4",
+              "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+              "WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED": "1"
+            },
+            "flexAppSettings": {
+              "FUNCTIONS_EXTENSION_VERSION": "~4"
+            },
+            "insightsSettings": "[if(not(empty(parameters('appInsightsConnectionString'))), createObject('APPLICATIONINSIGHTS_CONNECTION_STRING', parameters('appInsightsConnectionString')), if(not(empty(parameters('appInsightsInstrumentationKey'))), createObject('APPINSIGHTS_INSTRUMENTATIONKEY', parameters('appInsightsInstrumentationKey')), createObject()))]",
+            "authSettings": "[union(if(not(empty(parameters('aadAuthSecret'))), createObject('MICROSOFT_PROVIDER_AUTHENTICATION_SECRET', parameters('aadAuthSecret')), createObject()), if(not(empty(parameters('aadAllowedTenants'))), createObject('WEBSITE_AUTH_AAD_ALLOWED_TENANTS', parameters('aadAllowedTenants')), createObject()))]",
+            "sqlConnectionSettings": "[if(not(empty(parameters('keyVaultName'))), createObject('ConnectionStrings__SqlServer', format('@Microsoft.KeyVault(SecretUri=https://{0}{1}/secrets/{2}/)', parameters('keyVaultName'), environment().suffixes.keyvaultDns, parameters('sqlConnectionStringSecretName'))), createObject())]",
+            "mergedAppSettings": "[union(if(parameters('isFlexConsumption'), variables('flexAppSettings'), variables('baseAppSettings')), variables('insightsSettings'), variables('authSettings'), variables('sqlConnectionSettings'), parameters('appSettings'))]",
+            "flexExtraSettings": [
+              {
+                "name": "DEPLOYMENT_STORAGE_CONNECTION_STRING",
+                "value": "[parameters('storageAccountConnectionString')]"
+              },
+              {
+                "name": "AzureWebJobsStorage__accountName",
+                "value": "[parameters('storageAccountName')]"
+              }
+            ],
+            "flexAppSettingsArray": "[concat(variables('flexExtraSettings'), variables('appSettingsArray'))]",
+            "appInsightsTags": "[if(not(empty(parameters('appInsightsResourceId'))), createObject('hidden-link: /app-insights-resource-id', parameters('appInsightsResourceId')), createObject())]",
+            "mergedTags": "[union(parameters('tags'), variables('appInsightsTags'))]"
+          },
+          "resources": [
+            {
+              "condition": "[parameters('isFlexConsumption')]",
+              "type": "Microsoft.Web/sites",
+              "apiVersion": "2023-12-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "tags": "[variables('mergedTags')]",
+              "kind": "functionapp,linux",
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "properties": {
+                "serverFarmId": "[parameters('appServicePlanId')]",
+                "httpsOnly": true,
+                "publicNetworkAccess": "Enabled",
+                "reserved": true,
+                "clientAffinityEnabled": false,
+                "functionAppConfig": {
+                  "deployment": {
+                    "storage": {
+                      "type": "blobContainer",
+                      "value": "[parameters('deploymentsContainerUrl')]",
+                      "authentication": {
+                        "type": "StorageAccountConnectionString",
+                        "storageAccountConnectionStringName": "DEPLOYMENT_STORAGE_CONNECTION_STRING"
+                      }
+                    }
+                  },
+                  "runtime": {
+                    "name": "dotnet-isolated",
+                    "version": "[variables('flexRuntimeVersion')]"
+                  },
+                  "scaleAndConcurrency": {
+                    "maximumInstanceCount": "[parameters('maximumInstanceCount')]",
+                    "instanceMemoryMB": "[parameters('instanceMemoryMB')]"
+                  }
+                },
+                "siteConfig": {
+                  "ftpsState": "FtpsOnly",
+                  "minTlsVersion": "1.2",
+                  "cors": {
+                    "allowedOrigins": "[parameters('corsAllowedOrigins')]",
+                    "supportCredentials": "[parameters('corsSupportCredentials')]"
+                  },
+                  "appSettings": "[variables('flexAppSettingsArray')]"
+                }
+              }
+            },
+            {
+              "condition": "[not(parameters('isFlexConsumption'))]",
+              "type": "Microsoft.Web/sites",
+              "apiVersion": "2023-12-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "tags": "[variables('mergedTags')]",
+              "kind": "[variables('kind')]",
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "properties": {
+                "serverFarmId": "[parameters('appServicePlanId')]",
+                "httpsOnly": true,
+                "publicNetworkAccess": "Enabled",
+                "reserved": "[variables('isLinux')]",
+                "clientAffinityEnabled": false,
+                "containerSize": "[parameters('containerSize')]",
+                "siteConfig": {
+                  "ftpsState": "FtpsOnly",
+                  "minTlsVersion": "1.2",
+                  "scmMinTlsVersion": "1.2",
+                  "http20Enabled": false,
+                  "use32BitWorkerProcess": false,
+                  "functionAppScaleLimit": "[parameters('functionAppScaleLimit')]",
+                  "cors": {
+                    "allowedOrigins": "[parameters('corsAllowedOrigins')]",
+                    "supportCredentials": "[parameters('corsSupportCredentials')]"
+                  },
+                  "appSettings": "[variables('appSettingsArray')]"
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the Function App"
+              },
+              "value": "[if(parameters('isFlexConsumption'), resourceId('Microsoft.Web/sites', parameters('name')), resourceId('Microsoft.Web/sites', parameters('name')))]"
+            },
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the Function App"
+              },
+              "value": "[if(parameters('isFlexConsumption'), parameters('name'), parameters('name'))]"
+            },
+            "defaultHostName": {
+              "type": "string",
+              "metadata": {
+                "description": "The default hostname of the Function App"
+              },
+              "value": "[if(parameters('isFlexConsumption'), reference(resourceId('Microsoft.Web/sites', parameters('name')), '2023-12-01').defaultHostName, reference(resourceId('Microsoft.Web/sites', parameters('name')), '2023-12-01').defaultHostName)]"
+            },
+            "principalId": {
+              "type": "string",
+              "metadata": {
+                "description": "The principal ID of the Function App managed identity"
+              },
+              "value": "[if(parameters('isFlexConsumption'), reference(resourceId('Microsoft.Web/sites', parameters('name')), '2023-12-01', 'full').identity.principalId, reference(resourceId('Microsoft.Web/sites', parameters('name')), '2023-12-01', 'full').identity.principalId)]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', format('alertMgmtAppInsights-{0}', uniqueString(resourceGroup().id)))]",
+        "[resourceId('Microsoft.Resources/deployments', format('alertMgmtAppServicePlan-{0}', uniqueString(resourceGroup().id)))]",
+        "[resourceId('Microsoft.Resources/deployments', format('alertMgmtStorageAccount-{0}', uniqueString(resourceGroup().id)))]",
+        "[resourceId('Microsoft.Resources/deployments', format('keyVault-{0}', uniqueString(resourceGroup().id)))]",
+        "[resourceId('Microsoft.Resources/deployments', format('staticWebApp-{0}', uniqueString(resourceGroup().id)))]"
+      ]
+    },
+    {
+      "condition": "[parameters('deployUserManagementFunction')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('userMgmtStorageAccount-{0}', uniqueString(resourceGroup().id))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[variables('userMgmtStorageAccountName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[union(variables('tags'), createObject('Service', 'UserManagement'))]"
+          },
+          "sku": {
+            "value": "[parameters('storageAccountSku')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.29.47.4906",
+              "templateHash": "11799874353899747264"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the storage account"
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Location for the storage account"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Tags for the resource"
+              }
+            },
+            "sku": {
+              "type": "string",
+              "defaultValue": "Standard_LRS",
+              "allowedValues": [
+                "Standard_LRS",
+                "Standard_GRS",
+                "Standard_RAGRS",
+                "Standard_ZRS",
+                "Premium_LRS"
+              ],
+              "metadata": {
+                "description": "Storage account SKU"
+              }
+            },
+            "kind": {
+              "type": "string",
+              "defaultValue": "StorageV2",
+              "allowedValues": [
+                "Storage",
+                "StorageV2",
+                "BlobStorage"
+              ],
+              "metadata": {
+                "description": "Storage account kind"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Storage/storageAccounts",
+              "apiVersion": "2023-05-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "sku": {
+                "name": "[parameters('sku')]"
+              },
+              "kind": "[parameters('kind')]",
+              "properties": {
+                "supportsHttpsTrafficOnly": true,
+                "minimumTlsVersion": "TLS1_2",
+                "allowBlobPublicAccess": false,
+                "networkAcls": {
+                  "defaultAction": "Allow",
+                  "bypass": "AzureServices"
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Storage/storageAccounts/blobServices",
+              "apiVersion": "2023-05-01",
+              "name": "[format('{0}/{1}', parameters('name'), 'default')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('name'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+              "apiVersion": "2023-05-01",
+              "name": "[format('{0}/{1}/{2}', parameters('name'), 'default', 'deployments')]",
+              "properties": {
+                "publicAccess": "None"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('name'), 'default')]"
+              ]
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the storage account"
+              },
+              "value": "[resourceId('Microsoft.Storage/storageAccounts', parameters('name'))]"
+            },
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the storage account"
+              },
+              "value": "[parameters('name')]"
+            },
+            "connectionString": {
+              "type": "string",
+              "metadata": {
+                "description": "The primary connection string for the storage account"
+              },
+              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', parameters('name'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('name')), '2023-05-01').keys[0].value)]"
+            },
+            "blobEndpoint": {
+              "type": "string",
+              "metadata": {
+                "description": "The primary blob endpoint"
+              },
+              "value": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('name')), '2023-05-01').primaryEndpoints.blob]"
+            },
+            "deploymentsContainerUrl": {
+              "type": "string",
+              "metadata": {
+                "description": "The deployments container URL for Flex Consumption"
+              },
+              "value": "[format('{0}deployments', reference(resourceId('Microsoft.Storage/storageAccounts', parameters('name')), '2023-05-01').primaryEndpoints.blob)]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "condition": "[parameters('deployUserManagementFunction')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('userMgmtAppServicePlan-{0}', uniqueString(resourceGroup().id))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[variables('userMgmtAppServicePlanName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[union(variables('tags'), createObject('Service', 'UserManagement'))]"
+          },
+          "sku": {
+            "value": "[parameters('appServicePlanSku')]"
+          },
+          "operatingSystem": {
+            "value": "Linux"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.29.47.4906",
+              "templateHash": "3619622788601372831"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the App Service Plan"
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Location for the App Service Plan"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Tags for the resource"
+              }
+            },
+            "sku": {
+              "type": "string",
+              "defaultValue": "FC1",
+              "allowedValues": [
+                "Y1",
+                "FC1",
+                "EP1",
+                "EP2",
+                "EP3"
+              ],
+              "metadata": {
+                "description": "The SKU of the App Service Plan"
+              }
+            },
+            "operatingSystem": {
+              "type": "string",
+              "defaultValue": "Linux",
+              "allowedValues": [
+                "Windows",
+                "Linux"
+              ],
+              "metadata": {
+                "description": "Operating system for the plan"
+              }
+            }
+          },
+          "variables": {
+            "isConsumption": "[equals(parameters('sku'), 'Y1')]",
+            "isFlexConsumption": "[equals(parameters('sku'), 'FC1')]",
+            "isLinux": "[equals(parameters('operatingSystem'), 'Linux')]",
+            "skuTier": "[if(variables('isConsumption'), 'Dynamic', if(variables('isFlexConsumption'), 'FlexConsumption', 'ElasticPremium'))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Web/serverfarms",
+              "apiVersion": "2023-12-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "kind": "[if(variables('isLinux'), 'linux', 'functionapp')]",
+              "sku": {
+                "name": "[parameters('sku')]",
+                "tier": "[variables('skuTier')]"
+              },
+              "properties": {
+                "reserved": "[variables('isLinux')]",
+                "maximumElasticWorkerCount": "[if(or(variables('isConsumption'), variables('isFlexConsumption')), null(), 20)]"
+              }
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the App Service Plan"
+              },
+              "value": "[resourceId('Microsoft.Web/serverfarms', parameters('name'))]"
+            },
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the App Service Plan"
+              },
+              "value": "[parameters('name')]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "condition": "[parameters('deployUserManagementFunction')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('userMgmtAppInsights-{0}', uniqueString(resourceGroup().id))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[variables('userMgmtAppInsightsName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[union(variables('tags'), createObject('Service', 'UserManagement'))]"
+          },
+          "retentionInDays": "[if(equals(parameters('environment'), 'prod'), createObject('value', 90), createObject('value', 90))]"
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.29.47.4906",
+              "templateHash": "9598626941977206408"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Application Insights resource"
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Location for the Application Insights resource"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Tags for the resource"
+              }
+            },
+            "workspaceResourceId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Resource ID of the Log Analytics Workspace (optional)"
+              }
+            },
+            "applicationType": {
+              "type": "string",
+              "defaultValue": "web",
+              "allowedValues": [
+                "web",
+                "other"
+              ],
+              "metadata": {
+                "description": "Application type"
+              }
+            },
+            "retentionInDays": {
+              "type": "int",
+              "defaultValue": 90,
+              "minValue": 30,
+              "maxValue": 730,
+              "metadata": {
+                "description": "Retention period in days"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Insights/components",
+              "apiVersion": "2020-02-02",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "kind": "web",
+              "properties": {
+                "Application_Type": "[parameters('applicationType')]",
+                "RetentionInDays": "[parameters('retentionInDays')]",
+                "WorkspaceResourceId": "[if(not(empty(parameters('workspaceResourceId'))), parameters('workspaceResourceId'), null())]",
+                "IngestionMode": "[if(not(empty(parameters('workspaceResourceId'))), 'LogAnalytics', 'ApplicationInsights')]",
+                "publicNetworkAccessForIngestion": "Enabled",
+                "publicNetworkAccessForQuery": "Enabled"
+              }
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the Application Insights"
+              },
+              "value": "[resourceId('Microsoft.Insights/components', parameters('name'))]"
+            },
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the Application Insights"
+              },
+              "value": "[parameters('name')]"
+            },
+            "instrumentationKey": {
+              "type": "string",
+              "metadata": {
+                "description": "The instrumentation key"
+              },
+              "value": "[reference(resourceId('Microsoft.Insights/components', parameters('name')), '2020-02-02').InstrumentationKey]"
+            },
+            "connectionString": {
+              "type": "string",
+              "metadata": {
+                "description": "The connection string"
+              },
+              "value": "[reference(resourceId('Microsoft.Insights/components', parameters('name')), '2020-02-02').ConnectionString]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "condition": "[parameters('deployUserManagementFunction')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('userManagementFunction-{0}', uniqueString(resourceGroup().id))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[variables('userMgmtFunctionName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[union(variables('tags'), createObject('Service', 'UserManagement'))]"
+          },
+          "appServicePlanId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('userMgmtAppServicePlan-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.id.value]"
+          },
+          "storageAccountConnectionString": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('userMgmtStorageAccount-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.connectionString.value]"
+          },
+          "storageAccountName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('userMgmtStorageAccount-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.name.value]"
+          },
+          "deploymentsContainerUrl": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('userMgmtStorageAccount-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.deploymentsContainerUrl.value]"
+          },
+          "appInsightsConnectionString": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('userMgmtAppInsights-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.connectionString.value]"
+          },
+          "appInsightsResourceId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('userMgmtAppInsights-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.id.value]"
+          },
+          "dotnetVersion": {
+            "value": "v9.0"
+          },
+          "operatingSystem": {
+            "value": "Linux"
+          },
+          "corsAllowedOrigins": {
+            "value": [
+              "https://localhost:7183",
+              "[if(parameters('deployStaticWebApp'), format('https://{0}', reference(resourceId('Microsoft.Resources/deployments', format('staticWebApp-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.defaultHostName.value), '')]"
+            ]
+          },
+          "corsSupportCredentials": {
+            "value": true
+          },
+          "isFlexConsumption": {
+            "value": "[variables('isFlexConsumption')]"
+          },
+          "keyVaultName": "[if(parameters('deployKeyVault'), createObject('value', reference(resourceId('Microsoft.Resources/deployments', format('keyVault-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.name.value), createObject('value', ''))]"
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.29.47.4906",
+              "templateHash": "4019775017380997760"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Function App"
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Location for the Function App"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Tags for the resource"
+              }
+            },
+            "appServicePlanId": {
+              "type": "string",
+              "metadata": {
+                "description": "Resource ID of the App Service Plan"
+              }
+            },
+            "storageAccountConnectionString": {
+              "type": "securestring",
+              "metadata": {
+                "description": "Connection string for the storage account"
+              }
+            },
+            "storageAccountName": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Storage account name for Flex Consumption"
+              }
+            },
+            "deploymentsContainerUrl": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Deployments blob container URL for Flex Consumption"
+              }
+            },
+            "appInsightsInstrumentationKey": {
+              "type": "securestring",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Application Insights Instrumentation Key"
+              }
+            },
+            "appInsightsConnectionString": {
+              "type": "securestring",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Application Insights Connection String"
+              }
+            },
+            "appInsightsResourceId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Application Insights Resource ID (for tagging)"
+              }
+            },
+            "dotnetVersion": {
+              "type": "string",
+              "defaultValue": "v9.0",
+              "allowedValues": [
+                "v8.0",
+                "v9.0"
+              ],
+              "metadata": {
+                "description": ".NET version for the function app"
+              }
+            },
+            "operatingSystem": {
+              "type": "string",
+              "defaultValue": "Linux",
+              "allowedValues": [
+                "Windows",
+                "Linux"
+              ],
+              "metadata": {
+                "description": "Operating system for the function app"
+              }
+            },
+            "corsAllowedOrigins": {
+              "type": "array",
+              "defaultValue": [],
+              "metadata": {
+                "description": "CORS allowed origins"
+              }
+            },
+            "corsSupportCredentials": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "CORS support credentials"
+              }
+            },
+            "containerSize": {
+              "type": "int",
+              "defaultValue": 1536,
+              "metadata": {
+                "description": "Container size in MB"
+              }
+            },
+            "functionAppScaleLimit": {
+              "type": "int",
+              "defaultValue": 100,
+              "metadata": {
+                "description": "Function app scale limit"
+              }
+            },
+            "appSettings": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Additional app settings"
+              }
+            },
+            "isFlexConsumption": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Whether this is a Flex Consumption plan"
+              }
+            },
+            "maximumInstanceCount": {
+              "type": "int",
+              "defaultValue": 100,
+              "metadata": {
+                "description": "Maximum instance count for Flex Consumption"
+              }
+            },
+            "instanceMemoryMB": {
+              "type": "int",
+              "defaultValue": 2048,
+              "allowedValues": [
+                2048,
+                4096
+              ],
+              "metadata": {
+                "description": "Instance memory in MB for Flex Consumption"
+              }
+            },
+            "aadAuthSecret": {
+              "type": "securestring",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Azure AD authentication secret"
+              }
+            },
+            "aadAllowedTenants": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Allowed Azure AD tenant IDs"
+              }
+            },
+            "keyVaultName": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Key Vault name for secret references"
+              }
+            },
+            "sqlConnectionStringSecretName": {
+              "type": "string",
+              "defaultValue": "AzureSqlServer-ConnectionString",
+              "metadata": {
+                "description": "SQL Server connection string secret name in Key Vault"
+              }
+            }
+          },
+          "variables": {
+            "copy": [
+              {
+                "name": "appSettingsArray",
+                "count": "[length(items(variables('mergedAppSettings')))]",
+                "input": {
+                  "name": "[items(variables('mergedAppSettings'))[copyIndex('appSettingsArray')].key]",
+                  "value": "[items(variables('mergedAppSettings'))[copyIndex('appSettingsArray')].value]"
+                }
+              }
+            ],
+            "isLinux": "[equals(parameters('operatingSystem'), 'Linux')]",
+            "kind": "[if(parameters('isFlexConsumption'), 'functionapp,linux', if(variables('isLinux'), 'functionapp,linux', 'functionapp'))]",
+            "flexRuntimeVersion": "[replace(parameters('dotnetVersion'), 'v', '')]",
+            "baseAppSettings": {
+              "AzureWebJobsStorage": "[parameters('storageAccountConnectionString')]",
+              "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "[parameters('storageAccountConnectionString')]",
+              "WEBSITE_CONTENTSHARE": "[toLower(parameters('name'))]",
+              "FUNCTIONS_EXTENSION_VERSION": "~4",
+              "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+              "WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED": "1"
+            },
+            "flexAppSettings": {
+              "FUNCTIONS_EXTENSION_VERSION": "~4"
+            },
+            "insightsSettings": "[if(not(empty(parameters('appInsightsConnectionString'))), createObject('APPLICATIONINSIGHTS_CONNECTION_STRING', parameters('appInsightsConnectionString')), if(not(empty(parameters('appInsightsInstrumentationKey'))), createObject('APPINSIGHTS_INSTRUMENTATIONKEY', parameters('appInsightsInstrumentationKey')), createObject()))]",
+            "authSettings": "[union(if(not(empty(parameters('aadAuthSecret'))), createObject('MICROSOFT_PROVIDER_AUTHENTICATION_SECRET', parameters('aadAuthSecret')), createObject()), if(not(empty(parameters('aadAllowedTenants'))), createObject('WEBSITE_AUTH_AAD_ALLOWED_TENANTS', parameters('aadAllowedTenants')), createObject()))]",
+            "sqlConnectionSettings": "[if(not(empty(parameters('keyVaultName'))), createObject('ConnectionStrings__SqlServer', format('@Microsoft.KeyVault(SecretUri=https://{0}{1}/secrets/{2}/)', parameters('keyVaultName'), environment().suffixes.keyvaultDns, parameters('sqlConnectionStringSecretName'))), createObject())]",
+            "mergedAppSettings": "[union(if(parameters('isFlexConsumption'), variables('flexAppSettings'), variables('baseAppSettings')), variables('insightsSettings'), variables('authSettings'), variables('sqlConnectionSettings'), parameters('appSettings'))]",
+            "flexExtraSettings": [
+              {
+                "name": "DEPLOYMENT_STORAGE_CONNECTION_STRING",
+                "value": "[parameters('storageAccountConnectionString')]"
+              },
+              {
+                "name": "AzureWebJobsStorage__accountName",
+                "value": "[parameters('storageAccountName')]"
+              }
+            ],
+            "flexAppSettingsArray": "[concat(variables('flexExtraSettings'), variables('appSettingsArray'))]",
+            "appInsightsTags": "[if(not(empty(parameters('appInsightsResourceId'))), createObject('hidden-link: /app-insights-resource-id', parameters('appInsightsResourceId')), createObject())]",
+            "mergedTags": "[union(parameters('tags'), variables('appInsightsTags'))]"
+          },
+          "resources": [
+            {
+              "condition": "[parameters('isFlexConsumption')]",
+              "type": "Microsoft.Web/sites",
+              "apiVersion": "2023-12-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "tags": "[variables('mergedTags')]",
+              "kind": "functionapp,linux",
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "properties": {
+                "serverFarmId": "[parameters('appServicePlanId')]",
+                "httpsOnly": true,
+                "publicNetworkAccess": "Enabled",
+                "reserved": true,
+                "clientAffinityEnabled": false,
+                "functionAppConfig": {
+                  "deployment": {
+                    "storage": {
+                      "type": "blobContainer",
+                      "value": "[parameters('deploymentsContainerUrl')]",
+                      "authentication": {
+                        "type": "StorageAccountConnectionString",
+                        "storageAccountConnectionStringName": "DEPLOYMENT_STORAGE_CONNECTION_STRING"
+                      }
+                    }
+                  },
+                  "runtime": {
+                    "name": "dotnet-isolated",
+                    "version": "[variables('flexRuntimeVersion')]"
+                  },
+                  "scaleAndConcurrency": {
+                    "maximumInstanceCount": "[parameters('maximumInstanceCount')]",
+                    "instanceMemoryMB": "[parameters('instanceMemoryMB')]"
+                  }
+                },
+                "siteConfig": {
+                  "ftpsState": "FtpsOnly",
+                  "minTlsVersion": "1.2",
+                  "cors": {
+                    "allowedOrigins": "[parameters('corsAllowedOrigins')]",
+                    "supportCredentials": "[parameters('corsSupportCredentials')]"
+                  },
+                  "appSettings": "[variables('flexAppSettingsArray')]"
+                }
+              }
+            },
+            {
+              "condition": "[not(parameters('isFlexConsumption'))]",
+              "type": "Microsoft.Web/sites",
+              "apiVersion": "2023-12-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "tags": "[variables('mergedTags')]",
+              "kind": "[variables('kind')]",
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "properties": {
+                "serverFarmId": "[parameters('appServicePlanId')]",
+                "httpsOnly": true,
+                "publicNetworkAccess": "Enabled",
+                "reserved": "[variables('isLinux')]",
+                "clientAffinityEnabled": false,
+                "containerSize": "[parameters('containerSize')]",
+                "siteConfig": {
+                  "ftpsState": "FtpsOnly",
+                  "minTlsVersion": "1.2",
+                  "scmMinTlsVersion": "1.2",
+                  "http20Enabled": false,
+                  "use32BitWorkerProcess": false,
+                  "functionAppScaleLimit": "[parameters('functionAppScaleLimit')]",
+                  "cors": {
+                    "allowedOrigins": "[parameters('corsAllowedOrigins')]",
+                    "supportCredentials": "[parameters('corsSupportCredentials')]"
+                  },
+                  "appSettings": "[variables('appSettingsArray')]"
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the Function App"
+              },
+              "value": "[if(parameters('isFlexConsumption'), resourceId('Microsoft.Web/sites', parameters('name')), resourceId('Microsoft.Web/sites', parameters('name')))]"
+            },
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the Function App"
+              },
+              "value": "[if(parameters('isFlexConsumption'), parameters('name'), parameters('name'))]"
+            },
+            "defaultHostName": {
+              "type": "string",
+              "metadata": {
+                "description": "The default hostname of the Function App"
+              },
+              "value": "[if(parameters('isFlexConsumption'), reference(resourceId('Microsoft.Web/sites', parameters('name')), '2023-12-01').defaultHostName, reference(resourceId('Microsoft.Web/sites', parameters('name')), '2023-12-01').defaultHostName)]"
+            },
+            "principalId": {
+              "type": "string",
+              "metadata": {
+                "description": "The principal ID of the Function App managed identity"
+              },
+              "value": "[if(parameters('isFlexConsumption'), reference(resourceId('Microsoft.Web/sites', parameters('name')), '2023-12-01', 'full').identity.principalId, reference(resourceId('Microsoft.Web/sites', parameters('name')), '2023-12-01', 'full').identity.principalId)]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', format('keyVault-{0}', uniqueString(resourceGroup().id)))]",
+        "[resourceId('Microsoft.Resources/deployments', format('staticWebApp-{0}', uniqueString(resourceGroup().id)))]",
+        "[resourceId('Microsoft.Resources/deployments', format('userMgmtAppInsights-{0}', uniqueString(resourceGroup().id)))]",
+        "[resourceId('Microsoft.Resources/deployments', format('userMgmtAppServicePlan-{0}', uniqueString(resourceGroup().id)))]",
+        "[resourceId('Microsoft.Resources/deployments', format('userMgmtStorageAccount-{0}', uniqueString(resourceGroup().id)))]"
+      ]
+    },
+    {
+      "condition": "[parameters('deployStaticWebApp')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('staticWebApp-{0}', uniqueString(resourceGroup().id))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[variables('staticWebAppName')]"
+          },
+          "location": {
+            "value": "[variables('staticWebAppLocation')]"
+          },
+          "tags": {
+            "value": "[union(variables('tags'), createObject('Service', 'WebApp'))]"
+          },
+          "sku": {
+            "value": "[parameters('staticWebAppSku')]"
+          },
+          "repositoryUrl": {
+            "value": "[parameters('repositoryUrl')]"
+          },
+          "branch": {
+            "value": "[parameters('branch')]"
+          },
+          "appLocation": {
+            "value": "./Client/src/Web"
+          },
+          "outputLocation": {
+            "value": "wwwroot"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.29.47.4906",
+              "templateHash": "10865996754638373731"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Static Web App"
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Location for the Static Web App"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Tags for the resource"
+              }
+            },
+            "sku": {
+              "type": "string",
+              "defaultValue": "Free",
+              "allowedValues": [
+                "Free",
+                "Standard"
+              ],
+              "metadata": {
+                "description": "SKU for the Static Web App"
+              }
+            },
+            "repositoryUrl": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "GitHub repository URL (optional - for linking)"
+              }
+            },
+            "branch": {
+              "type": "string",
+              "defaultValue": "master",
+              "metadata": {
+                "description": "GitHub branch (optional)"
+              }
+            },
+            "appLocation": {
+              "type": "string",
+              "defaultValue": "./Client/src/Web",
+              "metadata": {
+                "description": "Build configuration - App location"
+              }
+            },
+            "outputLocation": {
+              "type": "string",
+              "defaultValue": "wwwroot",
+              "metadata": {
+                "description": "Build configuration - Output location"
+              }
+            },
+            "apiLocation": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Build configuration - API location (optional)"
+              }
+            },
+            "allowConfigFileUpdates": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Allow configuration file overrides"
+              }
+            },
+            "stagingEnvironmentPolicy": {
+              "type": "string",
+              "defaultValue": "Enabled",
+              "allowedValues": [
+                "Enabled",
+                "Disabled"
+              ],
+              "metadata": {
+                "description": "Staging environment policy"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Web/staticSites",
+              "apiVersion": "2023-12-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "sku": {
+                "name": "[parameters('sku')]",
+                "tier": "[parameters('sku')]"
+              },
+              "properties": {
+                "repositoryUrl": "[if(not(empty(parameters('repositoryUrl'))), parameters('repositoryUrl'), null())]",
+                "branch": "[if(not(empty(parameters('repositoryUrl'))), parameters('branch'), null())]",
+                "buildProperties": {
+                  "appLocation": "[parameters('appLocation')]",
+                  "outputLocation": "[parameters('outputLocation')]",
+                  "apiLocation": "[if(not(empty(parameters('apiLocation'))), parameters('apiLocation'), null())]"
+                },
+                "stagingEnvironmentPolicy": "[parameters('stagingEnvironmentPolicy')]",
+                "allowConfigFileUpdates": "[parameters('allowConfigFileUpdates')]"
+              }
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the Static Web App"
+              },
+              "value": "[resourceId('Microsoft.Web/staticSites', parameters('name'))]"
+            },
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the Static Web App"
+              },
+              "value": "[parameters('name')]"
+            },
+            "defaultHostName": {
+              "type": "string",
+              "metadata": {
+                "description": "The default hostname of the Static Web App"
+              },
+              "value": "[reference(resourceId('Microsoft.Web/staticSites', parameters('name')), '2023-12-01').defaultHostname]"
+            },
+            "apiKey": {
+              "type": "string",
+              "metadata": {
+                "description": "The API key for deployment (use with caution)"
+              },
+              "value": "[listSecrets(resourceId('Microsoft.Web/staticSites', parameters('name')), '2023-12-01').properties.apiKey]"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "sqlServerName": {
+      "type": "string",
+      "metadata": {
+        "description": "SQL Server name"
+      },
+      "value": "[if(and(parameters('deploySqlServer'), not(empty(parameters('sqlAzureAdAdminLogin')))), reference(resourceId('Microsoft.Resources/deployments', format('sqlServer-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.name.value, '')]"
+    },
+    "sqlServerFqdn": {
+      "type": "string",
+      "metadata": {
+        "description": "SQL Server FQDN"
+      },
+      "value": "[if(and(parameters('deploySqlServer'), not(empty(parameters('sqlAzureAdAdminLogin')))), reference(resourceId('Microsoft.Resources/deployments', format('sqlServer-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.fullyQualifiedDomainName.value, '')]"
+    },
+    "sqlDatabaseName": {
+      "type": "string",
+      "metadata": {
+        "description": "SQL Database name"
+      },
+      "value": "[if(and(parameters('deploySqlServer'), not(empty(parameters('sqlAzureAdAdminLogin')))), reference(resourceId('Microsoft.Resources/deployments', format('sqlDatabase-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.name.value, '')]"
+    },
+    "appConfigurationName": {
+      "type": "string",
+      "metadata": {
+        "description": "App Configuration name"
+      },
+      "value": "[if(parameters('deployAppConfiguration'), reference(resourceId('Microsoft.Resources/deployments', format('appConfiguration-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.name.value, '')]"
+    },
+    "appConfigurationEndpoint": {
+      "type": "string",
+      "metadata": {
+        "description": "App Configuration endpoint"
+      },
+      "value": "[if(parameters('deployAppConfiguration'), reference(resourceId('Microsoft.Resources/deployments', format('appConfiguration-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.endpoint.value, '')]"
+    },
+    "keyVaultName": {
+      "type": "string",
+      "metadata": {
+        "description": "Key Vault name"
+      },
+      "value": "[if(parameters('deployKeyVault'), reference(resourceId('Microsoft.Resources/deployments', format('keyVault-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.name.value, '')]"
+    },
+    "keyVaultUri": {
+      "type": "string",
+      "metadata": {
+        "description": "Key Vault URI"
+      },
+      "value": "[if(parameters('deployKeyVault'), reference(resourceId('Microsoft.Resources/deployments', format('keyVault-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.vaultUri.value, '')]"
+    },
+    "communicationServicesName": {
+      "type": "string",
+      "metadata": {
+        "description": "Communication Services name"
+      },
+      "value": "[if(parameters('deployCommunicationServices'), reference(resourceId('Microsoft.Resources/deployments', format('communicationServices-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.name.value, '')]"
+    },
+    "communicationServicesHostName": {
+      "type": "string",
+      "metadata": {
+        "description": "Communication Services hostname"
+      },
+      "value": "[if(parameters('deployCommunicationServices'), reference(resourceId('Microsoft.Resources/deployments', format('communicationServices-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.hostName.value, '')]"
+    },
+    "notificationHubNamespaceName": {
+      "type": "string",
+      "metadata": {
+        "description": "Notification Hub Namespace name"
+      },
+      "value": "[if(parameters('deployNotificationHub'), reference(resourceId('Microsoft.Resources/deployments', format('notificationHub-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.namespaceName.value, '')]"
+    },
+    "notificationHubName": {
+      "type": "string",
+      "metadata": {
+        "description": "Notification Hub name"
+      },
+      "value": "[if(parameters('deployNotificationHub'), reference(resourceId('Microsoft.Resources/deployments', format('notificationHub-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.hubName.value, '')]"
+    },
+    "alertManagementFunctionName": {
+      "type": "string",
+      "metadata": {
+        "description": "Alert Management Function App name"
+      },
+      "value": "[if(parameters('deployAlertManagementFunction'), reference(resourceId('Microsoft.Resources/deployments', format('alertManagementFunction-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.name.value, '')]"
+    },
+    "alertManagementFunctionHostName": {
+      "type": "string",
+      "metadata": {
+        "description": "Alert Management Function App hostname"
+      },
+      "value": "[if(parameters('deployAlertManagementFunction'), reference(resourceId('Microsoft.Resources/deployments', format('alertManagementFunction-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.defaultHostName.value, '')]"
+    },
+    "alertManagementFunctionPrincipalId": {
+      "type": "string",
+      "metadata": {
+        "description": "Alert Management Function App principal ID"
+      },
+      "value": "[if(parameters('deployAlertManagementFunction'), reference(resourceId('Microsoft.Resources/deployments', format('alertManagementFunction-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.principalId.value, '')]"
+    },
+    "userManagementFunctionName": {
+      "type": "string",
+      "metadata": {
+        "description": "User Management Function App name"
+      },
+      "value": "[if(parameters('deployUserManagementFunction'), reference(resourceId('Microsoft.Resources/deployments', format('userManagementFunction-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.name.value, '')]"
+    },
+    "userManagementFunctionHostName": {
+      "type": "string",
+      "metadata": {
+        "description": "User Management Function App hostname"
+      },
+      "value": "[if(parameters('deployUserManagementFunction'), reference(resourceId('Microsoft.Resources/deployments', format('userManagementFunction-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.defaultHostName.value, '')]"
+    },
+    "userManagementFunctionPrincipalId": {
+      "type": "string",
+      "metadata": {
+        "description": "User Management Function App principal ID"
+      },
+      "value": "[if(parameters('deployUserManagementFunction'), reference(resourceId('Microsoft.Resources/deployments', format('userManagementFunction-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.principalId.value, '')]"
+    },
+    "staticWebAppName": {
+      "type": "string",
+      "metadata": {
+        "description": "Static Web App name"
+      },
+      "value": "[if(parameters('deployStaticWebApp'), reference(resourceId('Microsoft.Resources/deployments', format('staticWebApp-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.name.value, '')]"
+    },
+    "staticWebAppHostName": {
+      "type": "string",
+      "metadata": {
+        "description": "Static Web App hostname"
+      },
+      "value": "[if(parameters('deployStaticWebApp'), reference(resourceId('Microsoft.Resources/deployments', format('staticWebApp-{0}', uniqueString(resourceGroup().id))), '2022-09-01').outputs.defaultHostName.value, '')]"
+    }
+  }
+}

@@ -47,7 +47,8 @@
       "Bash(az monitor:*)",
       "Bash(az appservice plan list:*)",
       "Bash(az sql db show:*)",
-      "Bash(az storage account:*)"
+      "Bash(az storage account:*)",
+      "Bash(az bicep build:*)"
     ]
   }
 }
