@@ -85,6 +85,7 @@
     <File Path=".github/workflows/azure-static-web-apps-icy-stone-0670cb10f.yml" />
     <File Path=".github/workflows/deploy-alertmanagement-api.yml" />
     <File Path=".github/workflows/deploy-android-playstore.yml" />
+    <File Path=".github/workflows/deploy-infrastructure.yml" />
     <File Path=".github/workflows/deploy-usermanagement-api.yml" />
     <File Path=".github/workflows/deploy-windows-blob.yml" />
     <File Path="Directory.Packages.props" />

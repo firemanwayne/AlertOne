@@ -44,6 +44,19 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   }
 }
 
+resource blobServices 'Microsoft.Storage/storageAccounts/blobServices@2023-05-01' = {
+  parent: storageAccount
+  name: 'default'
+}
+
+resource deploymentsContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-05-01' = {
+  parent: blobServices
+  name: 'deployments'
+  properties: {
+    publicAccess: 'None'
+  }
+}
+
 @description('The resource ID of the storage account')
 output id string = storageAccount.id
 
@@ -55,3 +68,6 @@ output connectionString string = 'DefaultEndpointsProtocol=https;AccountName=${s
 
 @description('The primary blob endpoint')
 output blobEndpoint string = storageAccount.properties.primaryEndpoints.blob
+
+@description('The deployments container URL for Flex Consumption')
+output deploymentsContainerUrl string = '${storageAccount.properties.primaryEndpoints.blob}deployments'

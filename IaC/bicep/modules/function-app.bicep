@@ -17,6 +17,9 @@ param storageAccountConnectionString string
 @description('Storage account name for Flex Consumption')
 param storageAccountName string = ''
 
+@description('Deployments blob container URL for Flex Consumption')
+param deploymentsContainerUrl string = ''
+
 @description('Application Insights Instrumentation Key')
 @secure()
 param appInsightsInstrumentationKey string = ''
@@ -168,7 +171,7 @@ resource functionAppFlex 'Microsoft.Web/sites@2023-12-01' = if (isFlexConsumptio
       deployment: {
         storage: {
           type: 'blobContainer'
-          value: '${storageAccountConnectionString};ContainerName=deployments'
+          value: deploymentsContainerUrl
           authentication: {
             type: 'StorageAccountConnectionString'
             storageAccountConnectionStringName: 'DEPLOYMENT_STORAGE_CONNECTION_STRING'

@@ -327,6 +327,7 @@ module alertManagementFunction 'modules/function-app.bicep' = if (deployAlertMan
     appServicePlanId: alertMgmtAppServicePlan.outputs.id
     storageAccountConnectionString: alertMgmtStorageAccount.outputs.connectionString
     storageAccountName: alertMgmtStorageAccount.outputs.name
+    deploymentsContainerUrl: alertMgmtStorageAccount.outputs.deploymentsContainerUrl
     appInsightsConnectionString: alertMgmtAppInsights.outputs.connectionString
     appInsightsResourceId: alertMgmtAppInsights.outputs.id
     dotnetVersion: 'v9.0'
@@ -388,6 +389,7 @@ module userManagementFunction 'modules/function-app.bicep' = if (deployUserManag
     appServicePlanId: userMgmtAppServicePlan.outputs.id
     storageAccountConnectionString: userMgmtStorageAccount.outputs.connectionString
     storageAccountName: userMgmtStorageAccount.outputs.name
+    deploymentsContainerUrl: userMgmtStorageAccount.outputs.deploymentsContainerUrl
     appInsightsConnectionString: userMgmtAppInsights.outputs.connectionString
     appInsightsResourceId: userMgmtAppInsights.outputs.id
     dotnetVersion: 'v9.0'
