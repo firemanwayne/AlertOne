@@ -15,9 +15,6 @@ param environment string = 'dev'
 @description('Primary location for resources')
 param location string = resourceGroup().location
 
-@description('Location abbreviation for naming')
-param locationAbbreviation string = 'eastus2'
-
 @description('Instance number for resources')
 param instance string = '001'
 
@@ -163,6 +160,7 @@ var userMgmtAppInsightsName = userMgmtFunctionName
 var staticWebAppLocation = 'eastus2'
 
 // CORS origins
+#disable-next-line BCP318
 var staticWebAppHostname = deployStaticWebApp ? 'https://${staticWebApp.outputs.defaultHostName}' : ''
 var corsAllowedOrigins = [
   'https://localhost:7183'
@@ -260,10 +258,12 @@ module communicationServices 'modules/communication-services.bicep' = if (deploy
     dataLocation: 'United States'
     enableSystemAssignedIdentity: true
     linkedDomains: deployCommunicationServices ? [
+        #disable-next-line BCP318
       emailServices.outputs.azureManagedDomainId
     ] : []
   }
   dependsOn: [
+#disable-next-line no-unnecessary-dependson
     emailServices
   ]
 }
@@ -324,23 +324,29 @@ module alertManagementFunction 'modules/function-app.bicep' = if (deployAlertMan
     name: alertMgmtFunctionName
     location: location
     tags: union(tags, { Service: 'AlertManagement' })
+    #disable-next-line BCP318
     appServicePlanId: alertMgmtAppServicePlan.outputs.id
+    #disable-next-line BCP318
     storageAccountConnectionString: alertMgmtStorageAccount.outputs.connectionString
-    storageAccountName: alertMgmtStorageAccount.outputs.name
-    deploymentsContainerUrl: alertMgmtStorageAccount.outputs.deploymentsContainerUrl
-    appInsightsConnectionString: alertMgmtAppInsights.outputs.connectionString
-    appInsightsResourceId: alertMgmtAppInsights.outputs.id
+    storageAccountName: alertMgmtStorageAccount.?outputs.name
+    deploymentsContainerUrl: alertMgmtStorageAccount.?outputs.deploymentsContainerUrl
+    appInsightsConnectionString: alertMgmtAppInsights.?outputs.connectionString
+    appInsightsResourceId: alertMgmtAppInsights.?outputs.id
     dotnetVersion: 'v9.0'
     operatingSystem: 'Linux'
     corsAllowedOrigins: corsAllowedOrigins
     corsSupportCredentials: true
     isFlexConsumption: isFlexConsumption
-    keyVaultName: deployKeyVault ? keyVault.outputs.name : ''
+    keyVaultName: deployKeyVault ? keyVault.?outputs.name : ''
   }
   dependsOn: [
+#disable-next-line no-unnecessary-dependson
     alertMgmtStorageAccount
+#disable-next-line no-unnecessary-dependson
     alertMgmtAppServicePlan
+#disable-next-line no-unnecessary-dependson
     alertMgmtAppInsights
+#disable-next-line no-unnecessary-dependson
     keyVault
   ]
 }
@@ -386,23 +392,34 @@ module userManagementFunction 'modules/function-app.bicep' = if (deployUserManag
     name: userMgmtFunctionName
     location: location
     tags: union(tags, { Service: 'UserManagement' })
+    #disable-next-line BCP318
     appServicePlanId: userMgmtAppServicePlan.outputs.id
+    #disable-next-line BCP318
     storageAccountConnectionString: userMgmtStorageAccount.outputs.connectionString
+    #disable-next-line BCP318
     storageAccountName: userMgmtStorageAccount.outputs.name
+    #disable-next-line BCP318
     deploymentsContainerUrl: userMgmtStorageAccount.outputs.deploymentsContainerUrl
+    #disable-next-line BCP318
     appInsightsConnectionString: userMgmtAppInsights.outputs.connectionString
+    #disable-next-line BCP318
     appInsightsResourceId: userMgmtAppInsights.outputs.id
     dotnetVersion: 'v9.0'
     operatingSystem: 'Linux'
     corsAllowedOrigins: corsAllowedOrigins
     corsSupportCredentials: true
     isFlexConsumption: isFlexConsumption
+    #disable-next-line BCP318
     keyVaultName: deployKeyVault ? keyVault.outputs.name : ''
   }
   dependsOn: [
+#disable-next-line no-unnecessary-dependson
     userMgmtStorageAccount
+#disable-next-line no-unnecessary-dependson
     userMgmtAppServicePlan
+#disable-next-line no-unnecessary-dependson
     userMgmtAppInsights
+#disable-next-line no-unnecessary-dependson
     keyVault
   ]
 }
@@ -419,6 +436,7 @@ resource alertMgmtStorageAccess 'Microsoft.Authorization/roleAssignments@2022-04
   scope: resourceGroup()
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageBlobDataOwnerRoleId)
+    #disable-next-line BCP318
     principalId: alertManagementFunction.outputs.principalId
     principalType: 'ServicePrincipal'
   }
@@ -429,6 +447,7 @@ resource userMgmtStorageAccess 'Microsoft.Authorization/roleAssignments@2022-04-
   scope: resourceGroup()
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageBlobDataOwnerRoleId)
+    #disable-next-line BCP318
     principalId: userManagementFunction.outputs.principalId
     principalType: 'ServicePrincipal'
   }
@@ -446,6 +465,7 @@ resource alertMgmtKeyVaultAccess 'Microsoft.Authorization/roleAssignments@2022-0
   scope: resourceGroup()
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', keyVaultSecretsUserRoleId)
+    #disable-next-line BCP318
     principalId: alertManagementFunction.outputs.principalId
     principalType: 'ServicePrincipal'
   }
@@ -456,6 +476,7 @@ resource userMgmtKeyVaultAccess 'Microsoft.Authorization/roleAssignments@2022-04
   scope: resourceGroup()
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', keyVaultSecretsUserRoleId)
+#disable-next-line BCP318
     principalId: userManagementFunction.outputs.principalId
     principalType: 'ServicePrincipal'
   }
@@ -485,65 +506,84 @@ module staticWebApp 'modules/static-web-app.bicep' = if (deployStaticWebApp) {
 
 // SQL Server
 @description('SQL Server name')
+#disable-next-line BCP318
 output sqlServerName string = deploySqlServer && !empty(sqlAzureAdAdminLogin) ? sqlServer.outputs.name : ''
 
 @description('SQL Server FQDN')
+#disable-next-line BCP318
 output sqlServerFqdn string = deploySqlServer && !empty(sqlAzureAdAdminLogin) ? sqlServer.outputs.fullyQualifiedDomainName : ''
 
 @description('SQL Database name')
+#disable-next-line BCP318
 output sqlDatabaseName string = deploySqlServer && !empty(sqlAzureAdAdminLogin) ? sqlDatabase.outputs.name : ''
 
 // App Configuration
 @description('App Configuration name')
+#disable-next-line BCP318
 output appConfigurationName string = deployAppConfiguration ? appConfiguration.outputs.name : ''
 
 @description('App Configuration endpoint')
+#disable-next-line BCP318
 output appConfigurationEndpoint string = deployAppConfiguration ? appConfiguration.outputs.endpoint : ''
 
 // Key Vault
 @description('Key Vault name')
+#disable-next-line BCP318
 output keyVaultName string = deployKeyVault ? keyVault.outputs.name : ''
 
 @description('Key Vault URI')
+#disable-next-line BCP318
 output keyVaultUri string = deployKeyVault ? keyVault.outputs.vaultUri : ''
 
 // Communication Services
 @description('Communication Services name')
+#disable-next-line BCP318
 output communicationServicesName string = deployCommunicationServices ? communicationServices.outputs.name : ''
 
 @description('Communication Services hostname')
+#disable-next-line BCP318
 output communicationServicesHostName string = deployCommunicationServices ? communicationServices.outputs.hostName : ''
 
 // Notification Hub
 @description('Notification Hub Namespace name')
+#disable-next-line BCP318
 output notificationHubNamespaceName string = deployNotificationHub ? notificationHub.outputs.namespaceName : ''
 
 @description('Notification Hub name')
+#disable-next-line BCP318
 output notificationHubName string = deployNotificationHub ? notificationHub.outputs.hubName : ''
 
 // Alert Management Function App
 @description('Alert Management Function App name')
+#disable-next-line BCP318
 output alertManagementFunctionName string = deployAlertManagementFunction ? alertManagementFunction.outputs.name : ''
 
 @description('Alert Management Function App hostname')
+#disable-next-line BCP318
 output alertManagementFunctionHostName string = deployAlertManagementFunction ? alertManagementFunction.outputs.defaultHostName : ''
 
 @description('Alert Management Function App principal ID')
+#disable-next-line BCP318
 output alertManagementFunctionPrincipalId string = deployAlertManagementFunction ? alertManagementFunction.outputs.principalId : ''
 
 // User Management Function App
 @description('User Management Function App name')
+#disable-next-line BCP318
 output userManagementFunctionName string = deployUserManagementFunction ? userManagementFunction.outputs.name : ''
 
 @description('User Management Function App hostname')
+#disable-next-line BCP318
 output userManagementFunctionHostName string = deployUserManagementFunction ? userManagementFunction.outputs.defaultHostName : ''
 
 @description('User Management Function App principal ID')
+#disable-next-line BCP318
 output userManagementFunctionPrincipalId string = deployUserManagementFunction ? userManagementFunction.outputs.principalId : ''
 
 // Static Web App
 @description('Static Web App name')
+#disable-next-line BCP318
 output staticWebAppName string = deployStaticWebApp ? staticWebApp.outputs.name : ''
 
 @description('Static Web App hostname')
+#disable-next-line BCP318
 output staticWebAppHostName string = deployStaticWebApp ? staticWebApp.outputs.defaultHostName : ''
