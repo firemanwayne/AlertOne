@@ -29,4 +29,9 @@ public interface IAuthenticationService
     /// Revokes a user's refresh token
     /// </summary>
     Task<Result> RevokeTokenAsync(UserId userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Checks if any users exist in the system
+    /// </summary>
+    Task<Result<bool>> HasUsersAsync(CancellationToken cancellationToken = default);
 }

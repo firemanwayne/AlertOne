@@ -13,9 +13,10 @@ public static class ServiceRegistryExtensions
         var preliminaryConfig = builder.Build();
         var appConfigBaseUri = preliminaryConfig["AppConfig:BaseUri"];
 
+        // Skip App Configuration for local development when BaseUri is not configured
         if (string.IsNullOrWhiteSpace(appConfigBaseUri))
         {
-            throw new InvalidOperationException("AppConfig:BaseUri is not configured. Set it as an environment variable or app setting.");
+            return builder;
         }
 
         var credential = new DefaultAzureCredential();
@@ -24,10 +25,10 @@ public static class ServiceRegistryExtensions
         {
             options
             .Connect(new Uri(appConfigBaseUri), credential)
-            // Load all keys that start with `AzureNotificationHubs:` and have no label
+            // Load all keys with no label
             .Select(keyFilter: "AzureNotificationHubs:*", labelFilter: LabelFilter.Null)
             .Select(keyFilter: "AzureCommunications:*", labelFilter: LabelFilter.Null)
-            .Select(keyFilter: "AzureSqlServer:*", labelFilter: LabelFilter.Null)
+            .Select(keyFilter: "CosmosDb:*", labelFilter: LabelFilter.Null)
             .Select(keyFilter: "JwtSettings:*", labelFilter: LabelFilter.Null)
             // Configure Key Vault reference resolution
             .ConfigureKeyVault(kv =>
@@ -36,11 +37,10 @@ public static class ServiceRegistryExtensions
             })
             .ConfigureRefresh(refreshOptions =>
             {
-                // Trigger full configuration refresh only if the `AzureNotificationHubs` changes.
                 refreshOptions
                 .Register("AzureNotificationHubs", refreshAll: true)
                 .Register("AzureCommunications", refreshAll: true)
-                .Register("AzureSqlServer", refreshAll: true)
+                .Register("CosmosDb", refreshAll: true)
                 .Register("JwtSettings", refreshAll: true);
             });
         });

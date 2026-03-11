@@ -187,9 +187,13 @@ internal sealed class AlertTypeService(AlertDbContext context, ILogger<AlertType
             return Result.Failure(Error.NotFound("AlertType.NotFound", $"Alert type with ID {id} not found"));
         }
 
-        var hasAlerts = await context.Alerts.AnyAsync(a => a.AlertTypeId == id, cancellationToken);
+        // Note: AnyAsync generates malformed Cosmos SQL - use FirstOrDefaultAsync instead
+        var alertUsingType = await context.Alerts
+            .Where(a => a.AlertTypeId == id)
+            .Select(a => a.Id)
+            .FirstOrDefaultAsync(cancellationToken);
 
-        if (hasAlerts)
+        if (alertUsingType is not null)
         {
             logger.LogWarning("Alert type {AlertTypeId} is referenced by existing alerts", id);
             return Result.Failure(Error.Conflict("AlertType.InUse", "Cannot delete alert type that is referenced by existing alerts"));

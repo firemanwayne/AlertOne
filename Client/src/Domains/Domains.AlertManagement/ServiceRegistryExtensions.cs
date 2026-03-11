@@ -19,7 +19,11 @@ public static class ServiceRegistryExtensions
         services
             .AddHttpClient<IAlertManagementApiClient, AlertManagementApiClient>(client =>
             {
+#if DEBUG
+                client.BaseAddress = new Uri("http://localhost:7071");
+#else
                 client.BaseAddress = new Uri("https://alertone-alrtmg-dev-eastus2-001-a4bzesh5c0cwbjbw.eastus2-01.azurewebsites.net");
+#endif
                 client.Timeout = TimeSpan.FromSeconds(60);
             })
             .AddHttpMessageHandler<JwtAuthHeaderHandler>();

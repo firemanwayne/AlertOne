@@ -319,9 +319,13 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
     {
         logger.LogInformation("Getting history for alert {AlertId}", alertId);
 
-        var alertExists = await context.Alerts.AnyAsync(a => a.Id == alertId, cancellationToken);
+        // Note: AnyAsync generates malformed Cosmos SQL - use FirstOrDefaultAsync instead
+        var existingAlertId = await context.Alerts
+            .Where(a => a.Id == alertId)
+            .Select(a => a.Id)
+            .FirstOrDefaultAsync(cancellationToken);
 
-        if (!alertExists)
+        if (existingAlertId is null)
         {
             logger.LogWarning("Alert not found when fetching history: {AlertId}", alertId);
             return Result.Failure<IEnumerable<AlertHistoryResponse>>(Error.NotFound("Alert.NotFound", $"Alert with ID {alertId} not found"));

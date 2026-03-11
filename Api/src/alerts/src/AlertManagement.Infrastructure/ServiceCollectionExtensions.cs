@@ -32,16 +32,28 @@ public static class ServiceCollectionExtensions
     {
         var cosmosEndpoint = configuration.GetValue<string>("CosmosDb:Endpoint");
         var cosmosDatabase = configuration.GetValue<string>("CosmosDb:DatabaseName");
+        var cosmosAccountKey = configuration.GetValue<string>("CosmosDb:AccountKey");
 
         ArgumentException.ThrowIfNullOrWhiteSpace(cosmosEndpoint, "CosmosDb:Endpoint");
         ArgumentException.ThrowIfNullOrWhiteSpace(cosmosDatabase, "CosmosDb:DatabaseName");
 
         services.AddDbContext<AlertDbContext>(options =>
         {
-            options.UseCosmos(
-                cosmosEndpoint,
-                new DefaultAzureCredential(),
-                cosmosDatabase);
+            // Use account key for local development (Cosmos Emulator), managed identity for Azure
+            if (!string.IsNullOrWhiteSpace(cosmosAccountKey))
+            {
+                options.UseCosmos(
+                    cosmosEndpoint,
+                    cosmosAccountKey,
+                    cosmosDatabase);
+            }
+            else
+            {
+                options.UseCosmos(
+                    cosmosEndpoint,
+                    new DefaultAzureCredential(),
+                    cosmosDatabase);
+            }
         });
 
         return services;

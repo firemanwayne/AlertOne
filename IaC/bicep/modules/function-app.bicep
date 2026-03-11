@@ -14,9 +14,6 @@ param appServicePlanId string
 @secure()
 param storageAccountConnectionString string
 
-@description('Storage account name for Flex Consumption')
-param storageAccountName string = ''
-
 @description('Deployments blob container URL for Flex Consumption')
 param deploymentsContainerUrl string = ''
 
@@ -96,8 +93,7 @@ var flexRuntimeVersion = replace(dotnetVersion, 'v', '')
 var baseAppSettings = {
   AzureWebJobsStorage: storageAccountConnectionString
   WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: storageAccountConnectionString
-  WEBSITE_CONTENTSHARE: toLower(name)
-  FUNCTIONS_EXTENSION_VERSION: '~4'
+  WEBSITE_CONTENTSHARE: toLower(name) 
   FUNCTIONS_WORKER_RUNTIME: 'dotnet-isolated'
   WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED: '1'
 }
@@ -238,7 +234,9 @@ output id string = isFlexConsumption ? functionAppFlex.id : functionApp.id
 output name string = isFlexConsumption ? functionAppFlex.name : functionApp.name
 
 @description('The default hostname of the Function App')
+#disable-next-line BCP318
 output defaultHostName string = isFlexConsumption ? functionAppFlex.properties.defaultHostName : functionApp.properties.defaultHostName
 
 @description('The principal ID of the Function App managed identity')
+#disable-next-line BCP318
 output principalId string = isFlexConsumption ? functionAppFlex.identity.principalId : functionApp.identity.principalId

@@ -25,6 +25,7 @@ public sealed class AlertDbContext(DbContextOptions<AlertDbContext> options) : D
             entity.HasNoDiscriminator();
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).ToJsonProperty("id");
+            entity.Property(e => e.AlertTypeId).ToJsonProperty("alertTypeId");
             entity.Property(e => e.CreatedBy).IsRequired();
             // Navigation properties are not supported in Cosmos - we'll handle relationships manually
             entity.Ignore(e => e.AlertType);
@@ -53,6 +54,7 @@ public sealed class AlertDbContext(DbContextOptions<AlertDbContext> options) : D
             entity.HasNoDiscriminator();
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).ToJsonProperty("id");
+            entity.Property(e => e.AlertTypeId).ToJsonProperty("alertTypeId");
             // Navigation properties are not supported in Cosmos
             entity.Ignore(e => e.AlertType);
         });
@@ -77,6 +79,7 @@ public sealed class AlertDbContext(DbContextOptions<AlertDbContext> options) : D
             entity.HasNoDiscriminator();
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).ToJsonProperty("id");
+            entity.Property(e => e.AlertId).ToJsonProperty("alertId");
             entity.Property(e => e.EventType).IsRequired();
             // Navigation properties are not supported in Cosmos
             entity.Ignore(e => e.Alert);

@@ -13,7 +13,7 @@ namespace UserManagement.Infrastructure.Services;
 /// <summary>
 /// Service for user management operations
 /// </summary>
-internal sealed class UserService(ILogger<UserService> logger, UserManager<ApplicationUser> userManager, IUserSettingsService userSettingsService) : IUserService
+internal sealed class UserService(ILogger<UserService> logger, UserManager<ApplicationUser> userManager, ApplicationDbContext dbContext, IUserSettingsService userSettingsService) : IUserService
 {
     public async Task<Result<UserResponse>> CreateUserAsync(CreateUserRequest request, CancellationToken cancellationToken = default)
     {
@@ -217,7 +217,9 @@ internal sealed class UserService(ILogger<UserService> logger, UserManager<Appli
     {
         logger.LogInformation("Getting all users");
 
-        var users = await userManager.Users.ToListAsync(cancellationToken);
+        // Note: userManager.Users requires IQueryableUserStore which we don't implement for Cosmos DB
+        // Query the DbContext directly instead
+        var users = await dbContext.Users.ToListAsync(cancellationToken);
 
         var userResponses = new List<UserResponse>();
 

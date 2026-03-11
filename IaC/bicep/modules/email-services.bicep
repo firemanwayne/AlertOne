@@ -49,4 +49,5 @@ output name string = emailServices.name
 output azureManagedDomainId string = createAzureManagedDomain ? azureManagedDomain.id : ''
 
 @description('The from sender domain for the Azure Managed Domain')
+#disable-next-line BCP318
 output azureManagedDomainFromSenderDomain string = createAzureManagedDomain ? azureManagedDomain.properties.fromSenderDomain : ''

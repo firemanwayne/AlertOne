@@ -52,13 +52,21 @@ public sealed class ApplicationDbContext : DbContext
         });
 
         // Configure IdentityUserRole
+        // Cosmos DB requires a single string 'id' property - use shadow property combining UserId and RoleId
         builder.Entity<IdentityUserRole<Guid>>(entity =>
         {
             entity.ToContainer("user-roles");
             entity.HasPartitionKey(e => e.UserId);
             entity.HasNoDiscriminator();
-            // Composite key for user-role relationship
-            entity.HasKey(e => new { e.UserId, e.RoleId });
+
+            // Create a shadow property for the Cosmos id
+            entity.Property<string>("Id")
+                .ToJsonProperty("id")
+                .HasValueGenerator<UserRoleIdGenerator>();
+            entity.HasKey("Id");
+
+            entity.Property(e => e.UserId).ToJsonProperty("userId");
+            entity.Property(e => e.RoleId).ToJsonProperty("roleId");
         });
 
         // Configure IdentityUserClaim
@@ -68,16 +76,29 @@ public sealed class ApplicationDbContext : DbContext
             entity.HasPartitionKey(e => e.UserId);
             entity.HasNoDiscriminator();
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Id).ToJsonProperty("id");
+            entity.Property(e => e.Id)
+                .ToJsonProperty("id")
+                .HasConversion<string>();
+            entity.Property(e => e.UserId).ToJsonProperty("userId");
         });
 
         // Configure IdentityUserLogin
+        // Cosmos DB requires a single string 'id' property - use shadow property combining LoginProvider and ProviderKey
         builder.Entity<IdentityUserLogin<Guid>>(entity =>
         {
             entity.ToContainer("user-logins");
             entity.HasPartitionKey(e => e.UserId);
             entity.HasNoDiscriminator();
-            entity.HasKey(e => new { e.LoginProvider, e.ProviderKey });
+
+            // Create a shadow property for the Cosmos id
+            entity.Property<string>("Id")
+                .ToJsonProperty("id")
+                .HasValueGenerator<UserLoginIdGenerator>();
+            entity.HasKey("Id");
+
+            entity.Property(e => e.UserId).ToJsonProperty("userId");
+            entity.Property(e => e.LoginProvider).ToJsonProperty("loginProvider");
+            entity.Property(e => e.ProviderKey).ToJsonProperty("providerKey");
         });
 
         // Configure IdentityRoleClaim
@@ -87,16 +108,29 @@ public sealed class ApplicationDbContext : DbContext
             entity.HasPartitionKey(e => e.RoleId);
             entity.HasNoDiscriminator();
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Id).ToJsonProperty("id");
+            entity.Property(e => e.Id)
+                .ToJsonProperty("id")
+                .HasConversion<string>();
+            entity.Property(e => e.RoleId).ToJsonProperty("roleId");
         });
 
         // Configure IdentityUserToken
+        // Cosmos DB requires a single string 'id' property - use shadow property combining UserId, LoginProvider, and Name
         builder.Entity<IdentityUserToken<Guid>>(entity =>
         {
             entity.ToContainer("user-tokens");
             entity.HasPartitionKey(e => e.UserId);
             entity.HasNoDiscriminator();
-            entity.HasKey(e => new { e.UserId, e.LoginProvider, e.Name });
+
+            // Create a shadow property for the Cosmos id
+            entity.Property<string>("Id")
+                .ToJsonProperty("id")
+                .HasValueGenerator<UserTokenIdGenerator>();
+            entity.HasKey("Id");
+
+            entity.Property(e => e.UserId).ToJsonProperty("userId");
+            entity.Property(e => e.LoginProvider).ToJsonProperty("loginProvider");
+            entity.Property(e => e.Name).ToJsonProperty("name");
         });
 
         // Configure UserDevice
@@ -107,6 +141,7 @@ public sealed class ApplicationDbContext : DbContext
             entity.HasNoDiscriminator();
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).ToJsonProperty("id");
+            entity.Property(e => e.UserId).ToJsonProperty("userId");
             entity.Property(e => e.DeviceId).IsRequired();
             entity.Property(e => e.DeviceName).IsRequired();
             entity.Property(e => e.Platform).IsRequired();
@@ -124,7 +159,7 @@ public sealed class ApplicationDbContext : DbContext
             entity.HasNoDiscriminator();
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).ToJsonProperty("id");
-            entity.Property(e => e.Email).IsRequired();
+            entity.Property(e => e.Email).ToJsonProperty("email");
             entity.Property(e => e.ActivationCode).IsRequired();
             entity.Property(e => e.InvitedBy).IsRequired();
             entity.Property(e => e.InvitedAt).IsRequired();
@@ -139,6 +174,7 @@ public sealed class ApplicationDbContext : DbContext
             entity.HasNoDiscriminator();
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).ToJsonProperty("id");
+            entity.Property(e => e.UserId).ToJsonProperty("userId");
             entity.Property(e => e.ReceiveEmailNotifications).IsRequired();
             entity.Property(e => e.ReceivePushNotifications).IsRequired();
             entity.Property(e => e.CreatedDate).IsRequired();

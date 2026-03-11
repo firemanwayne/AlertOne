@@ -201,10 +201,13 @@ internal sealed class AlertStatusLevelService(
                 Error.NotFound("AlertStatusLevel.NotFound", $"Alert status level with ID {id} not found"));
         }
 
-        var hasAlerts = await context.Alerts
-            .AnyAsync(a => a.AlertStatusLevelId == id, cancellationToken);
+        // Note: AnyAsync generates malformed Cosmos SQL - use FirstOrDefaultAsync instead
+        var alertUsingStatus = await context.Alerts
+            .Where(a => a.AlertStatusLevelId == id)
+            .Select(a => a.Id)
+            .FirstOrDefaultAsync(cancellationToken);
 
-        if (hasAlerts)
+        if (alertUsingStatus is not null)
         {
             logger.LogWarning("Alert status level {AlertStatusLevelId} is referenced by existing alerts", id);
             return Result.Failure(

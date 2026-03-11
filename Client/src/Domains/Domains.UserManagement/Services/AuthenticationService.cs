@@ -153,6 +153,22 @@ internal sealed class AuthenticationService(
         return Result.Success();
     }
 
+    public async Task<IApiResult<bool>> HasUsersAsync(CancellationToken cancellationToken = default)
+    {
+        var result = await apiClient.GetAsync<HasUsersResponse>(
+            "/api/auth/has-users",
+            cancellationToken);
+
+        if (result.IsSuccess)
+        {
+            return Result<bool>.Success(result.Value.HasUsers);
+        }
+
+        return Result<bool>.Failure(result.Error ?? Error.Internal("HasUsers.Failed", "Failed to check for users"));
+    }
+
+    private record HasUsersResponse(bool HasUsers);
+
     private async Task UnregisterFromPushNotificationsAsync(CancellationToken cancellationToken)
     {
         if (pushNotificationService is null || !pushNotificationService.IsRegistered)

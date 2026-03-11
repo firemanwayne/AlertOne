@@ -285,7 +285,14 @@ internal sealed class CosmosUserStore :
             return false;
         }
 
-        return await _context.UserRoles.AnyAsync(ur => ur.UserId == user.Id && ur.RoleId == role.Id, cancellationToken);
+        // Note: AnyAsync generates malformed Cosmos SQL (FROM root c instead of FROM c)
+        // Use FirstOrDefaultAsync instead to check for existence
+        var userRole = await _context.UserRoles
+            .Where(ur => ur.UserId == user.Id && ur.RoleId == role.Id)
+            .Select(ur => ur.UserId)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return userRole != default;
     }
 
     public async Task RemoveFromRoleAsync(ApplicationUser user, string roleName, CancellationToken cancellationToken)

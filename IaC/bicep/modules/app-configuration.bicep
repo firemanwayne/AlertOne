@@ -46,8 +46,10 @@ output name string = appConfiguration.name
 @description('The endpoint of the App Configuration store')
 output endpoint string = appConfiguration.properties.endpoint
 
+@secure()
 @description('The primary connection string')
 output connectionString string = appConfiguration.listKeys().value[0].connectionString
 
+@secure()
 @description('The primary read-only connection string')
 output readOnlyConnectionString string = appConfiguration.listKeys().value[2].connectionString

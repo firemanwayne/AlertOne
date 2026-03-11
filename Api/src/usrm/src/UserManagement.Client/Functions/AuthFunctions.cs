@@ -20,6 +20,7 @@ public sealed class AuthFunctions(
     public const string REGISTER = "auth/register";
     public const string LOGIN = "auth/login";
     public const string REFRESH = "auth/refresh";
+    public const string HAS_USERS = "auth/has-users";
 
     [Function("Register")]
     public async Task<HttpResponseData> Register([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = REGISTER)] HttpRequestData req, FunctionContext context)
@@ -108,6 +109,20 @@ public sealed class AuthFunctions(
         var response = req.CreateResponse(HttpStatusCode.OK);
 
         await response.WriteAsJsonAsync(result.Value);
+
+        return response;
+    }
+
+    [Function("HasUsers")]
+    public async Task<HttpResponseData> HasUsers([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = HAS_USERS)] HttpRequestData req, FunctionContext context)
+    {
+        logger.LogInformation("Checking if any users exist");
+
+        var result = await authService.HasUsersAsync(context.CancellationToken);
+
+        var response = req.CreateResponse(HttpStatusCode.OK);
+
+        await response.WriteAsJsonAsync(new { hasUsers = result.Value });
 
         return response;
     }

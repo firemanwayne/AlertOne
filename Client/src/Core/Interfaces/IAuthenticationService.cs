@@ -28,4 +28,9 @@ public interface IAuthenticationService
     /// Logs out the current user
     /// </summary>
     Task<IApiResult> LogoutAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Checks if any users exist in the system
+    /// </summary>
+    Task<IApiResult<bool>> HasUsersAsync(CancellationToken cancellationToken = default);
 }

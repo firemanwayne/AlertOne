@@ -69,5 +69,6 @@ output name string = staticWebApp.name
 @description('The default hostname of the Static Web App')
 output defaultHostName string = staticWebApp.properties.defaultHostname
 
+@secure()
 @description('The API key for deployment (use with caution)')
 output apiKey string = staticWebApp.listSecrets().properties.apiKey

@@ -16,6 +16,7 @@ namespace UserManagement.Infrastructure.Services;
 internal sealed class RoleService(
     RoleManager<IdentityRole<Guid>> roleManager,
     UserManager<ApplicationUser> userManager,
+    ApplicationDbContext dbContext,
     ILogger<RoleService> logger) : IRoleService
 {
     public async Task<Result<RoleResponse>> CreateRoleAsync(CreateRoleRequest request, CancellationToken cancellationToken = default)
@@ -123,7 +124,9 @@ internal sealed class RoleService(
     {
         logger.LogInformation("Getting all roles");
 
-        var roles = await roleManager.Roles.ToListAsync(cancellationToken);
+        // Note: roleManager.Roles requires IQueryableRoleStore which we don't implement for Cosmos DB
+        // Query the DbContext directly instead
+        var roles = await dbContext.Roles.ToListAsync(cancellationToken);
 
         var responses = new List<RoleResponse>();
         foreach (var role in roles)

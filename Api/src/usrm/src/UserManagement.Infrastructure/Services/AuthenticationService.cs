@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.IdentityModel.Tokens.Jwt;
 using UserManagement.Core.Common;
@@ -19,7 +20,8 @@ internal sealed class AuthenticationService(
     IUserSettingsService userSettingsService,
     ILogger<AuthenticationService> logger,
     UserManager<ApplicationUser> userManager,
-    SignInManager<ApplicationUser> signInManager) : IAuthenticationService
+    SignInManager<ApplicationUser> signInManager,
+    ApplicationDbContext dbContext) : IAuthenticationService
 {
     public async Task<Result<AuthenticationResponse>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
     {
@@ -315,6 +317,30 @@ internal sealed class AuthenticationService(
         logger.LogInformation("All devices revoked successfully for user: {UserId}", userId.Value);
 
         return Result.Success();
+    }
+
+    public async Task<Result<bool>> HasUsersAsync(CancellationToken cancellationToken = default)
+    {
+        logger.LogInformation("Checking if any users exist");
+
+        try
+        {
+            // Simple query - for a new system with no/few users this is efficient
+            var users = await dbContext.Users
+                .Select(u => u.Id)
+                .ToListAsync(cancellationToken);
+
+            var hasUsers = users.Count > 0;
+
+            return Result.Success(hasUsers);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error checking if users exist");
+
+            // If query fails, assume no users (allows registration)
+            return Result.Success(false);
+        }
     }
 
 #pragma warning disable CA1859 // Use concrete types when possible for improved performance
