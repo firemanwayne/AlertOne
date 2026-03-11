@@ -355,8 +355,7 @@ module alertManagementFunction 'modules/function-app.bicep' = if (deployAlertMan
     #disable-next-line BCP318
     appServicePlanId: alertMgmtAppServicePlan.outputs.id
     #disable-next-line BCP318
-    storageAccountConnectionString: alertMgmtStorageAccount.outputs.connectionString
-    storageAccountName: alertMgmtStorageAccount.?outputs.name
+    storageAccountConnectionString: alertMgmtStorageAccount.outputs.connectionString    
     deploymentsContainerUrl: alertMgmtStorageAccount.?outputs.deploymentsContainerUrl
     appInsightsConnectionString: alertMgmtAppInsights.?outputs.connectionString
     appInsightsResourceId: alertMgmtAppInsights.?outputs.id
@@ -428,9 +427,7 @@ module userManagementFunction 'modules/function-app.bicep' = if (deployUserManag
     #disable-next-line BCP318
     appServicePlanId: userMgmtAppServicePlan.outputs.id
     #disable-next-line BCP318
-    storageAccountConnectionString: userMgmtStorageAccount.outputs.connectionString
-    #disable-next-line BCP318
-    storageAccountName: userMgmtStorageAccount.outputs.name
+    storageAccountConnectionString: userMgmtStorageAccount.outputs.connectionString    
     #disable-next-line BCP318
     deploymentsContainerUrl: userMgmtStorageAccount.outputs.deploymentsContainerUrl
     #disable-next-line BCP318
