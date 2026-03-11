@@ -24,7 +24,7 @@ param deployKeyVault = true
 param deployCommunicationServices = true
 param deployNotificationHub = true
 
-param appConfigurationSku = 'free'
+param appConfigurationSku = 'developer'
 
 // SKU parameters
 param appServicePlanSku = 'FC1'

@@ -65,9 +65,10 @@ param deployNotificationHub bool = true
 @description('App Configuration SKU')
 @allowed([
   'free'
+  'developer'
   'standard'
 ])
-param appConfigurationSku string = 'free'
+param appConfigurationSku string = 'developer'
 
 @description('App Service Plan SKU for Function Apps')
 @allowed([

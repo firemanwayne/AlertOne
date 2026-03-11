@@ -10,9 +10,10 @@ param tags object = {}
 @description('SKU for the App Configuration store')
 @allowed([
   'free'
+  'developer'
   'standard'
 ])
-param sku string = 'free'
+param sku string = 'developer'
 
 @description('Enable purge protection')
 param enablePurgeProtection bool = false
@@ -22,7 +23,7 @@ param enablePurgeProtection bool = false
 @maxValue(7)
 param softDeleteRetentionInDays int = 7
 
-resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2023-03-01' = {
+resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2025-06-01-preview' = {
   name: name
   location: location
   tags: tags
