@@ -69,8 +69,8 @@ public static class MauiProgram
         // Domain services
         builder
             .Services
-            .AddUserManagement()
-            .AddAlertManagement();
+            .AddUserManagement(builder.Configuration)
+            .AddAlertManagement(builder.Configuration);
 
 #if DEBUG
         builder

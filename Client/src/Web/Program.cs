@@ -57,8 +57,8 @@ builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredServ
 
 builder
     .Services
-    .AddUserManagement()
-    .AddAlertManagement();
+    .AddUserManagement(builder.Configuration)
+    .AddAlertManagement(builder.Configuration);
 
 await builder
     .Build()

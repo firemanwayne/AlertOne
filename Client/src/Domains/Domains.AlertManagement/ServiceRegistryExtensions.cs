@@ -1,5 +1,9 @@
 using AlertOne.Shared.Handlers;
 
+using Domains.AlertManagement.Options;
+
+using Microsoft.Extensions.Configuration;
+
 namespace Domains.AlertManagement;
 
 /// <summary>
@@ -10,20 +14,40 @@ public static class ServiceRegistryExtensions
     /// <summary>
     /// Adds AlertManagement domain services to the dependency injection container
     /// </summary>
-    public static IServiceCollection AddAlertManagement(this IServiceCollection services)
+    public static IServiceCollection AddAlertManagement(this IServiceCollection services, IConfiguration configuration)
     {
+        // Bind options from configuration
+        services.Configure<AlertManagementOptions>(configuration.GetSection("Api:AlertManagement"));
+
         services.AddScoped<IAlertService, AlertService>();
         services.AddScoped<IAlertTypeService, AlertTypeService>();
         services.AddScoped<IAlertStatusLevelService, AlertStatusLevelService>();
 
         services
-            .AddHttpClient<IAlertManagementApiClient, AlertManagementApiClient>(client =>
+            .AddHttpClient<IAlertManagementApiClient, AlertManagementApiClient>((sp, client) =>
             {
+                var options = configuration
+                .GetSection("Api:AlertManagement")
+                .Get<AlertManagementOptions>();
+
+                var baseUri = options?.BaseUri;
+
 #if DEBUG
-                client.BaseAddress = new Uri("http://localhost:7071");
-#else
-                client.BaseAddress = new Uri("https://alertone-alrtmg-dev-eastus2-001-a4bzesh5c0cwbjbw.eastus2-01.azurewebsites.net");
+                // Use local development URL if not configured
+                baseUri ??= "http://localhost:7071";
 #endif
+
+                if (!string.IsNullOrWhiteSpace(baseUri))
+                {
+                    client.BaseAddress = new Uri(baseUri);
+                }
+
+                // Add function key header if configured
+                if (!string.IsNullOrWhiteSpace(options?.FunctionKey))
+                {
+                    client.DefaultRequestHeaders.Add("x-functions-key", options.FunctionKey);
+                }
+
                 client.Timeout = TimeSpan.FromSeconds(60);
             })
             .AddHttpMessageHandler<JwtAuthHeaderHandler>();

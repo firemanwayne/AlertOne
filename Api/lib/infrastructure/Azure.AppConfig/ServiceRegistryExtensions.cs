@@ -26,10 +26,7 @@ public static class ServiceRegistryExtensions
             options
             .Connect(new Uri(appConfigBaseUri), credential)
             // Load all keys with no label
-            .Select(keyFilter: "AzureNotificationHubs:*", labelFilter: LabelFilter.Null)
-            .Select(keyFilter: "AzureCommunications:*", labelFilter: LabelFilter.Null)
-            .Select(keyFilter: "CosmosDb:*", labelFilter: LabelFilter.Null)
-            .Select(keyFilter: "JwtSettings:*", labelFilter: LabelFilter.Null)
+            .Select(KeyFilter.Any, LabelFilter.Null)
             // Configure Key Vault reference resolution
             .ConfigureKeyVault(kv =>
             {
@@ -37,11 +34,10 @@ public static class ServiceRegistryExtensions
             })
             .ConfigureRefresh(refreshOptions =>
             {
+                // Use a sentinel key to trigger refresh of all values
                 refreshOptions
-                .Register("AzureNotificationHubs", refreshAll: true)
-                .Register("AzureCommunications", refreshAll: true)
-                .Register("CosmosDb", refreshAll: true)
-                .Register("JwtSettings", refreshAll: true);
+                .Register("Sentinel", refreshAll: true)
+                .SetRefreshInterval(TimeSpan.FromMinutes(5));
             });
         });
 

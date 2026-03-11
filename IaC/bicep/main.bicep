@@ -564,6 +564,64 @@ resource userMgmtAppConfigAccess 'Microsoft.Authorization/roleAssignments@2022-0
 }
 
 // ============================================================================
+// App Configuration Values for API Endpoints
+// ============================================================================
+
+module alertManagementApiUrl 'modules/app-configuration-value.bicep' = if (deployAppConfiguration && deployAlertManagementFunction) {
+  name: 'appConfig-alertMgmtUrl-${uniqueString(resourceGroup().id)}'
+  params: {
+    appConfigurationName: appConfigurationName
+    key: 'Api:AlertManagement:BaseUri'
+    #disable-next-line BCP318
+    value: 'https://${alertManagementFunction.outputs.defaultHostName}'
+  }
+  dependsOn: [
+    appConfiguration
+    alertManagementFunction
+  ]
+}
+
+module userManagementApiUrl 'modules/app-configuration-value.bicep' = if (deployAppConfiguration && deployUserManagementFunction) {
+  name: 'appConfig-userMgmtUrl-${uniqueString(resourceGroup().id)}'
+  params: {
+    appConfigurationName: appConfigurationName
+    key: 'Api:UserManagement:BaseUri'
+    #disable-next-line BCP318
+    value: 'https://${userManagementFunction.outputs.defaultHostName}'
+  }
+  dependsOn: [
+    appConfiguration
+    userManagementFunction
+  ]
+}
+
+// Function keys - these are placeholders that should be updated after deployment
+// with the actual function host keys from Azure Portal or via CLI
+module alertManagementApiFunctionKey 'modules/app-configuration-value.bicep' = if (deployAppConfiguration && deployAlertManagementFunction) {
+  name: 'appConfig-alertMgmtKey-${uniqueString(resourceGroup().id)}'
+  params: {
+    appConfigurationName: appConfigurationName
+    key: 'Api:AlertManagement:FunctionKey'
+    value: '' // Set via Azure Portal or CLI after deployment
+  }
+  dependsOn: [
+    appConfiguration
+  ]
+}
+
+module userManagementApiFunctionKey 'modules/app-configuration-value.bicep' = if (deployAppConfiguration && deployUserManagementFunction) {
+  name: 'appConfig-userMgmtKey-${uniqueString(resourceGroup().id)}'
+  params: {
+    appConfigurationName: appConfigurationName
+    key: 'Api:UserManagement:FunctionKey'
+    value: '' // Set via Azure Portal or CLI after deployment
+  }
+  dependsOn: [
+    appConfiguration
+  ]
+}
+
+// ============================================================================
 // Cosmos DB Role Assignments for Function Apps
 // ============================================================================
 
