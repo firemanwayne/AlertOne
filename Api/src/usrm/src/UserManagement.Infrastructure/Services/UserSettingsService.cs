@@ -19,8 +19,7 @@ internal sealed class UserSettingsService(ILogger<UserSettingsService> logger, A
     {
         logger.LogInformation("Getting settings for user: {UserId}", userId.Value);
 
-        var settings = await context.UserSettings
-            .FirstOrDefaultAsync(s => s.UserId == userId.Value, cancellationToken);
+        var settings = await FindOrProvisionAsync(userId, cancellationToken);
 
         if (settings is null)
         {
@@ -38,8 +37,7 @@ internal sealed class UserSettingsService(ILogger<UserSettingsService> logger, A
     {
         logger.LogInformation("Updating settings for user: {UserId}", userId.Value);
 
-        var settings = await context.UserSettings
-            .FirstOrDefaultAsync(s => s.UserId == userId.Value, cancellationToken);
+        var settings = await FindOrProvisionAsync(userId, cancellationToken);
 
         if (settings is null)
         {
@@ -96,6 +94,36 @@ internal sealed class UserSettingsService(ILogger<UserSettingsService> logger, A
         logger.LogInformation("Default settings created for user: {UserId}", userId.Value);
 
         return Result.Success(MapToResponse(settings));
+    }
+
+    /// <summary>
+    /// Finds a user's settings. When the user exists but has none (for example an account created before default settings were provisioned), creates the defaults.
+    /// </summary>
+    private async Task<UserSettings?> FindOrProvisionAsync(UserId userId, CancellationToken cancellationToken)
+    {
+        var settings = await context.UserSettings
+            .FirstOrDefaultAsync(s => s.UserId == userId.Value, cancellationToken);
+
+        if (settings is not null)
+        {
+            return settings;
+        }
+
+        // Note: AnyAsync generates malformed Cosmos SQL, so read the user instead
+        var user = await context.Users
+            .FirstOrDefaultAsync(u => u.Id == userId.Value, cancellationToken);
+
+        if (user is null)
+        {
+            return null;
+        }
+
+        logger.LogInformation("Provisioning default settings for existing user: {UserId}", userId.Value);
+
+        await CreateDefaultAsync(userId, cancellationToken);
+
+        return await context.UserSettings
+            .FirstOrDefaultAsync(s => s.UserId == userId.Value, cancellationToken);
     }
 
     /// <summary>
