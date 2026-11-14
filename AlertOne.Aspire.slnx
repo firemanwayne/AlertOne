@@ -97,13 +97,20 @@
     <File Path="IaC/bicep/parameters/staging.bicepparam" />
     <File Path="IaC/bicep/parameters/usermanagement.parameters.json" />
   </Folder>
-  <Folder Name="/Solution Items/">
+  <Folder Name="/.github/">
+  </Folder>
+  <Folder Name="/.github/workflows/">
     <File Path=".github/workflows/azure-static-web-apps-icy-stone-0670cb10f.yml" />
     <File Path=".github/workflows/deploy-alertmanagement-api.yml" />
     <File Path=".github/workflows/deploy-android-playstore.yml" />
     <File Path=".github/workflows/deploy-infrastructure.yml" />
     <File Path=".github/workflows/deploy-usermanagement-api.yml" />
     <File Path=".github/workflows/deploy-windows-blob.yml" />
+  </Folder>
+  <Folder Name="/.github/whatsnew/">
+    <File Path=".github/whatsnew/whatsnew-en-US" />
+  </Folder>
+  <Folder Name="/Solution Items/">
     <File Path="Directory.Packages.props" />
     <File Path="docs/SOC2-COMPLIANCE-ASSESSMENT.md" />
     <File Path="global.json" />

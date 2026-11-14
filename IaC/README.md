@@ -24,7 +24,11 @@ az deployment group create `
   --parameters IaC/bicep/parameters/dev.bicepparam
 ```
 
-Use `staging.bicepparam` or `prod.bicepparam` for the other environments. Preview a change first with `az deployment group what-if` and the same arguments.
+The pipeline (`.github/workflows/deploy-infrastructure.yml`) deploys **dev** with `parameters/dev.parameters.json` and **staging/prod** with `staging.bicepparam` / `prod.bicepparam`, so use the matching file for the environment. Preview a change first with `az deployment group what-if` and the same arguments.
+
+After `main.bicep` finishes, the pipeline also runs `az` steps that read the deployment outputs and write the Function URLs and keys to App Configuration and Key Vault, and set the Cosmos settings in App Configuration. Those steps are not part of the Bicep.
+
+> **Note:** a push to `master` deploys **dev** automatically (no path filter). Docs-only pushes trigger it too.
 
 ## Notes
 
