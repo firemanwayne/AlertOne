@@ -148,6 +148,8 @@ AlertOne runs **entirely on your machine**. No Azure subscription or Azure login
 
 How the pieces are wired together is described in [`Aspire/README.md`](./Aspire/README.md).
 
+**API documentation:** each API serves Swagger UI, for example `http://localhost:7071/api/swagger/ui` (User Management) and `http://localhost:7072/api/swagger/ui` (Alert Management). The raw OpenAPI documents are at `/api/swagger.json`.
+
 ### Local behavior to expect
 
 - **Email and push notifications are logged, not sent.** With no Azure Communication Services or Notification Hubs connection strings configured, the APIs use logging-only stand-ins. Invitation activation codes appear in the `api` log.
@@ -282,7 +284,9 @@ REST Client test files are available in:
 
 ### GitHub Actions Workflows
 
-- `deploy-infrastructure.yml` - Deploy the Bicep infrastructure (runs on every push to `master`)
+> **GitHub Actions is currently disabled for this repository** (Settings > Actions > General), so none of the workflows below run, including on pushes to `master`. Re-enable it there, or with `gh api -X PUT repos/firemanwayne/AlertOne/actions/permissions -F enabled=true`, before relying on them.
+
+- `deploy-infrastructure.yml` - Deploy the Bicep infrastructure (when enabled, runs on every push to `master`)
 - `deploy-alertmanagement-api.yml` - Deploy Alert Management API (manual)
 - `deploy-usermanagement-api.yml` - Deploy User Management API (manual)
 - `deploy-android-playstore.yml` - Deploy Android app to Play Store (version tags)

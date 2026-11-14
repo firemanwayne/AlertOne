@@ -28,7 +28,7 @@ The pipeline (`.github/workflows/deploy-infrastructure.yml`) deploys **dev** wit
 
 After `main.bicep` finishes, the pipeline also runs `az` steps that read the deployment outputs and write the Function URLs and keys to App Configuration and Key Vault, and set the Cosmos settings in App Configuration. Those steps are not part of the Bicep.
 
-> **Note:** a push to `master` deploys **dev** automatically (no path filter). Docs-only pushes trigger it too.
+> **Note:** when GitHub Actions is enabled, a push to `master` deploys **dev** automatically (no path filter), docs-only pushes included. Actions is currently **disabled** for this repository, so nothing deploys on push until it is re-enabled.
 
 ## Notes
 
