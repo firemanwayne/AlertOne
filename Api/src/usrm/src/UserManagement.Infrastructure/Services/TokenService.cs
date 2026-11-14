@@ -14,8 +14,12 @@ namespace UserManagement.Infrastructure.Services;
 /// </summary>
 internal sealed class TokenService(IOptions<JwtSettings> jwtSettings) : ITokenService
 {
+    /// <summary>
+    /// The bound JWT settings.
+    /// </summary>
     private readonly JwtSettings _jwtSettings = jwtSettings.Value;
 
+    /// <inheritdoc />
     public string GenerateAccessToken(Guid userId, string email, string firstName, string lastName, IList<string> roles)
     {
         var claims = new List<Claim>
@@ -43,6 +47,7 @@ internal sealed class TokenService(IOptions<JwtSettings> jwtSettings) : ITokenSe
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
+    /// <inheritdoc />
     public string GenerateRefreshToken()
     {
         var randomNumber = new byte[32];
@@ -51,6 +56,7 @@ internal sealed class TokenService(IOptions<JwtSettings> jwtSettings) : ITokenSe
         return Convert.ToBase64String(randomNumber);
     }
 
+    /// <inheritdoc />
     public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
     {
         var tokenValidationParameters = new TokenValidationParameters

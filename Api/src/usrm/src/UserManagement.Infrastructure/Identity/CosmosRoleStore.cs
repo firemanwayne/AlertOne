@@ -9,13 +9,20 @@ namespace UserManagement.Infrastructure.Identity;
 /// </summary>
 internal sealed class CosmosRoleStore : IRoleStore<IdentityRole<Guid>>
 {
+    /// <summary>
+    /// The Cosmos DB context holding the roles.
+    /// </summary>
     private readonly ApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes the store with the database context.
+    /// </summary>
     public CosmosRoleStore(ApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <inheritdoc />
     public async Task<IdentityResult> CreateAsync(IdentityRole<Guid> role, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -31,6 +38,7 @@ internal sealed class CosmosRoleStore : IRoleStore<IdentityRole<Guid>>
         return IdentityResult.Success;
     }
 
+    /// <inheritdoc />
     public async Task<IdentityResult> DeleteAsync(IdentityRole<Guid> role, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -46,6 +54,7 @@ internal sealed class CosmosRoleStore : IRoleStore<IdentityRole<Guid>>
         return IdentityResult.Success;
     }
 
+    /// <inheritdoc />
     public async Task<IdentityRole<Guid>?> FindByIdAsync(string roleId, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -58,6 +67,7 @@ internal sealed class CosmosRoleStore : IRoleStore<IdentityRole<Guid>>
         return await _context.Roles.FindAsync([id], cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<IdentityRole<Guid>?> FindByNameAsync(string normalizedRoleName, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -65,6 +75,7 @@ internal sealed class CosmosRoleStore : IRoleStore<IdentityRole<Guid>>
         return await _context.Roles.FirstOrDefaultAsync(r => r.NormalizedName == normalizedRoleName, cancellationToken);
     }
 
+    /// <inheritdoc />
     public Task<string?> GetNormalizedRoleNameAsync(IdentityRole<Guid> role, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -72,6 +83,7 @@ internal sealed class CosmosRoleStore : IRoleStore<IdentityRole<Guid>>
         return Task.FromResult(role.NormalizedName);
     }
 
+    /// <inheritdoc />
     public Task<string> GetRoleIdAsync(IdentityRole<Guid> role, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -79,6 +91,7 @@ internal sealed class CosmosRoleStore : IRoleStore<IdentityRole<Guid>>
         return Task.FromResult(role.Id.ToString());
     }
 
+    /// <inheritdoc />
     public Task<string?> GetRoleNameAsync(IdentityRole<Guid> role, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -86,6 +99,7 @@ internal sealed class CosmosRoleStore : IRoleStore<IdentityRole<Guid>>
         return Task.FromResult(role.Name);
     }
 
+    /// <inheritdoc />
     public Task SetNormalizedRoleNameAsync(IdentityRole<Guid> role, string? normalizedName, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -95,6 +109,7 @@ internal sealed class CosmosRoleStore : IRoleStore<IdentityRole<Guid>>
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public Task SetRoleNameAsync(IdentityRole<Guid> role, string? roleName, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -104,6 +119,7 @@ internal sealed class CosmosRoleStore : IRoleStore<IdentityRole<Guid>>
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public async Task<IdentityResult> UpdateAsync(IdentityRole<Guid> role, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -119,6 +135,7 @@ internal sealed class CosmosRoleStore : IRoleStore<IdentityRole<Guid>>
         return IdentityResult.Success;
     }
 
+    /// <inheritdoc />
     public void Dispose()
     {
         // DbContext is managed by DI, no disposal needed here

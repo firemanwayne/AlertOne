@@ -57,6 +57,9 @@ public class AlertOneFirebaseMessagingService : FirebaseMessagingService
         }
     }
 
+    /// <summary>
+    /// Returns whether the app is currently in the foreground.
+    /// </summary>
     private static bool IsAppInForeground()
     {
         var context = global::Android.App.Application.Context;
@@ -87,6 +90,9 @@ public class AlertOneFirebaseMessagingService : FirebaseMessagingService
         return false;
     }
 
+    /// <summary>
+    /// Shows a local notification for a received push message.
+    /// </summary>
     private void ShowNotification(string title, string body, IDictionary<string, string>? data)
     {
         var channelId = "alertone_notifications";

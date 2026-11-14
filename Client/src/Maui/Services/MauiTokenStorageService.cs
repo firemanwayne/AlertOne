@@ -8,10 +8,20 @@ namespace AlertOne.Maui.Services;
 /// </summary>
 internal sealed class MauiTokenStorageService : ITokenStorageService
 {
+    /// <summary>
+    /// Secure storage key of the access token.
+    /// </summary>
     private const string AccessTokenKey = "access_token";
+    /// <summary>
+    /// Secure storage key of the refresh token.
+    /// </summary>
     private const string RefreshTokenKey = "refresh_token";
+    /// <summary>
+    /// Secure storage key of the token expiry time.
+    /// </summary>
     private const string ExpiryTimeKey = "token_expiry";
 
+    /// <inheritdoc />
     public async Task<string?> GetAccessTokenAsync()
     {
         try
@@ -24,6 +34,7 @@ internal sealed class MauiTokenStorageService : ITokenStorageService
         }
     }
 
+    /// <inheritdoc />
     public async Task<string?> GetRefreshTokenAsync()
     {
         try
@@ -36,6 +47,7 @@ internal sealed class MauiTokenStorageService : ITokenStorageService
         }
     }
 
+    /// <inheritdoc />
     public async Task<DateTime?> GetExpiryTimeAsync()
     {
         try
@@ -63,6 +75,7 @@ internal sealed class MauiTokenStorageService : ITokenStorageService
         }
     }
 
+    /// <inheritdoc />
     public async Task SaveTokensAsync(string accessToken, string refreshToken, DateTime expiresAt)
     {
         try
@@ -77,6 +90,7 @@ internal sealed class MauiTokenStorageService : ITokenStorageService
         }
     }
 
+    /// <inheritdoc />
     public async Task ClearTokensAsync()
     {
         try
@@ -92,6 +106,7 @@ internal sealed class MauiTokenStorageService : ITokenStorageService
         }
     }
 
+    /// <inheritdoc />
     public async Task<bool> IsTokenExpiredAsync()
     {
         var expiryTime = await GetExpiryTimeAsync();

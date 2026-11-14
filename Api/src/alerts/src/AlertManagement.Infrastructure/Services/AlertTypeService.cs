@@ -14,6 +14,7 @@ namespace AlertManagement.Infrastructure.Services;
 /// </summary>
 internal sealed class AlertTypeService(AlertDbContext context, ILogger<AlertTypeService> logger) : IAlertTypeService
 {
+    /// <inheritdoc />
     public async Task<Result<IEnumerable<AlertTypeResponse>>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting all alert types");
@@ -36,6 +37,7 @@ internal sealed class AlertTypeService(AlertDbContext context, ILogger<AlertType
         return Result.Success(responses);
     }
 
+    /// <inheritdoc />
     public async Task<Result<AlertTypeResponse>> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting alert type {AlertTypeId}", id);
@@ -55,6 +57,7 @@ internal sealed class AlertTypeService(AlertDbContext context, ILogger<AlertType
         return Result.Success(MapToResponse(alertType, alertTypeUsers));
     }
 
+    /// <inheritdoc />
     public async Task<Result<AlertTypeResponse>> CreateAsync(CreateAlertTypeRequest request, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Creating alert type: {AlertTypeName}", request.Name);
@@ -109,6 +112,7 @@ internal sealed class AlertTypeService(AlertDbContext context, ILogger<AlertType
         return Result.Success(MapToResponse(alertType, createdAlertTypeUsers));
     }
 
+    /// <inheritdoc />
     public async Task<Result<AlertTypeResponse>> UpdateAsync(string id, UpdateAlertTypeRequest request, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Updating alert type {AlertTypeId}", id);
@@ -175,6 +179,7 @@ internal sealed class AlertTypeService(AlertDbContext context, ILogger<AlertType
         return Result.Success(MapToResponse(alertType, updatedAlertTypeUsers));
     }
 
+    /// <inheritdoc />
     public async Task<Result> DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Deleting alert type {AlertTypeId}", id);
@@ -218,6 +223,9 @@ internal sealed class AlertTypeService(AlertDbContext context, ILogger<AlertType
         return Result.Success();
     }
 
+    /// <summary>
+    /// Maps an alert type and its notified users to its response.
+    /// </summary>
     private static AlertTypeResponse MapToResponse(AlertType alertType, IEnumerable<AlertTypeUser> alertTypeUsers)
     {
         var notifyUserIds = alertTypeUsers

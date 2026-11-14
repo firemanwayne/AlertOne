@@ -19,6 +19,7 @@ internal sealed class RoleService(
     ApplicationDbContext dbContext,
     ILogger<RoleService> logger) : IRoleService
 {
+    /// <inheritdoc />
     public async Task<Result<RoleResponse>> CreateRoleAsync(CreateRoleRequest request, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Creating role: {RoleName}", request.Name);
@@ -68,6 +69,7 @@ internal sealed class RoleService(
         return Result.Success(response);
     }
 
+    /// <inheritdoc />
     public async Task<Result<RoleResponse>> GetRoleByIdAsync(Guid roleId, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting role by ID: {RoleId}", roleId);
@@ -94,6 +96,7 @@ internal sealed class RoleService(
         return Result.Success(response);
     }
 
+    /// <inheritdoc />
     public async Task<Result<RoleResponse>> GetRoleByNameAsync(string roleName, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting role by name: {RoleName}", roleName);
@@ -120,6 +123,7 @@ internal sealed class RoleService(
         return Result.Success(response);
     }
 
+    /// <inheritdoc />
     public async Task<Result<IEnumerable<RoleResponse>>> GetAllRolesAsync(CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting all roles");
@@ -145,6 +149,7 @@ internal sealed class RoleService(
         return Result.Success<IEnumerable<RoleResponse>>(responses);
     }
 
+    /// <inheritdoc />
     public async Task<Result<RoleResponse>> UpdateRoleAsync(Guid roleId, UpdateRoleRequest request, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Updating role: {RoleId}", roleId);
@@ -201,6 +206,7 @@ internal sealed class RoleService(
         return Result.Success(response);
     }
 
+    /// <inheritdoc />
     public async Task<Result> DeleteRoleAsync(Guid roleId, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Deleting role: {RoleId}", roleId);
@@ -244,6 +250,7 @@ internal sealed class RoleService(
         return Result.Success();
     }
 
+    /// <inheritdoc />
     public async Task<Result> AssignRoleToUserAsync(UserId userId, string roleName, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Assigning role {RoleName} to user {UserId}", roleName, userId.Value);
@@ -288,6 +295,7 @@ internal sealed class RoleService(
         return Result.Success();
     }
 
+    /// <inheritdoc />
     public async Task<Result> RemoveRoleFromUserAsync(UserId userId, string roleName, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Removing role {RoleName} from user {UserId}", roleName, userId.Value);
@@ -332,6 +340,7 @@ internal sealed class RoleService(
         return Result.Success();
     }
 
+    /// <inheritdoc />
     public async Task<Result<IEnumerable<UserResponse>>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting users in role: {RoleName}", roleName);
@@ -372,6 +381,9 @@ internal sealed class RoleService(
         return Result.Success<IEnumerable<UserResponse>>(responses);
     }
 
+    /// <summary>
+    /// Counts the users that have a role.
+    /// </summary>
     private async Task<int> GetUserCountInRoleAsync(string roleName)
     {
         var users = await userManager.GetUsersInRoleAsync(roleName);

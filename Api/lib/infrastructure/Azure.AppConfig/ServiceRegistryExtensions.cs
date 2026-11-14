@@ -5,8 +5,14 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Azure.AppConfig;
 
+/// <summary>
+/// Extension methods for loading configuration from Azure App Configuration.
+/// </summary>
 public static class ServiceRegistryExtensions
 {
+    /// <summary>
+    /// Adds Azure App Configuration as a configuration source when <c>AppConfig:BaseUri</c> is set; otherwise returns the builder unchanged (local development).
+    /// </summary>
     public static IConfigurationBuilder AddAppConfiguration(this IConfigurationBuilder builder)
     {
         // Build preliminary config to get App Configuration endpoint

@@ -6,6 +6,7 @@ namespace Domains.UserManagement.Services;
 internal sealed class RoleManagementService(
     IUserManagementApiClient apiClient) : IRoleManagementService
 {
+    /// <inheritdoc />
     public async Task<IApiResult<IEnumerable<RoleResponse>>> GetAllRolesAsync(CancellationToken cancellationToken = default)
     {
         return await apiClient.GetAsync<IEnumerable<RoleResponse>>(
@@ -13,6 +14,7 @@ internal sealed class RoleManagementService(
             cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<IApiResult> AssignRoleAsync(AssignRoleRequest request, CancellationToken cancellationToken = default)
     {
         var result = await apiClient.PostAsync<AssignRoleRequest, object>(
@@ -28,6 +30,7 @@ internal sealed class RoleManagementService(
         return Result.Failure(result.Error!);
     }
 
+    /// <inheritdoc />
     public async Task<IApiResult> RemoveRoleAsync(AssignRoleRequest request, CancellationToken cancellationToken = default)
     {
         var result = await apiClient.PostAsync<AssignRoleRequest, object>(
@@ -43,9 +46,11 @@ internal sealed class RoleManagementService(
         return Result.Failure(result.Error!);
     }
 
+    /// <inheritdoc />
     public Task<IApiResult<RoleResponse>> CreateRoleAsync(CreateRoleRequest request, CancellationToken cancellationToken = default)
         => apiClient.PostAsync<CreateRoleRequest, RoleResponse>("/api/roles", request, cancellationToken);
 
+    /// <inheritdoc />
     public Task<IApiResult> DeleteRoleAsync(Guid roleId, CancellationToken cancellationToken = default)
         => apiClient.DeleteAsync($"/api/roles/{roleId}", cancellationToken);
 }

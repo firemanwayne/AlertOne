@@ -1,5 +1,8 @@
 namespace AlertManagement.Core.DTOs.Responses;
 
+/// <summary>
+/// An alert status level.
+/// </summary>
 public sealed record AlertStatusLevelResponse(
     string Id,
     string Name,

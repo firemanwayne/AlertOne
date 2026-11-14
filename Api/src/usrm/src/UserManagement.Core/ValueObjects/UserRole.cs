@@ -5,6 +5,12 @@ namespace UserManagement.Core.ValueObjects;
 /// </summary>
 public enum UserRole
 {
+    /// <summary>
+    /// A standard user.
+    /// </summary>
     User,
+    /// <summary>
+    /// An administrator.
+    /// </summary>
     Admin
 }

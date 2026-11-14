@@ -11,6 +11,9 @@ namespace AlertOne.Core.Attributes;
 /// validation.</remarks>
 public sealed class NotEmptyGuidAttribute : ValidationAttribute
 {
+    /// <summary>
+    /// Fails validation when the value is <see cref="Guid.Empty"/>.
+    /// </summary>
     protected override ValidationResult? IsValid(object? value, ValidationContext context)
     {
         if (value is Guid g && g == Guid.Empty)

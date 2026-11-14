@@ -1,11 +1,11 @@
 using AlertOne.Core.DTOs.Requests;
 using AlertOne.Core.Interfaces;
-using AlertOne.Shared.States;
+using AlertOne.Shared.Blazor.States;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Net.Http.Headers;
 
-namespace AlertOne.Shared.Handlers;
+namespace AlertOne.Shared.Blazor.Handlers;
 
 /// <summary>
 /// HTTP message handler that adds JWT authentication headers to requests
@@ -15,6 +15,9 @@ public sealed class JwtAuthHeaderHandler(
     IServiceProvider services,
     AppState appState) : DelegatingHandler
 {
+    /// <summary>
+    /// Adds the bearer token to outgoing requests, first refreshing it when it is expired or about to expire; auth endpoints are sent unchanged.
+    /// </summary>
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         // Skip auth for login/register/refresh endpoints

@@ -19,15 +19,42 @@ public sealed class DeviceFunctions(
     ILogger<DeviceFunctions> logger)
 {
     // Route constants
+    /// <summary>
+    /// Route for listing the caller's active devices.
+    /// </summary>
     public const string GET_DEVICES = "devices";
+    /// <summary>
+    /// Route for getting a device by identifier.
+    /// </summary>
     public const string GET_DEVICE = "devices/{id:guid}";
+    /// <summary>
+    /// Route for revoking a device.
+    /// </summary>
     public const string DELETE_DEVICE = GET_DEVICE;
+    /// <summary>
+    /// Route for revoking all of the caller's devices.
+    /// </summary>
     public const string DELETE_ALL_DEVICES = "devices/all";
+    /// <summary>
+    /// Route for revoking all devices except one.
+    /// </summary>
     public const string DELETE_ALL_EXCEPT = "devices/all-except/{id:guid}";
+    /// <summary>
+    /// Route for trusting a device.
+    /// </summary>
     public const string TRUST_DEVICE = "devices/{id:guid}/trust";
+    /// <summary>
+    /// Route for renaming a device.
+    /// </summary>
     public const string UPDATE_DEVICE_NAME = "devices/{id:guid}/name";
+    /// <summary>
+    /// Route for getting a user's devices that can receive notifications.
+    /// </summary>
     public const string GET_DEVICES_FOR_NOTIFICATIONS = "users/{userId:guid}/devices/notifications";
 
+    /// <summary>
+    /// Returns the caller's active devices.
+    /// </summary>
     [Function("GetActiveDevices")]
     public async Task<HttpResponseData> GetActiveDevices([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = GET_DEVICES)] HttpRequestData req, FunctionContext context)
     {
@@ -54,6 +81,9 @@ public sealed class DeviceFunctions(
         return response;
     }
 
+    /// <summary>
+    /// Returns a device by identifier.
+    /// </summary>
     [Function("GetDevice")]
     public async Task<HttpResponseData> GetDevice([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = GET_DEVICE)] HttpRequestData req, string id, FunctionContext context)
     {
@@ -89,6 +119,9 @@ public sealed class DeviceFunctions(
         return response;
     }
 
+    /// <summary>
+    /// Revokes a device.
+    /// </summary>
     [Function("RevokeDevice")]
     public async Task<HttpResponseData> RevokeDevice([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = DELETE_DEVICE)] HttpRequestData req, string id, FunctionContext context)
     {
@@ -120,6 +153,9 @@ public sealed class DeviceFunctions(
         return req.CreateResponse(HttpStatusCode.NoContent);
     }
 
+    /// <summary>
+    /// Revokes all of the caller's devices.
+    /// </summary>
     [Function("RevokeAllDevices")]
     public async Task<HttpResponseData> RevokeAllDevices([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = DELETE_ALL_DEVICES)] HttpRequestData req, FunctionContext context)
     {
@@ -142,6 +178,9 @@ public sealed class DeviceFunctions(
         return req.CreateResponse(HttpStatusCode.NoContent);
     }
 
+    /// <summary>
+    /// Revokes all of the caller's devices except the given one.
+    /// </summary>
     [Function("RevokeAllDevicesExcept")]
     public async Task<HttpResponseData> RevokeAllDevicesExcept([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = DELETE_ALL_EXCEPT)] HttpRequestData req, string id, FunctionContext context)
     {
@@ -169,6 +208,9 @@ public sealed class DeviceFunctions(
         return req.CreateResponse(HttpStatusCode.NoContent);
     }
 
+    /// <summary>
+    /// Marks a device as trusted.
+    /// </summary>
     [Function("TrustDevice")]
     public async Task<HttpResponseData> TrustDevice([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = TRUST_DEVICE)] HttpRequestData req, string id, FunctionContext context)
     {
@@ -200,6 +242,9 @@ public sealed class DeviceFunctions(
         return req.CreateResponse(HttpStatusCode.NoContent);
     }
 
+    /// <summary>
+    /// Renames a device.
+    /// </summary>
     [Function("UpdateDeviceName")]
     public async Task<HttpResponseData> UpdateDeviceName([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = UPDATE_DEVICE_NAME)] HttpRequestData req, string id, FunctionContext context)
     {
@@ -243,6 +288,9 @@ public sealed class DeviceFunctions(
         return response;
     }
 
+    /// <summary>
+    /// Returns the devices of a user that can receive push notifications.
+    /// </summary>
     [Function("GetDevicesForNotifications")]
     public async Task<HttpResponseData> GetDevicesForNotifications([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = GET_DEVICES_FOR_NOTIFICATIONS)] HttpRequestData req, string userId, FunctionContext context)
     {
@@ -268,6 +316,9 @@ public sealed class DeviceFunctions(
         return response;
     }
 
+    /// <summary>
+    /// Gets the authenticated user's identifier from the name identifier claim, or null when it is missing or invalid.
+    /// </summary>
     private static UserId? GetUserIdFromContext(FunctionContext context)
     {
         var claimsPrincipal = context.Features.Get<ClaimsPrincipal>();

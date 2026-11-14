@@ -15,8 +15,14 @@ internal sealed class CosmosUserStore :
     IUserSecurityStampStore<ApplicationUser>,
     IUserLockoutStore<ApplicationUser>
 {
+    /// <summary>
+    /// The Cosmos DB context holding the users.
+    /// </summary>
     private readonly ApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes the store with the database context.
+    /// </summary>
     public CosmosUserStore(ApplicationDbContext context)
     {
         _context = context;
@@ -24,6 +30,7 @@ internal sealed class CosmosUserStore :
 
     // IUserStore<ApplicationUser>
 
+    /// <inheritdoc />
     public async Task<IdentityResult> CreateAsync(ApplicationUser user, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -40,6 +47,7 @@ internal sealed class CosmosUserStore :
         return IdentityResult.Success;
     }
 
+    /// <inheritdoc />
     public async Task<IdentityResult> DeleteAsync(ApplicationUser user, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -55,6 +63,7 @@ internal sealed class CosmosUserStore :
         return IdentityResult.Success;
     }
 
+    /// <inheritdoc />
     public async Task<ApplicationUser?> FindByIdAsync(string userId, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -67,6 +76,7 @@ internal sealed class CosmosUserStore :
         return await _context.Users.FindAsync([id], cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<ApplicationUser?> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -74,6 +84,7 @@ internal sealed class CosmosUserStore :
         return await _context.Users.FirstOrDefaultAsync(u => u.NormalizedUserName == normalizedUserName, cancellationToken);
     }
 
+    /// <inheritdoc />
     public Task<string?> GetNormalizedUserNameAsync(ApplicationUser user, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -81,6 +92,7 @@ internal sealed class CosmosUserStore :
         return Task.FromResult(user.NormalizedUserName);
     }
 
+    /// <inheritdoc />
     public Task<string> GetUserIdAsync(ApplicationUser user, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -88,6 +100,7 @@ internal sealed class CosmosUserStore :
         return Task.FromResult(user.Id.ToString());
     }
 
+    /// <inheritdoc />
     public Task<string?> GetUserNameAsync(ApplicationUser user, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -95,6 +108,7 @@ internal sealed class CosmosUserStore :
         return Task.FromResult(user.UserName);
     }
 
+    /// <inheritdoc />
     public Task SetNormalizedUserNameAsync(ApplicationUser user, string? normalizedName, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -104,6 +118,7 @@ internal sealed class CosmosUserStore :
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public Task SetUserNameAsync(ApplicationUser user, string? userName, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -113,6 +128,7 @@ internal sealed class CosmosUserStore :
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public async Task<IdentityResult> UpdateAsync(ApplicationUser user, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -131,6 +147,7 @@ internal sealed class CosmosUserStore :
 
     // IUserPasswordStore<ApplicationUser>
 
+    /// <inheritdoc />
     public Task<string?> GetPasswordHashAsync(ApplicationUser user, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -138,6 +155,7 @@ internal sealed class CosmosUserStore :
         return Task.FromResult(user.PasswordHash);
     }
 
+    /// <inheritdoc />
     public Task<bool> HasPasswordAsync(ApplicationUser user, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -145,6 +163,7 @@ internal sealed class CosmosUserStore :
         return Task.FromResult(!string.IsNullOrEmpty(user.PasswordHash));
     }
 
+    /// <inheritdoc />
     public Task SetPasswordHashAsync(ApplicationUser user, string? passwordHash, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -156,6 +175,7 @@ internal sealed class CosmosUserStore :
 
     // IUserEmailStore<ApplicationUser>
 
+    /// <inheritdoc />
     public async Task<ApplicationUser?> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -163,6 +183,7 @@ internal sealed class CosmosUserStore :
         return await _context.Users.FirstOrDefaultAsync(u => u.NormalizedEmail == normalizedEmail, cancellationToken);
     }
 
+    /// <inheritdoc />
     public Task<string?> GetEmailAsync(ApplicationUser user, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -170,6 +191,7 @@ internal sealed class CosmosUserStore :
         return Task.FromResult(user.Email);
     }
 
+    /// <inheritdoc />
     public Task<bool> GetEmailConfirmedAsync(ApplicationUser user, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -177,6 +199,7 @@ internal sealed class CosmosUserStore :
         return Task.FromResult(user.EmailConfirmed);
     }
 
+    /// <inheritdoc />
     public Task<string?> GetNormalizedEmailAsync(ApplicationUser user, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -184,6 +207,7 @@ internal sealed class CosmosUserStore :
         return Task.FromResult(user.NormalizedEmail);
     }
 
+    /// <inheritdoc />
     public Task SetEmailAsync(ApplicationUser user, string? email, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -193,6 +217,7 @@ internal sealed class CosmosUserStore :
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public Task SetEmailConfirmedAsync(ApplicationUser user, bool confirmed, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -202,6 +227,7 @@ internal sealed class CosmosUserStore :
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public Task SetNormalizedEmailAsync(ApplicationUser user, string? normalizedEmail, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -213,6 +239,7 @@ internal sealed class CosmosUserStore :
 
     // IUserRoleStore<ApplicationUser>
 
+    /// <inheritdoc />
     public async Task AddToRoleAsync(ApplicationUser user, string roleName, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -234,6 +261,7 @@ internal sealed class CosmosUserStore :
         await _context.SaveChangesAsync(cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<IList<string>> GetRolesAsync(ApplicationUser user, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -251,6 +279,7 @@ internal sealed class CosmosUserStore :
         return roles;
     }
 
+    /// <inheritdoc />
     public async Task<IList<ApplicationUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -274,6 +303,7 @@ internal sealed class CosmosUserStore :
         return users;
     }
 
+    /// <inheritdoc />
     public async Task<bool> IsInRoleAsync(ApplicationUser user, string roleName, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -295,6 +325,7 @@ internal sealed class CosmosUserStore :
         return userRole != default;
     }
 
+    /// <inheritdoc />
     public async Task RemoveFromRoleAsync(ApplicationUser user, string roleName, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -317,6 +348,7 @@ internal sealed class CosmosUserStore :
 
     // IUserSecurityStampStore<ApplicationUser>
 
+    /// <inheritdoc />
     public Task<string?> GetSecurityStampAsync(ApplicationUser user, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -324,6 +356,7 @@ internal sealed class CosmosUserStore :
         return Task.FromResult(user.SecurityStamp);
     }
 
+    /// <inheritdoc />
     public Task SetSecurityStampAsync(ApplicationUser user, string stamp, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -335,6 +368,7 @@ internal sealed class CosmosUserStore :
 
     // IUserLockoutStore<ApplicationUser>
 
+    /// <inheritdoc />
     public Task<int> GetAccessFailedCountAsync(ApplicationUser user, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -342,6 +376,7 @@ internal sealed class CosmosUserStore :
         return Task.FromResult(user.AccessFailedCount);
     }
 
+    /// <inheritdoc />
     public Task<bool> GetLockoutEnabledAsync(ApplicationUser user, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -349,6 +384,7 @@ internal sealed class CosmosUserStore :
         return Task.FromResult(user.LockoutEnabled);
     }
 
+    /// <inheritdoc />
     public Task<DateTimeOffset?> GetLockoutEndDateAsync(ApplicationUser user, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -356,6 +392,7 @@ internal sealed class CosmosUserStore :
         return Task.FromResult(user.LockoutEnd);
     }
 
+    /// <inheritdoc />
     public Task<int> IncrementAccessFailedCountAsync(ApplicationUser user, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -365,6 +402,7 @@ internal sealed class CosmosUserStore :
         return Task.FromResult(user.AccessFailedCount);
     }
 
+    /// <inheritdoc />
     public Task ResetAccessFailedCountAsync(ApplicationUser user, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -374,6 +412,7 @@ internal sealed class CosmosUserStore :
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public Task SetLockoutEnabledAsync(ApplicationUser user, bool enabled, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -383,6 +422,7 @@ internal sealed class CosmosUserStore :
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public Task SetLockoutEndDateAsync(ApplicationUser user, DateTimeOffset? lockoutEnd, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -392,6 +432,7 @@ internal sealed class CosmosUserStore :
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public void Dispose()
     {
         // DbContext is managed by DI, no disposal needed here

@@ -3,6 +3,7 @@ using Azure.Communications.Options;
 using Azure.Communications.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Azure.Communications;
 
@@ -21,7 +22,17 @@ public static class ServiceRegistryExtensions
     {
         services.Configure<AzureCommunicationsOptions>(configuration.GetSection(AzureCommunicationsOptions.SectionName));
 
-        services.AddSingleton<IEmailService, AzureEmailService>();
+        var connectionString = configuration[$"{AzureCommunicationsOptions.SectionName}:{nameof(AzureCommunicationsOptions.ConnectionString)}"];
+
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            // No Communication Services configured (local development): log instead of sending
+            services.TryAddSingleton<IEmailService, LoggingEmailService>();
+
+            return services;
+        }
+
+        services.TryAddSingleton<IEmailService, AzureEmailService>();
 
         return services;
     }

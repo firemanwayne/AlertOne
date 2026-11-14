@@ -11,9 +11,18 @@ namespace Azure.NotificationHubs.Services;
 /// </summary>
 internal sealed class PushNotificationService : IPushNotificationService
 {
+    /// <summary>
+    /// The Azure Notification Hubs client used to send and register.
+    /// </summary>
     private readonly NotificationHubClient _hubClient;
+    /// <summary>
+    /// The logger.
+    /// </summary>
     private readonly ILogger<PushNotificationService> _logger;
 
+    /// <summary>
+    /// Initializes the service and creates the Notification Hubs client from configuration.
+    /// </summary>
     public PushNotificationService(IOptions<AzureNotificationHubsOptions> options, ILogger<PushNotificationService> logger)
     {
         _logger = logger;
@@ -38,8 +47,12 @@ internal sealed class PushNotificationService : IPushNotificationService
         _hubClient = NotificationHubClient.CreateClientFromConnectionString(connectionString, hubName);
     }
 
+    /// <summary>
+    /// Gets the logger (alias of the backing field).
+    /// </summary>
     private ILogger<PushNotificationService> logger => _logger;
 
+    /// <inheritdoc />
     public async Task<string> RegisterDeviceAsync(string deviceToken, string platform, string userId, IEnumerable<string>? tags = null, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Registering device for user {UserId} on platform {Platform}", userId, platform);
@@ -72,6 +85,7 @@ internal sealed class PushNotificationService : IPushNotificationService
         }
     }
 
+    /// <inheritdoc />
     public async Task UnregisterDeviceAsync(string registrationId, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Unregistering device with ID {RegistrationId}", registrationId);
@@ -89,6 +103,7 @@ internal sealed class PushNotificationService : IPushNotificationService
         }
     }
 
+    /// <inheritdoc />
     public async Task<bool> SendToUserAsync(string userId, string title, string body, IDictionary<string, string>? data = null, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Sending push notification to user {UserId}", userId);
@@ -98,6 +113,7 @@ internal sealed class PushNotificationService : IPushNotificationService
         return await SendNotificationAsync(tagExpression, title, body, data, cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<bool> SendToTagsAsync(IEnumerable<string> tags, string title, string body, IDictionary<string, string>? data = null, CancellationToken cancellationToken = default)
     {
         var tagList = tags.ToList();
@@ -109,6 +125,7 @@ internal sealed class PushNotificationService : IPushNotificationService
         return await SendNotificationAsync(tagExpression, title, body, data, cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<bool> SendToAllAsync(string title, string body, IDictionary<string, string>? data = null, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Sending push notification to all devices");
@@ -149,6 +166,9 @@ internal sealed class PushNotificationService : IPushNotificationService
         return success;
     }
 
+    /// <summary>
+    /// Sends a notification to the devices matching a tag expression using the FCM and APNs payloads.
+    /// </summary>
     private async Task<bool> SendNotificationAsync(string tagExpression, string title, string body, IDictionary<string, string>? data, CancellationToken cancellationToken)
     {
         var success = false;
@@ -182,6 +202,9 @@ internal sealed class PushNotificationService : IPushNotificationService
         return success;
     }
 
+    /// <summary>
+    /// Creates a Firebase Cloud Messaging (Android) registration for a device token.
+    /// </summary>
     private async Task<RegistrationDescription> CreateFcmRegistrationAsync(string deviceToken, List<string> tags, CancellationToken cancellationToken)
     {
         var registration = new FcmV1RegistrationDescription(deviceToken)
@@ -192,6 +215,9 @@ internal sealed class PushNotificationService : IPushNotificationService
         return await _hubClient.CreateRegistrationAsync(registration, cancellationToken);
     }
 
+    /// <summary>
+    /// Creates an Apple Push Notification service (iOS) registration for a device token.
+    /// </summary>
     private async Task<RegistrationDescription> CreateApnsRegistrationAsync(string deviceToken, List<string> tags, CancellationToken cancellationToken)
     {
         var registration = new AppleRegistrationDescription(deviceToken)
@@ -202,6 +228,9 @@ internal sealed class PushNotificationService : IPushNotificationService
         return await _hubClient.CreateRegistrationAsync(registration, cancellationToken);
     }
 
+    /// <summary>
+    /// Creates a Windows Notification Service registration for a channel URI.
+    /// </summary>
     private async Task<RegistrationDescription> CreateWnsRegistrationAsync(string channelUri, List<string> tags, CancellationToken cancellationToken)
     {
         var registration = new WindowsRegistrationDescription(channelUri)
@@ -212,6 +241,9 @@ internal sealed class PushNotificationService : IPushNotificationService
         return await _hubClient.CreateRegistrationAsync(registration, cancellationToken);
     }
 
+    /// <summary>
+    /// Builds the FCM JSON payload for a notification.
+    /// </summary>
     private static string BuildFcmPayload(string title, string body, IDictionary<string, string>? data)
     {
         var dataJson = data is not null && data.Count > 0
@@ -230,6 +262,9 @@ internal sealed class PushNotificationService : IPushNotificationService
             """;
     }
 
+    /// <summary>
+    /// Builds the APNs JSON payload for a notification.
+    /// </summary>
     private static string BuildApnsPayload(string title, string body, IDictionary<string, string>? data)
     {
         var dataJson = data is not null && data.Count > 0

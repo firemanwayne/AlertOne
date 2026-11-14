@@ -1,5 +1,6 @@
 using Azure.AppConfig;
 using Azure.Communications;
+using Azure.CosmosDb;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,6 +25,11 @@ builder
     .Services
     .AddInfrastructure(builder.Configuration);
 
+// Create the Cosmos DB database/containers if missing, then seed default roles (runs in the background, retries until Cosmos DB is ready)
+builder
+    .Services
+    .AddCosmosInitialization<ApplicationDbContext>(SeedRolesAsync);
+
 builder
     .Services
     .AddAzureCommunications(builder.Configuration);
@@ -34,44 +40,17 @@ builder
 
 var host = builder.Build();
 
-// Ensure Cosmos DB database and containers exist
-await EnsureDatabaseCreatedAsync(host);
-
 await host
     .RunAsync();
 
-static async Task EnsureDatabaseCreatedAsync(IHost host)
+static async Task SeedRolesAsync(IServiceProvider rootServices, CancellationToken cancellationToken)
 {
-    using var scope = host.Services.CreateScope();
+    using var scope = rootServices.CreateScope();
 
     var services = scope.ServiceProvider;
 
     var logger = services.GetRequiredService<ILogger<Program>>();
 
-    try
-    {
-        logger.LogInformation("Ensuring Cosmos DB database and containers exist...");
-
-        var context = services.GetRequiredService<ApplicationDbContext>();
-
-        await context
-            .Database
-            .EnsureCreatedAsync();
-
-        logger.LogInformation("Cosmos DB database and containers verified successfully");
-
-        // Seed default roles
-        await SeedRolesAsync(services, logger);
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "An error occurred while ensuring Cosmos DB database exists");
-        throw;
-    }
-}
-
-static async Task SeedRolesAsync(IServiceProvider services, ILogger logger)
-{
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
 
     string[] defaultRoles = ["Admin", "Manager", "User"];

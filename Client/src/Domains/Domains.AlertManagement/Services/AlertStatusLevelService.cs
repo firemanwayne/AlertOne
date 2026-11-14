@@ -1,19 +1,27 @@
 namespace Domains.AlertManagement.Services;
 
+/// <summary>
+/// Alert status level operations implemented by calling the Alert Management API.
+/// </summary>
 internal sealed class AlertStatusLevelService(IAlertManagementApiClient apiClient) : IAlertStatusLevelService
 {
+    /// <inheritdoc />
     public Task<IApiResult<IEnumerable<AlertStatusLevelResponse>>> GetAllAsync(CancellationToken cancellationToken = default)
         => apiClient.GetAsync<IEnumerable<AlertStatusLevelResponse>>("/api/alert-status-levels", cancellationToken);
 
+    /// <inheritdoc />
     public Task<IApiResult<AlertStatusLevelResponse>> GetByIdAsync(string id, CancellationToken cancellationToken = default)
         => apiClient.GetAsync<AlertStatusLevelResponse>($"/api/alert-status-levels/{id}", cancellationToken);
 
+    /// <inheritdoc />
     public Task<IApiResult<AlertStatusLevelResponse>> CreateAsync(CreateAlertStatusLevelRequest request, CancellationToken cancellationToken = default)
         => apiClient.PostAsync<CreateAlertStatusLevelRequest, AlertStatusLevelResponse>("/api/alert-status-levels", request, cancellationToken);
 
+    /// <inheritdoc />
     public Task<IApiResult<AlertStatusLevelResponse>> UpdateAsync(string id, UpdateAlertStatusLevelRequest request, CancellationToken cancellationToken = default)
         => apiClient.PutAsync<UpdateAlertStatusLevelRequest, AlertStatusLevelResponse>($"/api/alert-status-levels/{id}", request, cancellationToken);
 
+    /// <inheritdoc />
     public Task<IApiResult> DeleteAsync(string id, CancellationToken cancellationToken = default)
         => apiClient.DeleteAsync($"/api/alert-status-levels/{id}", cancellationToken);
 }

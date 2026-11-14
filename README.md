@@ -30,7 +30,7 @@ AlertOne/
 ├── Client/                       # Frontend applications
 │   └── src/
 │       ├── Core/                 # Shared DTOs, interfaces, models
-│       ├── Shared/               # Shared Blazor components, layouts
+│       ├── Blazor/               # Shared Blazor components, layouts (AlertOne.Shared.Blazor)
 │       ├── Domains/              # Feature modules
 │       │   ├── Domains.AlertManagement/   # Alert management UI
 │       │   └── Domains.UserManagement/    # User management UI

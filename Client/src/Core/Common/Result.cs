@@ -20,6 +20,9 @@ public class Result : IApiResult
     /// </summary>
     public Error? Error { get; }
 
+    /// <summary>
+    /// Initializes a result and enforces that failures carry an error.
+    /// </summary>
     protected Result(bool isSuccess, Error? error)
     {
         if (isSuccess && error is not null)
@@ -52,6 +55,9 @@ public class Result : IApiResult
 /// </summary>
 public sealed class Result<T> : Result, IApiResult<T>
 {
+    /// <summary>
+    /// The result value (only set when successful).
+    /// </summary>
     private readonly T? _value;
 
     /// <summary>
@@ -70,6 +76,9 @@ public sealed class Result<T> : Result, IApiResult<T>
         }
     }
 
+    /// <summary>
+    /// Initializes a typed result.
+    /// </summary>
     private Result(bool isSuccess, T? value, Error? error) : base(isSuccess, error)
     {
         _value = value;

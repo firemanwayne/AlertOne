@@ -13,10 +13,22 @@ namespace UserManagement.Client.Functions;
 public sealed class HealthFunctions(ApplicationDbContext dbContext, ILogger<HealthFunctions> logger)
 {
     // Route constants
+    /// <summary>
+    /// Route for the simple ping check.
+    /// </summary>
     public const string PING = "health/ping";
+    /// <summary>
+    /// Route for the readiness check (verifies dependencies).
+    /// </summary>
     public const string READY = "health/ready";
+    /// <summary>
+    /// Route for the liveness check.
+    /// </summary>
     public const string LIVE = "health/live";
 
+    /// <summary>
+    /// Returns a simple response showing the host is running.
+    /// </summary>
     [Function("HealthPing")]
     public HttpResponseData Ping([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = PING)] HttpRequestData req)
     {
@@ -29,6 +41,9 @@ public sealed class HealthFunctions(ApplicationDbContext dbContext, ILogger<Heal
         return response;
     }
 
+    /// <summary>
+    /// Liveness probe: returns healthy while the host process is running.
+    /// </summary>
     [Function("HealthLive")]
     public HttpResponseData Live([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = LIVE)] HttpRequestData req)
     {
@@ -41,6 +56,9 @@ public sealed class HealthFunctions(ApplicationDbContext dbContext, ILogger<Heal
         return response;
     }
 
+    /// <summary>
+    /// Readiness probe: verifies dependencies such as the database.
+    /// </summary>
     [Function("HealthReady")]
     public async Task<HttpResponseData> Ready([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = READY)] HttpRequestData req, FunctionContext context)
     {
@@ -72,6 +90,9 @@ public sealed class HealthFunctions(ApplicationDbContext dbContext, ILogger<Heal
         return response;
     }
 
+    /// <summary>
+    /// Checks that the database can be reached.
+    /// </summary>
     private async Task<HealthCheck> CheckDatabaseAsync(CancellationToken cancellationToken)
     {
         var check = new HealthCheck { Name = "Database" };
@@ -102,18 +123,45 @@ public sealed class HealthFunctions(ApplicationDbContext dbContext, ILogger<Heal
         return check;
     }
 
+    /// <summary>
+    /// Aggregated readiness result returned by the ready endpoint.
+    /// </summary>
     private sealed class HealthCheckResult
     {
+        /// <summary>
+        /// Gets or sets the service name.
+        /// </summary>
         public required string Service { get; set; }
+        /// <summary>
+        /// Gets or sets the overall status.
+        /// </summary>
         public HealthStatus Status { get; set; }
+        /// <summary>
+        /// Gets or sets the UTC time the check ran.
+        /// </summary>
         public DateTime Timestamp { get; set; }
+        /// <summary>
+        /// Gets or sets the individual dependency checks.
+        /// </summary>
         public List<HealthCheck> Checks { get; set; } = [];
     }
 
+    /// <summary>
+    /// Result of one dependency check.
+    /// </summary>
     private sealed class HealthCheck
     {
+        /// <summary>
+        /// Gets or sets the check name.
+        /// </summary>
         public required string Name { get; set; }
+        /// <summary>
+        /// Gets or sets the check status.
+        /// </summary>
         public HealthStatus Status { get; set; }
+        /// <summary>
+        /// Gets or sets an optional description or failure detail.
+        /// </summary>
         public string? Description { get; set; }
     }
 }

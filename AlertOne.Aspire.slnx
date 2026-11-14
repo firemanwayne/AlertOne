@@ -1,23 +1,32 @@
 <Solution>
-  <Folder Name="/Api/" />
+  <Folder Name="/Api/">
+    <File Path="Api/README.md" />
+  </Folder>
   <Folder Name="/Api/src/" />
   <Folder Name="/Api/src/alerts/">
+    <File Path="Api/src/alerts/README.md" />
     <Project Path="Api/src/alerts/src/AlertManagement.Client/AlertManagement.Client.csproj" />
     <Project Path="Api/src/alerts/src/AlertManagement.Core/AlertManagement.Core.csproj" />
     <Project Path="Api/src/alerts/src/AlertManagement.Infrastructure/AlertManagement.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/Api/src/usrm/">
+    <File Path="Api/src/usrm/README.md" />
     <Project Path="Api/src/usrm/src/UserManagement.Client/UserManagement.Client.csproj" />
     <Project Path="Api/src/usrm/src/UserManagement.Core/UserManagement.Core.csproj" />
     <Project Path="Api/src/usrm/src/UserManagement.Infrastructure/UserManagement.Infrastructure.csproj" />
   </Folder>
-  <Folder Name="/Api/lib/" />
+  <Folder Name="/Api/lib/">
+    <File Path="Api/lib/README.md" />
+  </Folder>
   <Folder Name="/Api/lib/core/">
+    <File Path="Api/lib/core/README.md" />
     <Project Path="Api/lib/core/AlertOne.Api.Core/AlertOne.Api.Core.csproj" Id="ce4c1aa6-4124-4479-9330-89da063035b0" />
   </Folder>
   <Folder Name="/Api/lib/infrastructure/">
+    <File Path="Api/lib/infrastructure/README.md" />
     <Project Path="Api/lib/infrastructure/Azure.AppConfig/Azure.AppConfig.csproj" Id="086ca554-7da8-4d43-813d-029b939a89c6" />
     <Project Path="Api/lib/infrastructure/Azure.Communications/Azure.Communications.csproj" Id="0920877d-7cc3-4200-bb61-7fe0820d044d" />
+    <Project Path="Api/lib/infrastructure/Azure.CosmosDb/Azure.CosmosDb.csproj" />
     <Project Path="Api/lib/infrastructure/Azure.NotificationHubs/Azure.NotificationHubs.csproj" />
   </Folder>
   <Folder Name="/Api/tests/" />
@@ -31,16 +40,24 @@
     <Project Path="Api/src/usrm/tests/UnitTests/UserManagement.Infrastructure.Tests/UserManagement.Infrastructure.Tests.csproj" />
   </Folder>
   <Folder Name="/Aspire/">
+    <File Path="Aspire/README.md" />
     <Project Path="Aspire/AlertOne.AppHost/AlertOne.AppHost.csproj" />
     <Project Path="Aspire/AlertOne.ServiceDefaults.Maui/AlertOne.ServiceDefaults.Maui.csproj" />
     <Project Path="Aspire/AlertOne.ServiceDefaults/AlertOne.ServiceDefaults.csproj" />
   </Folder>
   <Folder Name="/Client/" />
-  <Folder Name="/Client/src/" />
+  <Folder Name="/Client/src/">
+    <File Path="Client/src/README.md" />
+  </Folder>
+  <Folder Name="/Client/src/Blazor/">
+    <File Path="Client/src/Blazor/README.md" />
+    <Project Path="Client/src/Blazor/AlertOne.Shared.Blazor.csproj" />
+  </Folder>
   <Folder Name="/Client/src/Core/">
     <Project Path="Client/src/Core/AlertOne.Core.csproj" />
   </Folder>
   <Folder Name="/Client/src/Domains/">
+    <File Path="Client/src/Domains/README.md" />
     <Project Path="Client/src/Domains/Domains.AlertManagement/Domains.AlertManagement.csproj" />
     <Project Path="Client/src/Domains/Domains.UserManagement/Domains.UserManagement.csproj" />
   </Folder>
@@ -49,13 +66,12 @@
       <Deploy />
     </Project>
   </Folder>
-  <Folder Name="/Client/src/Shared/">
-    <Project Path="Client/src/Shared/AlertOne.Shared.csproj" />
-  </Folder>
   <Folder Name="/Client/src/Web/">
     <Project Path="Client/src/Web/AlertOne.Web.csproj" />
   </Folder>
-  <Folder Name="/IaC/" />
+  <Folder Name="/IaC/">
+    <File Path="IaC/README.md" />
+  </Folder>
   <Folder Name="/IaC/bicep/">
     <File Path="IaC/bicep/main.bicep" />
   </Folder>

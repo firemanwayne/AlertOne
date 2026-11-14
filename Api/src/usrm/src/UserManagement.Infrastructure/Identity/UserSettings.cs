@@ -7,6 +7,9 @@ namespace UserManagement.Infrastructure.Identity;
 /// </summary>
 public sealed class UserSettings : DataModelBase
 {
+    /// <summary>
+    /// Gets or sets the identifier of the user the settings belong to.
+    /// </summary>
     public Guid UserId { get; set; }
 
     /// <summary>
@@ -25,5 +28,8 @@ public sealed class UserSettings : DataModelBase
     public string? PreferredTheme { get; set; }
 
     // Navigation property
+    /// <summary>
+    /// Gets or sets the owning user (navigation property).
+    /// </summary>
     public ApplicationUser User { get; set; } = null!;
 }

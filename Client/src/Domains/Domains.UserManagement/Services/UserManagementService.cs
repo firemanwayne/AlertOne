@@ -6,6 +6,7 @@ namespace Domains.UserManagement.Services;
 internal sealed class UserManagementService(
     IUserManagementApiClient apiClient) : IUserManagementService
 {
+    /// <inheritdoc />
     public async Task<IApiResult<IEnumerable<UserResponse>>> GetAllUsersAsync(CancellationToken cancellationToken = default)
     {
         return await apiClient
@@ -14,6 +15,7 @@ internal sealed class UserManagementService(
             cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<IApiResult<UserResponse>> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         return await apiClient
@@ -22,6 +24,7 @@ internal sealed class UserManagementService(
             cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<IApiResult<UserResponse>> UpdateUserAsync(Guid userId, UpdateUserRequest request, CancellationToken cancellationToken = default)
     {
         return await apiClient
@@ -31,6 +34,7 @@ internal sealed class UserManagementService(
             cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<IApiResult> DeleteUserAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         return await apiClient

@@ -22,6 +22,9 @@ public sealed class Error
     /// </summary>
     public ErrorType Type { get; }
 
+    /// <summary>
+    /// Initializes an error.
+    /// </summary>
     private Error(string code, string message, ErrorType type)
     {
         Code = code;

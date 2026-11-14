@@ -8,9 +8,18 @@ namespace AlertOne.Web.Services;
 /// </summary>
 internal sealed class WebAppVersionService : IAppVersionService
 {
+    /// <summary>
+    /// The application version.
+    /// </summary>
     private readonly string _version;
+    /// <summary>
+    /// The build identifier.
+    /// </summary>
     private readonly string _build;
 
+    /// <summary>
+    /// Reads the version and build from the assembly's informational version (set by CI/CD), falling back to the assembly version.
+    /// </summary>
     public WebAppVersionService()
     {
         var assembly = Assembly.GetExecutingAssembly();
@@ -46,9 +55,12 @@ internal sealed class WebAppVersionService : IAppVersionService
         }
     }
 
+    /// <inheritdoc />
     public string Version => _version;
 
+    /// <inheritdoc />
     public string Build => _build;
 
+    /// <inheritdoc />
     public string FullVersion => $"{Version} ({Build})";
 }

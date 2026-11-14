@@ -8,6 +8,9 @@ namespace UserManagement.Core.Entities;
 /// </summary>
 public sealed class UserInvitation
 {
+    /// <summary>
+    /// Initializes an invitation (use the factory methods to create one).
+    /// </summary>
     private UserInvitation(string id, Email email, string activationCode, string invitedBy, DateTime invitedAt, DateTime expiresAt)
     {
         Id = id;
@@ -20,13 +23,37 @@ public sealed class UserInvitation
         AcceptedAt = null;
     }
 
+    /// <summary>
+    /// Gets the invitation identifier.
+    /// </summary>
     public string Id { get; private set; }
+    /// <summary>
+    /// Gets the invited email address.
+    /// </summary>
     public Email Email { get; private set; }
+    /// <summary>
+    /// Gets the activation code sent to the invitee.
+    /// </summary>
     public string ActivationCode { get; private set; }
+    /// <summary>
+    /// Gets who sent the invitation.
+    /// </summary>
     public string InvitedBy { get; private set; }
+    /// <summary>
+    /// Gets the UTC time the invitation was sent.
+    /// </summary>
     public DateTime InvitedAt { get; private set; }
+    /// <summary>
+    /// Gets the UTC time the invitation expires.
+    /// </summary>
     public DateTime ExpiresAt { get; private set; }
+    /// <summary>
+    /// Gets the UTC time the invitation was accepted.
+    /// </summary>
     public DateTime? AcceptedAt { get; private set; }
+    /// <summary>
+    /// Gets a value indicating whether the invitation has been accepted.
+    /// </summary>
     public bool IsAccepted { get; private set; }
 
     /// <summary>

@@ -5,11 +5,17 @@ namespace UserManagement.Core.ValueObjects;
 /// </summary>
 public sealed class UserId : IEquatable<UserId>
 {
+    /// <summary>
+    /// Initializes a user identifier from a GUID.
+    /// </summary>
     private UserId(Guid value)
     {
         Value = value;
     }
 
+    /// <summary>
+    /// Gets the underlying GUID.
+    /// </summary>
     public Guid Value { get; }
 
     /// <summary>
@@ -48,6 +54,9 @@ public sealed class UserId : IEquatable<UserId>
         return From(guid);
     }
 
+    /// <summary>
+    /// Determines whether two user identifiers are equal.
+    /// </summary>
     public bool Equals(UserId? other)
     {
         if (other is null)
@@ -63,10 +72,25 @@ public sealed class UserId : IEquatable<UserId>
         return Value.Equals(other.Value);
     }
 
+    /// <summary>
+    /// Determines whether an object is an equal user identifier.
+    /// </summary>
     public override bool Equals(object? obj) => obj is UserId userId && Equals(userId);
+    /// <summary>
+    /// Gets the hash code of the identifier.
+    /// </summary>
     public override int GetHashCode() => Value.GetHashCode();
+    /// <summary>
+    /// Returns the identifier as a string.
+    /// </summary>
     public override string ToString() => Value.ToString();
 
+    /// <summary>
+    /// Determines whether two user identifiers are equal.
+    /// </summary>
     public static bool operator ==(UserId? left, UserId? right) => Equals(left, right);
+    /// <summary>
+    /// Determines whether two user identifiers are different.
+    /// </summary>
     public static bool operator !=(UserId? left, UserId? right) => !Equals(left, right);
 }

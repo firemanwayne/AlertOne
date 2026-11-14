@@ -12,6 +12,7 @@ internal sealed class AuthenticationService(
     IPushNotificationRegistrationService? pushNotificationService = null,
     ILogger<AuthenticationService>? logger = null) : IAuthenticationService
 {
+    /// <inheritdoc />
     public async Task<IApiResult<AuthenticationResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
     {
         var result = await apiClient.PostAsync<LoginRequest, AuthenticationResponse>(
@@ -48,6 +49,9 @@ internal sealed class AuthenticationService(
         return result;
     }
 
+    /// <summary>
+    /// Registers the device for push notifications after a successful login.
+    /// </summary>
     private async Task RegisterForPushNotificationsAsync(string userId, IEnumerable<string> roles, CancellationToken cancellationToken)
     {
         if (pushNotificationService is null || !pushNotificationService.IsSupported)
@@ -77,6 +81,7 @@ internal sealed class AuthenticationService(
         }
     }
 
+    /// <inheritdoc />
     public async Task<IApiResult<AuthenticationResponse>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
     {
         var result = await apiClient.PostAsync<RegisterRequest, AuthenticationResponse>(
@@ -114,6 +119,7 @@ internal sealed class AuthenticationService(
         return result;
     }
 
+    /// <inheritdoc />
     public async Task<IApiResult<AuthenticationResponse>> RefreshTokenAsync(RefreshTokenRequest request, CancellationToken cancellationToken = default)
     {
         var result = await apiClient
@@ -139,6 +145,7 @@ internal sealed class AuthenticationService(
         return result;
     }
 
+    /// <inheritdoc />
     public async Task<IApiResult> LogoutAsync(CancellationToken cancellationToken = default)
     {
         // Unregister from push notifications
@@ -153,6 +160,7 @@ internal sealed class AuthenticationService(
         return Result.Success();
     }
 
+    /// <inheritdoc />
     public async Task<IApiResult<bool>> HasUsersAsync(CancellationToken cancellationToken = default)
     {
         var result = await apiClient.GetAsync<HasUsersResponse>(
@@ -167,8 +175,14 @@ internal sealed class AuthenticationService(
         return Result<bool>.Failure(result.Error ?? Error.Internal("HasUsers.Failed", "Failed to check for users"));
     }
 
+    /// <summary>
+    /// Response of the has-users endpoint.
+    /// </summary>
     private record HasUsersResponse(bool HasUsers);
 
+    /// <summary>
+    /// Unregisters the device from push notifications when logging out.
+    /// </summary>
     private async Task UnregisterFromPushNotificationsAsync(CancellationToken cancellationToken)
     {
         if (pushNotificationService is null || !pushNotificationService.IsRegistered)

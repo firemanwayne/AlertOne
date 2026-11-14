@@ -8,20 +8,32 @@ namespace AlertOne.Web.Services;
 /// </summary>
 internal sealed class BrowserTokenStorageService(ILocalStorageService localStorage) : ITokenStorageService
 {
+    /// <summary>
+    /// Local storage key of the access token.
+    /// </summary>
     private const string AccessTokenKey = "access_token";
+    /// <summary>
+    /// Local storage key of the refresh token.
+    /// </summary>
     private const string RefreshTokenKey = "refresh_token";
+    /// <summary>
+    /// Local storage key of the token expiry time.
+    /// </summary>
     private const string ExpiryTimeKey = "expiry_time";
 
+    /// <inheritdoc />
     public async Task<string?> GetAccessTokenAsync()
     {
         return await localStorage.GetItemAsync<string>(AccessTokenKey);
     }
 
+    /// <inheritdoc />
     public async Task<string?> GetRefreshTokenAsync()
     {
         return await localStorage.GetItemAsync<string>(RefreshTokenKey);
     }
 
+    /// <inheritdoc />
     public async Task SaveTokensAsync(string accessToken, string refreshToken, DateTime expiresAt)
     {
         await localStorage.SetItemAsync(AccessTokenKey, accessToken);
@@ -29,6 +41,7 @@ internal sealed class BrowserTokenStorageService(ILocalStorageService localStora
         await localStorage.SetItemAsync(ExpiryTimeKey, expiresAt.ToString("O"));
     }
 
+    /// <inheritdoc />
     public async Task ClearTokensAsync()
     {
         await localStorage.RemoveItemAsync(AccessTokenKey);
@@ -36,12 +49,14 @@ internal sealed class BrowserTokenStorageService(ILocalStorageService localStora
         await localStorage.RemoveItemAsync(ExpiryTimeKey);
     }
 
+    /// <inheritdoc />
     public async Task<bool> IsTokenExpiredAsync()
     {
         var expiryTime = await GetExpiryTimeAsync();
         return !expiryTime.HasValue || expiryTime.Value <= DateTime.UtcNow;
     }
 
+    /// <inheritdoc />
     public async Task<DateTime?> GetExpiryTimeAsync()
     {
         var expiryString = await localStorage.GetItemAsync<string>(ExpiryTimeKey);

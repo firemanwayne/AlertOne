@@ -14,6 +14,7 @@ namespace UserManagement.Infrastructure.Services;
 /// </summary>
 internal sealed class UserSettingsService(ILogger<UserSettingsService> logger, ApplicationDbContext context) : IUserSettingsService
 {
+    /// <inheritdoc />
     public async Task<Result<UserSettingsResponse>> GetByUserIdAsync(UserId userId, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting settings for user: {UserId}", userId.Value);
@@ -32,6 +33,7 @@ internal sealed class UserSettingsService(ILogger<UserSettingsService> logger, A
         return Result.Success(MapToResponse(settings));
     }
 
+    /// <inheritdoc />
     public async Task<Result<UserSettingsResponse>> UpdateAsync(UserId userId, UpdateUserSettingsRequest request, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Updating settings for user: {UserId}", userId.Value);
@@ -59,6 +61,7 @@ internal sealed class UserSettingsService(ILogger<UserSettingsService> logger, A
         return Result.Success(MapToResponse(settings));
     }
 
+    /// <inheritdoc />
     public async Task<Result<UserSettingsResponse>> CreateDefaultAsync(UserId userId, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Creating default settings for user: {UserId}", userId.Value);
@@ -95,6 +98,9 @@ internal sealed class UserSettingsService(ILogger<UserSettingsService> logger, A
         return Result.Success(MapToResponse(settings));
     }
 
+    /// <summary>
+    /// Maps a settings entity to its response.
+    /// </summary>
     private static UserSettingsResponse MapToResponse(UserSettings settings) =>
         new(settings.Id, settings.UserId, settings.ReceiveEmailNotifications, settings.ReceivePushNotifications, settings.PreferredTheme, settings.CreatedDate, settings.UpdatedDate);
 }

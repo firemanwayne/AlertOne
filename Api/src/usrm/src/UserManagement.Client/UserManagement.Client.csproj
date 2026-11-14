@@ -13,6 +13,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\..\lib\infrastructure\Azure.AppConfig\Azure.AppConfig.csproj" />
 		<ProjectReference Include="..\..\..\..\lib\infrastructure\Azure.Communications\Azure.Communications.csproj" />
+		<ProjectReference Include="..\..\..\..\lib\infrastructure\Azure.CosmosDb\Azure.CosmosDb.csproj" />
 		<ProjectReference Include="..\UserManagement.Infrastructure\UserManagement.Infrastructure.csproj" />
 	</ItemGroup>
 

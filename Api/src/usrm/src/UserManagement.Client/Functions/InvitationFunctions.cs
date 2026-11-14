@@ -17,14 +17,38 @@ public sealed class InvitationFunctions(
     ILogger<InvitationFunctions> logger)
 {
     // Route constants
+    /// <summary>
+    /// Route for listing invitations.
+    /// </summary>
     public const string GET = "invitations";
+    /// <summary>
+    /// Route for creating an invitation.
+    /// </summary>
     public const string POST = GET;
+    /// <summary>
+    /// Route for getting an invitation by identifier.
+    /// </summary>
     public const string GET_BY_ID = "invitations/{id}";
+    /// <summary>
+    /// Route for deleting an invitation.
+    /// </summary>
     public const string DELETE = GET_BY_ID;
+    /// <summary>
+    /// Route for resending an invitation.
+    /// </summary>
     public const string RESEND = "invitations/{id}/resend";
+    /// <summary>
+    /// Route for accepting an invitation.
+    /// </summary>
     public const string ACCEPT = "invitations/accept";
+    /// <summary>
+    /// Route for validating an invitation activation code.
+    /// </summary>
     public const string VALIDATE = "invitations/validate/{code}";
 
+    /// <summary>
+    /// Returns all invitations.
+    /// </summary>
     [Function("GetAllInvitations")]
     public async Task<HttpResponseData> GetAllInvitations([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = GET)] HttpRequestData req, FunctionContext context)
     {
@@ -44,6 +68,9 @@ public sealed class InvitationFunctions(
         return response;
     }
 
+    /// <summary>
+    /// Creates an invitation and emails the activation code.
+    /// </summary>
     [Function("CreateInvitation")]
     public async Task<HttpResponseData> CreateInvitation([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = POST)] HttpRequestData req, FunctionContext context)
     {
@@ -75,6 +102,9 @@ public sealed class InvitationFunctions(
         return response;
     }
 
+    /// <summary>
+    /// Returns an invitation by identifier.
+    /// </summary>
     [Function("GetInvitation")]
     public async Task<HttpResponseData> GetInvitation([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = GET_BY_ID)] HttpRequestData req, string id, FunctionContext context)
     {
@@ -98,6 +128,9 @@ public sealed class InvitationFunctions(
         return response;
     }
 
+    /// <summary>
+    /// Deletes an invitation.
+    /// </summary>
     [Function("DeleteInvitation")]
     public async Task<HttpResponseData> DeleteInvitation([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = DELETE)] HttpRequestData req, string id, FunctionContext context)
     {
@@ -117,6 +150,9 @@ public sealed class InvitationFunctions(
         return req.CreateResponse(HttpStatusCode.NoContent);
     }
 
+    /// <summary>
+    /// Resends an invitation email.
+    /// </summary>
     [Function("ResendInvitation")]
     public async Task<HttpResponseData> ResendInvitation([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = RESEND)] HttpRequestData req, string id, FunctionContext context)
     {
@@ -150,6 +186,9 @@ public sealed class InvitationFunctions(
         return response;
     }
 
+    /// <summary>
+    /// Validates an invitation activation code.
+    /// </summary>
     [Function("ValidateInvitationCode")]
     public async Task<HttpResponseData> ValidateInvitationCode([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = VALIDATE)] HttpRequestData req, string code, FunctionContext context)
     {
@@ -175,6 +214,9 @@ public sealed class InvitationFunctions(
         return response;
     }
 
+    /// <summary>
+    /// Accepts an invitation and creates the user.
+    /// </summary>
     [Function("AcceptInvitation")]
     public async Task<HttpResponseData> AcceptInvitation([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = ACCEPT)] HttpRequestData req, FunctionContext context)
     {

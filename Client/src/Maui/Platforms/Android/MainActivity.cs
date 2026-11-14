@@ -29,8 +29,14 @@ namespace AlertOne.Maui.Platforms.Android;
     DataScheme = "https",
     DataHost = "app.alertone.com",
     AutoVerify = true)]
+/// <summary>
+/// The Android main activity; handles notification permission, Firebase and deep link intents.
+/// </summary>
 public class MainActivity : MauiAppCompatActivity
 {
+    /// <summary>
+    /// Creates the activity, requests notification permission and initializes Firebase.
+    /// </summary>
     protected override void OnCreate(Bundle? savedInstanceState)
     {
         base.OnCreate(savedInstanceState);
@@ -49,6 +55,9 @@ public class MainActivity : MauiAppCompatActivity
         HandleDeepLinkIntent(Intent, isAppRunning: false);
     }
 
+    /// <summary>
+    /// Asks the user for the notification permission when the OS requires it.
+    /// </summary>
     private void RequestNotificationPermission()
     {
         if (OperatingSystem.IsAndroidVersionAtLeast(33))
@@ -60,6 +69,9 @@ public class MainActivity : MauiAppCompatActivity
         }
     }
 
+    /// <summary>
+    /// Initializes Firebase Cloud Messaging for push notifications.
+    /// </summary>
     private void InitializeFirebase()
     {
         try
@@ -83,6 +95,9 @@ public class MainActivity : MauiAppCompatActivity
         }
     }
 
+    /// <summary>
+    /// Handles a new intent, such as a deep link opened while the app is running.
+    /// </summary>
     protected override void OnNewIntent(Intent? intent)
     {
         base.OnNewIntent(intent);

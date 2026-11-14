@@ -1,3 +1,4 @@
+using Microsoft.Azure.Cosmos;
 using Azure.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -66,6 +67,9 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    /// <summary>
+    /// Registers the Cosmos DB context, using the account key (emulator) or managed identity (Azure).
+    /// </summary>
     private static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
     {
         var cosmosEndpoint = configuration.GetValue<string>("CosmosDb:Endpoint");
@@ -80,10 +84,14 @@ public static class ServiceCollectionExtensions
             // Use account key for local development (Cosmos Emulator), managed identity for Azure
             if (!string.IsNullOrWhiteSpace(cosmosAccountKey))
             {
+                // The Cosmos emulator only supports gateway mode and a single endpoint
                 options.UseCosmos(
                     cosmosEndpoint,
                     cosmosAccountKey,
-                    cosmosDatabase);
+                    cosmosDatabase,
+                    cosmosOptions => cosmosOptions
+                        .ConnectionMode(ConnectionMode.Gateway)
+                        .LimitToEndpoint());
             }
             else
             {
@@ -97,6 +105,9 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    /// <summary>
+    /// Configures JWT bearer authentication and binds the JWT settings.
+    /// </summary>
     private static IServiceCollection ConfigureJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
         var sectionName = $"{nameof(JwtSettings)}:usrm";

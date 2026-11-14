@@ -5,6 +5,9 @@ namespace Azure.NotificationHubs.Options;
 /// </summary>
 public sealed class AzureNotificationHubsOptions
 {
+    /// <summary>
+    /// The configuration section name.
+    /// </summary>
     public const string SectionName = "AzureNotificationHubs";
 
     /// <summary>

@@ -15,12 +15,30 @@ namespace AlertManagement.Client.Functions;
 public sealed class AlertTypeFunctions(IAlertTypeService alertTypeService, ILogger<AlertTypeFunctions> logger)
 {
     // Route constants
+    /// <summary>
+    /// Route for listing alert types.
+    /// </summary>
     public const string GET = "alert-types";
+    /// <summary>
+    /// Route for creating an alert type.
+    /// </summary>
     public const string POST = GET;
+    /// <summary>
+    /// Route for getting an alert type by identifier.
+    /// </summary>
     public const string GET_BY_ID = "alert-types/{id:guid}";
+    /// <summary>
+    /// Route for updating an alert type.
+    /// </summary>
     public const string PUT = GET_BY_ID;
+    /// <summary>
+    /// Route for deleting an alert type.
+    /// </summary>
     public const string DELETE = GET_BY_ID;
 
+    /// <summary>
+    /// Returns all alert types.
+    /// </summary>
     [Function("GetAllAlertTypes")]
     public async Task<HttpResponseData> GetAllAlertTypes([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = GET)] HttpRequestData req, FunctionContext context)
     {
@@ -40,6 +58,9 @@ public sealed class AlertTypeFunctions(IAlertTypeService alertTypeService, ILogg
         return response;
     }
 
+    /// <summary>
+    /// Returns an alert type by identifier.
+    /// </summary>
     [Function("GetAlertTypeById")]
     public async Task<HttpResponseData> GetAlertTypeById([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = GET_BY_ID)] HttpRequestData req, string id, FunctionContext context)
     {
@@ -68,6 +89,9 @@ public sealed class AlertTypeFunctions(IAlertTypeService alertTypeService, ILogg
         return response;
     }
 
+    /// <summary>
+    /// Creates an alert type.
+    /// </summary>
     [Function("CreateAlertType")]
     public async Task<HttpResponseData> CreateAlertType([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = POST)] HttpRequestData req, FunctionContext context)
     {
@@ -99,6 +123,9 @@ public sealed class AlertTypeFunctions(IAlertTypeService alertTypeService, ILogg
         return response;
     }
 
+    /// <summary>
+    /// Updates an alert type.
+    /// </summary>
     [Function("UpdateAlertType")]
     public async Task<HttpResponseData> UpdateAlertType([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = PUT)] HttpRequestData req, string id, FunctionContext context)
     {
@@ -136,6 +163,9 @@ public sealed class AlertTypeFunctions(IAlertTypeService alertTypeService, ILogg
         return response;
     }
 
+    /// <summary>
+    /// Deletes an alert type.
+    /// </summary>
     [Function("DeleteAlertType")]
     public async Task<HttpResponseData> DeleteAlertType([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = DELETE)] HttpRequestData req, string id, FunctionContext context)
     {

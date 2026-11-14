@@ -8,12 +8,30 @@ namespace AlertManagement.Infrastructure.Data;
 /// </summary>
 public sealed class AlertDbContext(DbContextOptions<AlertDbContext> options) : DbContext(options)
 {
+    /// <summary>
+    /// Gets the alerts.
+    /// </summary>
     public DbSet<Alert> Alerts => Set<Alert>();
+    /// <summary>
+    /// Gets the alert types.
+    /// </summary>
     public DbSet<AlertType> AlertTypes => Set<AlertType>();
+    /// <summary>
+    /// Gets the alert type to user links.
+    /// </summary>
     public DbSet<AlertTypeUser> AlertTypeUsers => Set<AlertTypeUser>();
+    /// <summary>
+    /// Gets the alert status levels.
+    /// </summary>
     public DbSet<AlertStatusLevel> AlertStatusLevels => Set<AlertStatusLevel>();
+    /// <summary>
+    /// Gets the alert history entries.
+    /// </summary>
     public DbSet<AlertHistory> AlertHistories => Set<AlertHistory>();
 
+    /// <summary>
+    /// Maps each entity to its Cosmos DB container and partition key; navigation properties are ignored and resolved manually.
+    /// </summary>
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

@@ -9,6 +9,9 @@ namespace UserManagement.Client.Middleware;
 /// </summary>
 public sealed class AuthenticationMiddleware(ILogger<AuthenticationMiddleware> logger) : IFunctionsWorkerMiddleware
 {
+    /// <summary>
+    /// Detects a bearer token on the request and logs its presence; token validation itself is handled by the JWT configuration, then runs the next function.
+    /// </summary>
     public async Task Invoke(FunctionContext context, FunctionExecutionDelegate next)
     {
         var httpRequestData = await context.GetHttpRequestDataAsync();

@@ -7,9 +7,12 @@ namespace AlertOne.Maui.Services;
 /// </summary>
 internal sealed class MauiAppVersionService : IAppVersionService
 {
+    /// <inheritdoc />
     public string Version => AppInfo.Current.VersionString;
 
+    /// <inheritdoc />
     public string Build => AppInfo.Current.BuildString;
 
+    /// <inheritdoc />
     public string FullVersion => $"{Version} ({Build})";
 }

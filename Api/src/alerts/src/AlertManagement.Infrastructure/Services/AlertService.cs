@@ -15,10 +15,20 @@ namespace AlertManagement.Infrastructure.Services;
 /// </summary>
 internal sealed class AlertService(AlertDbContext context, ILogger<AlertService> logger, IPushNotificationService pushNotificationService) : IAlertService
 {
+    /// <summary>
+    /// History event type recorded when an alert is created.
+    /// </summary>
     private const string EventTypeCreated = "Created";
+    /// <summary>
+    /// History event type recorded when an alert is rescinded.
+    /// </summary>
     private const string EventTypeRescinded = "Rescinded";
+    /// <summary>
+    /// History event type recorded when an alert status changes.
+    /// </summary>
     private const string EventTypeStatusUpdated = "StatusUpdated";
 
+    /// <inheritdoc />
     public async Task<Result<IEnumerable<AlertResponse>>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting all alerts");
@@ -55,6 +65,7 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
         return Result.Success(responses);
     }
 
+    /// <inheritdoc />
     public async Task<Result<AlertResponse?>> GetActiveAsync(CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting active alert");
@@ -80,6 +91,7 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
         return Result.Success<AlertResponse?>(MapToResponse(alert, alertType, statusLevel, alertTypeUsers));
     }
 
+    /// <inheritdoc />
     public async Task<Result<AlertResponse>> CreateAsync(CreateAlertRequest request, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Creating alert for type {AlertTypeId}", request.AlertTypeId);
@@ -155,6 +167,7 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
         return Result.Success(MapToResponse(alert, alertType, statusLevel, alertTypeUsers));
     }
 
+    /// <inheritdoc />
     public async Task<Result> RescindAsync(string id, RescindAlertRequest request, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Rescinding alert {AlertId}", id);
@@ -224,6 +237,7 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
         return Result.Success();
     }
 
+    /// <inheritdoc />
     public async Task<Result<AlertResponse>> UpdateStatusAsync(string id, UpdateAlertStatusRequest request, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Updating status for alert {AlertId}", id);
@@ -289,6 +303,7 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
         return Result.Success(MapToResponse(alert, alertType!, statusLevel, alertTypeUsers));
     }
 
+    /// <inheritdoc />
     public async Task<Result<AlertResponse>> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting alert {AlertId}", id);
@@ -315,6 +330,7 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
         return Result.Success(MapToResponse(alert, alertType, statusLevel, alertTypeUsers));
     }
 
+    /// <inheritdoc />
     public async Task<Result<IEnumerable<AlertHistoryResponse>>> GetHistoryAsync(string alertId, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting history for alert {AlertId}", alertId);
@@ -341,9 +357,15 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
         return Result.Success(responses);
     }
 
+    /// <summary>
+    /// Maps a history entity to its response.
+    /// </summary>
     private static AlertHistoryResponse MapHistoryToResponse(AlertHistory history) =>
         new(history.Id, history.AlertId, history.EventType, history.CreatedBy, history.CreatedDate, history.Notes);
 
+    /// <summary>
+    /// Maps an alert to its response using the preloaded alert types and status levels.
+    /// </summary>
     private static AlertResponse MapToResponse(Alert alert, IEnumerable<AlertType> alertTypes, IEnumerable<AlertStatusLevel> statusLevels, IEnumerable<AlertTypeUser> alertTypeUsers)
     {
         var alertType = alertTypes.First(t => t.Id == alert.AlertTypeId);
@@ -355,6 +377,9 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
         return MapToResponse(alert, alertType, statusLevel, typeUsers);
     }
 
+    /// <summary>
+    /// Maps an alert to its response using the given type, status level and notified users.
+    /// </summary>
     private static AlertResponse MapToResponse(Alert alert, AlertType alertType, AlertStatusLevel statusLevel, IEnumerable<AlertTypeUser> alertTypeUsers)
     {
         var notifyUserIds = alertTypeUsers
@@ -396,6 +421,9 @@ internal sealed class AlertService(AlertDbContext context, ILogger<AlertService>
             alert.RescindedBy);
     }
 
+    /// <summary>
+    /// Sends push notifications for an alert event to the users of its type when the status level allows it.
+    /// </summary>
     private async Task SendNotificationsAsync(Alert alert, AlertType alertType, AlertStatusLevel statusLevel, IEnumerable<AlertTypeUser> alertTypeUsers, string eventType, CancellationToken cancellationToken)
     {
         if (!statusLevel.SendNotifications)

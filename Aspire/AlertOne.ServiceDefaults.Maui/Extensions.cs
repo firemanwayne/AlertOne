@@ -13,8 +13,14 @@ namespace AlertOne.ServiceDefaults.Maui;
 // Adds common .NET Aspire services: service discovery, resilience, health checks, and OpenTelemetry.
 // This project should be referenced by each service project in your solution.
 // To learn more about using this project, see https://aka.ms/dotnet/aspire/service-defaults
+/// <summary>
+/// Shared service defaults (telemetry) for the MAUI app.
+/// </summary>
 public static class Extensions
 {
+    /// <summary>
+    /// Adds the default services (OpenTelemetry) to the MAUI app builder.
+    /// </summary>
     public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
         builder.ConfigureOpenTelemetry();
@@ -42,6 +48,9 @@ public static class Extensions
         return builder;
     }
 
+    /// <summary>
+    /// Configures OpenTelemetry logging, metrics and tracing for the MAUI app.
+    /// </summary>
     public static TBuilder ConfigureOpenTelemetry<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
         builder.Logging.AddOpenTelemetry(logging =>
@@ -75,8 +84,14 @@ public static class Extensions
         return builder;
     }
 
+    /// <summary>
+    /// MAUI initialization service that starts OpenTelemetry once the app services are built.
+    /// </summary>
     private class OpenTelemetryInitializer : IMauiInitializeService
     {
+        /// <summary>
+        /// Resolves the OpenTelemetry providers so they start collecting.
+        /// </summary>
         public void Initialize(IServiceProvider services)
         {
             services.GetService<MeterProvider>();
@@ -85,6 +100,9 @@ public static class Extensions
         }
     }
 
+    /// <summary>
+    /// Adds the OTLP exporter when an endpoint is configured.
+    /// </summary>
     private static TBuilder AddOpenTelemetryExporters<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
         var useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);

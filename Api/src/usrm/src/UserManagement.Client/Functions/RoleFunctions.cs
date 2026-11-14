@@ -18,16 +18,46 @@ public sealed class RoleFunctions(
     ILogger<RoleFunctions> logger)
 {
     // Route constants
+    /// <summary>
+    /// Route for listing roles.
+    /// </summary>
     public const string GET = "roles";
+    /// <summary>
+    /// Route for creating a role.
+    /// </summary>
     public const string POST = GET;
+    /// <summary>
+    /// Route for getting a role by identifier.
+    /// </summary>
     public const string GET_BY_ID = "roles/{id:guid}";
+    /// <summary>
+    /// Route for updating a role.
+    /// </summary>
     public const string PUT = GET_BY_ID;
+    /// <summary>
+    /// Route for deleting a role.
+    /// </summary>
     public const string DELETE = GET_BY_ID;
+    /// <summary>
+    /// Route for getting a role by name.
+    /// </summary>
     public const string GET_BY_NAME = "roles/name/{name}";
+    /// <summary>
+    /// Route for assigning a role to a user.
+    /// </summary>
     public const string ASSIGN = "roles/assign";
+    /// <summary>
+    /// Route for removing a role from a user.
+    /// </summary>
     public const string REMOVE = "roles/remove";
+    /// <summary>
+    /// Route for listing the users in a role.
+    /// </summary>
     public const string GET_USERS_IN_ROLE = "roles/{name}/users";
 
+    /// <summary>
+    /// Creates a role.
+    /// </summary>
     [Function("CreateRole")]
     public async Task<HttpResponseData> CreateRole([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = POST)] HttpRequestData req, FunctionContext context)
     {
@@ -59,6 +89,9 @@ public sealed class RoleFunctions(
         return response;
     }
 
+    /// <summary>
+    /// Returns a role by identifier.
+    /// </summary>
     [Function("GetRoleById")]
     public async Task<HttpResponseData> GetRoleById([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = GET_BY_ID)] HttpRequestData req, string id, FunctionContext context)
     {
@@ -87,6 +120,9 @@ public sealed class RoleFunctions(
         return response;
     }
 
+    /// <summary>
+    /// Returns a role by name.
+    /// </summary>
     [Function("GetRoleByName")]
     public async Task<HttpResponseData> GetRoleByName([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = GET_BY_NAME)] HttpRequestData req, string name, FunctionContext context)
     {
@@ -110,6 +146,9 @@ public sealed class RoleFunctions(
         return response;
     }
 
+    /// <summary>
+    /// Returns all roles.
+    /// </summary>
     [Function("GetAllRoles")]
     public async Task<HttpResponseData> GetAllRoles([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = GET)] HttpRequestData req, FunctionContext context)
     {
@@ -129,6 +168,9 @@ public sealed class RoleFunctions(
         return response;
     }
 
+    /// <summary>
+    /// Updates a role.
+    /// </summary>
     [Function("UpdateRole")]
     public async Task<HttpResponseData> UpdateRole([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = PUT)] HttpRequestData req, string id, FunctionContext context)
     {
@@ -163,6 +205,9 @@ public sealed class RoleFunctions(
         return response;
     }
 
+    /// <summary>
+    /// Deletes a role.
+    /// </summary>
     [Function("DeleteRole")]
     public async Task<HttpResponseData> DeleteRole([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = DELETE)] HttpRequestData req, string id, FunctionContext context)
     {
@@ -188,6 +233,9 @@ public sealed class RoleFunctions(
         return req.CreateResponse(HttpStatusCode.NoContent);
     }
 
+    /// <summary>
+    /// Assigns a role to a user.
+    /// </summary>
     [Function("AssignRoleToUser")]
     public async Task<HttpResponseData> AssignRoleToUser([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = ASSIGN)] HttpRequestData req, FunctionContext context)
     {
@@ -219,6 +267,9 @@ public sealed class RoleFunctions(
         return response;
     }
 
+    /// <summary>
+    /// Removes a role from a user.
+    /// </summary>
     [Function("RemoveRoleFromUser")]
     public async Task<HttpResponseData> RemoveRoleFromUser([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = REMOVE)] HttpRequestData req, FunctionContext context)
     {
@@ -250,6 +301,9 @@ public sealed class RoleFunctions(
         return response;
     }
 
+    /// <summary>
+    /// Returns the users that have a role.
+    /// </summary>
     [Function("GetUsersInRole")]
     public async Task<HttpResponseData> GetUsersInRole([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = GET_USERS_IN_ROLE)] HttpRequestData req, string name, FunctionContext context)
     {

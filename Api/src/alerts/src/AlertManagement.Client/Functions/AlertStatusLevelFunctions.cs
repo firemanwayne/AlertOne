@@ -15,12 +15,30 @@ namespace AlertManagement.Client.Functions;
 public sealed class AlertStatusLevelFunctions(IAlertStatusLevelService alertStatusLevelService, ILogger<AlertStatusLevelFunctions> logger)
 {
     // Route constants
+    /// <summary>
+    /// Route for listing alert status levels.
+    /// </summary>
     public const string GET = "alert-status-levels";
+    /// <summary>
+    /// Route for creating an alert status level.
+    /// </summary>
     public const string POST = GET;
+    /// <summary>
+    /// Route for getting an alert status level by identifier.
+    /// </summary>
     public const string GET_BY_ID = "alert-status-levels/{id:guid}";
+    /// <summary>
+    /// Route for updating an alert status level.
+    /// </summary>
     public const string PUT = GET_BY_ID;
+    /// <summary>
+    /// Route for deleting an alert status level.
+    /// </summary>
     public const string DELETE = GET_BY_ID;
 
+    /// <summary>
+    /// Returns all alert status levels.
+    /// </summary>
     [Function("GetAllAlertStatusLevels")]
     public async Task<HttpResponseData> GetAllAlertStatusLevels([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = GET)] HttpRequestData req, FunctionContext context)
     {
@@ -40,6 +58,9 @@ public sealed class AlertStatusLevelFunctions(IAlertStatusLevelService alertStat
         return response;
     }
 
+    /// <summary>
+    /// Returns an alert status level by identifier.
+    /// </summary>
     [Function("GetAlertStatusLevelById")]
     public async Task<HttpResponseData> GetAlertStatusLevelById([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = GET_BY_ID)] HttpRequestData req, string id, FunctionContext context)
     {
@@ -68,6 +89,9 @@ public sealed class AlertStatusLevelFunctions(IAlertStatusLevelService alertStat
         return response;
     }
 
+    /// <summary>
+    /// Creates an alert status level.
+    /// </summary>
     [Function("CreateAlertStatusLevel")]
     public async Task<HttpResponseData> CreateAlertStatusLevel([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = POST)] HttpRequestData req, FunctionContext context)
     {
@@ -99,6 +123,9 @@ public sealed class AlertStatusLevelFunctions(IAlertStatusLevelService alertStat
         return response;
     }
 
+    /// <summary>
+    /// Updates an alert status level.
+    /// </summary>
     [Function("UpdateAlertStatusLevel")]
     public async Task<HttpResponseData> UpdateAlertStatusLevel([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = PUT)] HttpRequestData req, string id, FunctionContext context)
     {
@@ -136,6 +163,9 @@ public sealed class AlertStatusLevelFunctions(IAlertStatusLevelService alertStat
         return response;
     }
 
+    /// <summary>
+    /// Deletes an alert status level; fails with a conflict when alerts still use it.
+    /// </summary>
     [Function("DeleteAlertStatusLevel")]
     public async Task<HttpResponseData> DeleteAlertStatusLevel([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = DELETE)] HttpRequestData req, string id, FunctionContext context)
     {

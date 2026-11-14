@@ -6,6 +6,7 @@ namespace Domains.UserManagement.Services;
 internal sealed class InvitationService(
     IUserManagementApiClient apiClient) : IInvitationService
 {
+    /// <inheritdoc />
     public async Task<IApiResult<IEnumerable<InvitationResponse>>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await apiClient
@@ -14,6 +15,7 @@ internal sealed class InvitationService(
             cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<IApiResult<InvitationResponse>> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         return await apiClient
@@ -22,6 +24,7 @@ internal sealed class InvitationService(
             cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<IApiResult<InvitationResponse>> CreateAsync(CreateInvitationRequest request, CancellationToken cancellationToken = default)
     {
         return await apiClient
@@ -31,6 +34,7 @@ internal sealed class InvitationService(
             cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<IApiResult<InvitationResponse>> ValidateCodeAsync(string code, CancellationToken cancellationToken = default)
     {
         return await apiClient
@@ -39,6 +43,7 @@ internal sealed class InvitationService(
             cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<IApiResult<UserResponse>> AcceptAsync(AcceptInvitationRequest request, CancellationToken cancellationToken = default)
     {
         return await apiClient
@@ -48,6 +53,7 @@ internal sealed class InvitationService(
             cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<IApiResult> DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
         return await apiClient
@@ -56,6 +62,7 @@ internal sealed class InvitationService(
             cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<IApiResult<InvitationResponse>> ResendAsync(string id, ResendInvitationRequest request, CancellationToken cancellationToken = default)
     {
         return await apiClient

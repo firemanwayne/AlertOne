@@ -16,9 +16,18 @@ namespace UserManagement.Client.Functions;
 public sealed class UserSettingsFunctions(IUserSettingsService userSettingsService, ILogger<UserSettingsFunctions> logger)
 {
     // Route constants
+    /// <summary>
+    /// Route for getting a user's settings.
+    /// </summary>
     public const string GET_BY_USER_ID = "users/{userId:guid}/settings";
+    /// <summary>
+    /// Route for updating a user's settings.
+    /// </summary>
     public const string PUT = GET_BY_USER_ID;
 
+    /// <summary>
+    /// Returns a user's settings.
+    /// </summary>
     [Function("GetUserSettings")]
     public async Task<HttpResponseData> GetUserSettings([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = GET_BY_USER_ID)] HttpRequestData req, string userId, FunctionContext context)
     {
@@ -47,6 +56,9 @@ public sealed class UserSettingsFunctions(IUserSettingsService userSettingsServi
         return response;
     }
 
+    /// <summary>
+    /// Updates a user's settings.
+    /// </summary>
     [Function("UpdateUserSettings")]
     public async Task<HttpResponseData> UpdateUserSettings([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = PUT)] HttpRequestData req, string userId, FunctionContext context)
     {

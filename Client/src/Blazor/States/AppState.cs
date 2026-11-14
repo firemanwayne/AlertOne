@@ -3,17 +3,32 @@ using AlertOne.Core.Models;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace AlertOne.Shared.States;
+namespace AlertOne.Shared.Blazor.States;
 
 /// <summary>
 /// Global application state with reactive property change notifications
 /// </summary>
 public sealed class AppState : INotifyPropertyChanged
 {
+    /// <summary>
+    /// Backing field for the API base URL.
+    /// </summary>
     private string _apiBaseUrl = "https://localhost:7071";
+    /// <summary>
+    /// Backing field for the access token.
+    /// </summary>
     private string? _accessToken;
+    /// <summary>
+    /// Backing field for the signed-in user.
+    /// </summary>
     private UserProfile? _currentUser;
+    /// <summary>
+    /// Backing field for the authenticated flag.
+    /// </summary>
     private bool _isAuthenticated;
+    /// <summary>
+    /// Backing field for the loading flag.
+    /// </summary>
     private bool _isLoading;
 
     /// <summary>
@@ -82,11 +97,17 @@ public sealed class AppState : INotifyPropertyChanged
     /// </summary>
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    /// <summary>
+    /// Raises <see cref="PropertyChanged"/> for a property.
+    /// </summary>
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
+    /// <summary>
+    /// Sets a field and raises <see cref="PropertyChanged"/> when the value changed; returns whether it changed.
+    /// </summary>
     private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))

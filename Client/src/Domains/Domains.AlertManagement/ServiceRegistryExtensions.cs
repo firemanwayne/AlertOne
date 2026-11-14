@@ -1,4 +1,4 @@
-using AlertOne.Shared.Handlers;
+using AlertOne.Shared.Blazor.Handlers;
 
 using Domains.AlertManagement.Options;
 
@@ -34,7 +34,7 @@ public static class ServiceRegistryExtensions
 
 #if DEBUG
                 // Use local development URL if not configured
-                baseUri ??= "http://localhost:7071";
+                baseUri ??= "http://localhost:7072";
 #endif
 
                 if (!string.IsNullOrWhiteSpace(baseUri))

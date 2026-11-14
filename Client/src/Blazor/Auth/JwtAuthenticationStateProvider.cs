@@ -1,6 +1,6 @@
 using AlertOne.Core.Interfaces;
 using AlertOne.Core.Models;
-using AlertOne.Shared.States;
+using AlertOne.Shared.Blazor.States;
 
 using Microsoft.AspNetCore.Components.Authorization;
 
@@ -8,13 +8,25 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 
-namespace AlertOne.Shared.Auth;
+namespace AlertOne.Shared.Blazor.Auth;
 
+/// <summary>
+/// Authentication state provider that builds the user from the stored JWT access token.
+/// </summary>
 public sealed class JwtAuthenticationStateProvider : AuthenticationStateProvider, IDisposable
 {
+    /// <summary>
+    /// Storage that holds the access and refresh tokens.
+    /// </summary>
     private readonly ITokenStorageService _tokenStorage;
+    /// <summary>
+    /// The shared application state.
+    /// </summary>
     private readonly AppState _appState;
 
+    /// <summary>
+    /// Initializes the provider and listens for authentication changes in the application state.
+    /// </summary>
     public JwtAuthenticationStateProvider(ITokenStorageService tokenStorage, AppState appState)
     {
         _tokenStorage = tokenStorage;
@@ -22,6 +34,9 @@ public sealed class JwtAuthenticationStateProvider : AuthenticationStateProvider
         _appState.PropertyChanged += OnAppStatePropertyChanged;
     }
 
+    /// <summary>
+    /// Refreshes the authentication state when the application state changes.
+    /// </summary>
     private void OnAppStatePropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(AppState.IsAuthenticated))
@@ -30,6 +45,9 @@ public sealed class JwtAuthenticationStateProvider : AuthenticationStateProvider
         }
     }
 
+    /// <summary>
+    /// Gets the current authentication state from the stored access token (anonymous when missing or expired).
+    /// </summary>
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         var token = await _tokenStorage.GetAccessTokenAsync();
@@ -102,6 +120,9 @@ public sealed class JwtAuthenticationStateProvider : AuthenticationStateProvider
         return new AuthenticationState(new ClaimsPrincipal(identity));
     }
 
+    /// <summary>
+    /// Reads the claims from the payload of a JWT without validating it.
+    /// </summary>
     private static List<Claim> ParseClaimsFromJwt(string jwt)
     {
         var parts = jwt.Split('.');
@@ -161,6 +182,9 @@ public sealed class JwtAuthenticationStateProvider : AuthenticationStateProvider
         return claims;
     }
 
+    /// <summary>
+    /// Stops listening for application state changes.
+    /// </summary>
     public void Dispose()
     {
         _appState.PropertyChanged -= OnAppStatePropertyChanged;

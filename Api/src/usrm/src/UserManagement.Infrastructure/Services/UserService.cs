@@ -15,6 +15,7 @@ namespace UserManagement.Infrastructure.Services;
 /// </summary>
 internal sealed class UserService(ILogger<UserService> logger, UserManager<ApplicationUser> userManager, ApplicationDbContext dbContext, IUserSettingsService userSettingsService) : IUserService
 {
+    /// <inheritdoc />
     public async Task<Result<UserResponse>> CreateUserAsync(CreateUserRequest request, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Creating new user with email: {Email}", request.Email);
@@ -86,6 +87,7 @@ internal sealed class UserService(ILogger<UserService> logger, UserManager<Appli
         return Result.Success(response);
     }
 
+    /// <inheritdoc />
     public async Task<Result<UserResponse>> GetUserByIdAsync(UserId userId, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting user by ID: {UserId}", userId.Value);
@@ -106,6 +108,7 @@ internal sealed class UserService(ILogger<UserService> logger, UserManager<Appli
         return Result.Success(response);
     }
 
+    /// <inheritdoc />
     public async Task<Result<UserResponse>> GetUserByEmailAsync(Email email, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting user by email: {Email}", email.Value);
@@ -124,6 +127,7 @@ internal sealed class UserService(ILogger<UserService> logger, UserManager<Appli
         return Result.Success(response);
     }
 
+    /// <inheritdoc />
     public async Task<Result<UserResponse>> UpdateUserAsync(UserId userId, UpdateUserRequest request, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Updating user: {UserId}", userId.Value);
@@ -182,6 +186,7 @@ internal sealed class UserService(ILogger<UserService> logger, UserManager<Appli
         return Result.Success(response);
     }
 
+    /// <inheritdoc />
     public async Task<Result> DeleteUserAsync(UserId userId, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Deleting user: {UserId}", userId.Value);
@@ -213,6 +218,7 @@ internal sealed class UserService(ILogger<UserService> logger, UserManager<Appli
         return Result.Success();
     }
 
+    /// <inheritdoc />
     public async Task<Result<IEnumerable<UserResponse>>> GetAllUsersAsync(CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting all users");
@@ -233,6 +239,9 @@ internal sealed class UserService(ILogger<UserService> logger, UserManager<Appli
         return Result.Success<IEnumerable<UserResponse>>(userResponses);
     }
 
+    /// <summary>
+    /// Maps a user and its roles to a response.
+    /// </summary>
     private static UserResponse MapToUserResponse(ApplicationUser user, IList<string> roles)
     {
         // Email should always be set for Identity users, but provide defensive fallback

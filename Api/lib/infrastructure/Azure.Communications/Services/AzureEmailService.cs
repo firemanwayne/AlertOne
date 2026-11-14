@@ -13,9 +13,16 @@ internal sealed class AzureEmailService(
     IOptions<AzureCommunicationsOptions> options,
     ILogger<AzureEmailService> logger) : IEmailService
 {
+    /// <summary>
+    /// The bound Azure Communication Services options.
+    /// </summary>
     private readonly AzureCommunicationsOptions _options = options.Value;
+    /// <summary>
+    /// The Azure Communication Services email client.
+    /// </summary>
     private readonly EmailClient _client = new(options.Value.ConnectionString);
 
+    /// <inheritdoc />
     public async Task<bool> SendEmailAsync(string to, string subject, string htmlBody, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Sending email to {Recipient} with subject: {Subject}", to, subject);
@@ -50,6 +57,7 @@ internal sealed class AzureEmailService(
         }
     }
 
+    /// <inheritdoc />
     public async Task<bool> SendInvitationEmailAsync(string to, string activationCode, string invitedBy, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Sending invitation email to {Recipient} from {InvitedBy}", to, invitedBy);
@@ -63,6 +71,9 @@ internal sealed class AzureEmailService(
         return await SendEmailAsync(to, subject, htmlBody, cancellationToken);
     }
 
+    /// <summary>
+    /// Builds the HTML body of the invitation email, including web and mobile deep links.
+    /// </summary>
     private static string BuildInvitationEmailHtml(string activationCode, string invitedBy, string webAppUrl, string mobileScheme)
     {
         var acceptUrl = $"{webAppUrl}/accept-invitation?code={activationCode}";

@@ -1,15 +1,39 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
+// Local Cosmos DB emulator (preview/vnext emulator serves plain HTTP, so no certificate trust is needed).
+// The APIs create their databases and containers on startup (EnsureCreated).
+var cosmos = builder
+    .AddAzureCosmosDB("cosmos")
+    .RunAsPreviewEmulator(emulator => emulator
+        .WithLifetime(ContainerLifetime.Persistent)
+        .WithDataExplorer());
+
+// Well-known, publicly documented Cosmos emulator account key (not a secret)
+const string CosmosEmulatorKey = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
+
 // Azure Functions isolated-worker API running as plain .NET (Kestrel via AspNetCore integration)
 // Pin to port 7071 so the Blazor WASM wwwroot/appsettings.json and MAUI fallback stay correct
 var userApi = builder
-    .AddAzureFunctionsProject<Projects.UserManagement_Client>("api")
-    .WithEndpoint("http", e => e.Port = 7071);
+    .AddAzureFunctionsProject<Projects.UserManagement_Client>("usrm-api")
+    .WithEndpoint("http", e => e.Port = 7071)
+    .WaitForStart(cosmos)
+    .WithEnvironment("CosmosDb__Endpoint", cosmos.Resource.UriExpression)
+    .WithEnvironment("CosmosDb__AccountKey", CosmosEmulatorKey)
+    .WithEnvironment("CosmosDb__DatabaseName", "alertone-usrm")
+    // Local-only JWT settings (previously supplied by Azure App Configuration)
+    .WithEnvironment("JwtSettings__usrm__Secret", "local-dev-only-jwt-secret-key-change-me-0123456789")
+    .WithEnvironment("JwtSettings__usrm__Issuer", "AlertOne.Local")
+    .WithEnvironment("JwtSettings__usrm__Audience", "AlertOne.Local")
+    .WithEnvironment("JwtSettings__usrm__ExpiryMinutes", "60");
 
 // Alert management API on port 7072
 var alertsApi = builder
     .AddAzureFunctionsProject<Projects.AlertManagement_Client>("alerts-api")
-    .WithEndpoint("http", e => e.Port = 7072);
+    .WithEndpoint("http", e => e.Port = 7072)
+    .WaitForStart(cosmos)
+    .WithEnvironment("CosmosDb__Endpoint", cosmos.Resource.UriExpression)
+    .WithEnvironment("CosmosDb__AccountKey", CosmosEmulatorKey)
+    .WithEnvironment("CosmosDb__DatabaseName", "alertone-alerts");
 
 // Blazor WebAssembly dev server
 // API URL is read from wwwroot/appsettings.json (browser can't read process env vars)
@@ -24,35 +48,6 @@ var blazor = builder
 userApi.WithReference(blazor);
 
 alertsApi.WithReference(blazor);
-
-// MAUI Windows app
-// Aspire injects services__api__http__0 as an env var; MauiApp.CreateBuilder reads it via IConfiguration
-// Register your MAUI app
-
-// Add Windows device (uses localhost directly)
-// Windows
-//mauiapp.AddWindowsDevice()
-//    .WithReference(api);
-
-//// macOS Catalyst
-//mauiapp.AddMacCatalystDevice()
-//    .WithReference(api);
-
-//// iOS Simulator
-//mauiapp.AddiOSSimulator()
-//     .WithReference(api);
-
-//// iOS Device
-//mauiapp.AddiOSDevice()
-//     .WithReference(api);
-
-//// Android Device
-//mauiapp.AddAndroidDevice()
-//        .WithReference(api);
-
-//// Android Emulator
-//mauiapp.AddAndroidEmulator()
-//    .WithReference(api);
 
 builder
     .Build()

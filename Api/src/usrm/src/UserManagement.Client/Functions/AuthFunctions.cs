@@ -17,11 +17,26 @@ public sealed class AuthFunctions(
     IAuthenticationService authService)
 {
     // Route constants
+    /// <summary>
+    /// Route for registering a user.
+    /// </summary>
     public const string REGISTER = "auth/register";
+    /// <summary>
+    /// Route for logging in.
+    /// </summary>
     public const string LOGIN = "auth/login";
+    /// <summary>
+    /// Route for refreshing an access token.
+    /// </summary>
     public const string REFRESH = "auth/refresh";
+    /// <summary>
+    /// Route for checking whether any user exists.
+    /// </summary>
     public const string HAS_USERS = "auth/has-users";
 
+    /// <summary>
+    /// Registers a new user and returns tokens.
+    /// </summary>
     [Function("Register")]
     public async Task<HttpResponseData> Register([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = REGISTER)] HttpRequestData req, FunctionContext context)
     {
@@ -52,6 +67,9 @@ public sealed class AuthFunctions(
         return response;
     }
 
+    /// <summary>
+    /// Authenticates a user and returns tokens.
+    /// </summary>
     [Function("Login")]
     public async Task<HttpResponseData> Login([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = LOGIN)] HttpRequestData req, FunctionContext context)
     {
@@ -83,6 +101,9 @@ public sealed class AuthFunctions(
         return response;
     }
 
+    /// <summary>
+    /// Exchanges a refresh token for new tokens.
+    /// </summary>
     [Function("RefreshToken")]
     public async Task<HttpResponseData> RefreshToken([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = REFRESH)] HttpRequestData req, FunctionContext context)
     {
@@ -113,6 +134,9 @@ public sealed class AuthFunctions(
         return response;
     }
 
+    /// <summary>
+    /// Returns whether at least one user exists (used for first-run setup).
+    /// </summary>
     [Function("HasUsers")]
     public async Task<HttpResponseData> HasUsers([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = HAS_USERS)] HttpRequestData req, FunctionContext context)
     {

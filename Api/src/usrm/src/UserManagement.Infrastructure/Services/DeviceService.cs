@@ -17,8 +17,12 @@ internal sealed class DeviceService(
     ApplicationDbContext context,
     ILogger<DeviceService> logger) : IDeviceService
 {
+    /// <summary>
+    /// The maximum number of active devices a user can have; registering more fails with a conflict.
+    /// </summary>
     private const int MaxDevicesPerUser = 20;
 
+    /// <inheritdoc />
     public async Task<Result<RegisterDeviceResponse>> RegisterOrUpdateDeviceAsync(UserId userId, DeviceInfo deviceInfo, string? ipAddress, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Registering or updating device {DeviceId} for user {UserId}", deviceInfo.DeviceId, userId.Value);
@@ -107,6 +111,7 @@ internal sealed class DeviceService(
         return Result.Success(new RegisterDeviceResponse(refreshToken, deviceResponse));
     }
 
+    /// <inheritdoc />
     public async Task<Result<ValidateRefreshTokenResponse>> ValidateRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Validating refresh token");
@@ -144,6 +149,7 @@ internal sealed class DeviceService(
         return Result.Success(new ValidateRefreshTokenResponse(UserId.From(device.UserId), device.Id));
     }
 
+    /// <inheritdoc />
     public async Task<Result<IEnumerable<DeviceSessionResponse>>> GetActiveDevicesAsync(UserId userId, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting active devices for user {UserId}", userId.Value);
@@ -161,6 +167,7 @@ internal sealed class DeviceService(
         return Result.Success<IEnumerable<DeviceSessionResponse>>(deviceResponses);
     }
 
+    /// <inheritdoc />
     public async Task<Result<DeviceSessionResponse>> GetDeviceByIdAsync(UserId userId, Guid deviceId, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting device {DeviceId} for user {UserId}", deviceId, userId.Value);
@@ -182,6 +189,7 @@ internal sealed class DeviceService(
         return Result.Success(deviceResponse);
     }
 
+    /// <inheritdoc />
     public async Task<Result> RevokeDeviceAsync(UserId userId, Guid deviceId, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Revoking device {DeviceId} for user {UserId}", deviceId, userId.Value);
@@ -208,6 +216,7 @@ internal sealed class DeviceService(
         return Result.Success();
     }
 
+    /// <inheritdoc />
     public async Task<Result> RevokeAllDevicesExceptAsync(UserId userId, Guid exceptDeviceId, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Revoking all devices except {DeviceId} for user {UserId}", exceptDeviceId, userId.Value);
@@ -232,6 +241,7 @@ internal sealed class DeviceService(
         return Result.Success();
     }
 
+    /// <inheritdoc />
     public async Task<Result> RevokeAllDevicesAsync(UserId userId, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Revoking all devices for user {UserId}", userId.Value);
@@ -256,6 +266,7 @@ internal sealed class DeviceService(
         return Result.Success();
     }
 
+    /// <inheritdoc />
     public async Task<Result> UpdateLastActivityAsync(Guid deviceId, CancellationToken cancellationToken = default)
     {
         var device = await context
@@ -275,6 +286,7 @@ internal sealed class DeviceService(
         return Result.Success();
     }
 
+    /// <inheritdoc />
     public async Task<Result> TrustDeviceAsync(UserId userId, Guid deviceId, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Marking device {DeviceId} as trusted for user {UserId}", deviceId, userId.Value);
@@ -300,6 +312,7 @@ internal sealed class DeviceService(
         return Result.Success();
     }
 
+    /// <inheritdoc />
     public async Task<Result<DeviceSessionResponse>> UpdateDeviceNameAsync(UserId userId, Guid deviceId, string newName, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Updating device name for device {DeviceId}", deviceId);
@@ -327,6 +340,9 @@ internal sealed class DeviceService(
         return Result.Success(deviceResponse);
     }
 
+    /// <summary>
+    /// Generates a cryptographically random refresh token.
+    /// </summary>
     private static string GenerateRefreshToken()
     {
         var randomNumber = new byte[64];
@@ -335,6 +351,7 @@ internal sealed class DeviceService(
         return Convert.ToBase64String(randomNumber);
     }
 
+    /// <inheritdoc />
     public async Task<Result<IEnumerable<DeviceNotificationInfo>>> GetDevicesForNotificationsAsync(UserId userId, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting devices for notifications for user {UserId}", userId.Value);
@@ -356,6 +373,9 @@ internal sealed class DeviceService(
         return Result.Success<IEnumerable<DeviceNotificationInfo>>(deviceNotifications);
     }
 
+    /// <summary>
+    /// Maps a device to its session response, flagging the current device.
+    /// </summary>
     private static DeviceSessionResponse MapToDeviceSessionResponse(UserDevice device, Guid? currentDeviceId)
     {
         return new DeviceSessionResponse(

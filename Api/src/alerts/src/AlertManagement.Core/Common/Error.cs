@@ -47,10 +47,28 @@ public sealed record Error(string Code, string Message, ErrorType Type)
 /// </summary>
 public enum ErrorType
 {
+    /// <summary>
+    /// The request failed validation.
+    /// </summary>
     Validation,
+    /// <summary>
+    /// The requested resource was not found.
+    /// </summary>
     NotFound,
+    /// <summary>
+    /// The request conflicts with the current state.
+    /// </summary>
     Conflict,
+    /// <summary>
+    /// The caller is not authenticated.
+    /// </summary>
     Unauthorized,
+    /// <summary>
+    /// The caller is not allowed to perform the operation.
+    /// </summary>
     Forbidden,
+    /// <summary>
+    /// An unexpected server error occurred.
+    /// </summary>
     Internal
 }

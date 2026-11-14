@@ -8,8 +8,14 @@ namespace UserManagement.Core.Entities;
 /// </summary>
 public sealed class User
 {
+    /// <summary>
+    /// The roles assigned to the user.
+    /// </summary>
     private readonly List<UserRole> _roles = [];
 
+    /// <summary>
+    /// Initializes a user (use the factory methods to create one).
+    /// </summary>
     private User(UserId id, Email email, string firstName, string lastName, DateTime createdAt)
     {
         Id = id;
@@ -19,12 +25,33 @@ public sealed class User
         CreatedAt = createdAt;
     }
 
+    /// <summary>
+    /// Gets the user identifier.
+    /// </summary>
     public UserId Id { get; private set; }
+    /// <summary>
+    /// Gets the email address.
+    /// </summary>
     public Email Email { get; private set; }
+    /// <summary>
+    /// Gets the first name.
+    /// </summary>
     public string FirstName { get; private set; }
+    /// <summary>
+    /// Gets the last name.
+    /// </summary>
     public string LastName { get; private set; }
+    /// <summary>
+    /// Gets the roles assigned to the user.
+    /// </summary>
     public IReadOnlyList<UserRole> Roles => _roles.AsReadOnly();
+    /// <summary>
+    /// Gets the UTC time the user was created.
+    /// </summary>
     public DateTime CreatedAt { get; private set; }
+    /// <summary>
+    /// Gets the UTC time the user was last modified.
+    /// </summary>
     public DateTime? LastModifiedAt { get; private set; }
 
     /// <summary>

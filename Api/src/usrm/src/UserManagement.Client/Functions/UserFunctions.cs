@@ -18,12 +18,30 @@ public sealed class UserFunctions(
     ILogger<UserFunctions> logger)
 {
     // Route constants
+    /// <summary>
+    /// Route for listing users.
+    /// </summary>
     public const string GET = "users";
+    /// <summary>
+    /// Route for creating a user.
+    /// </summary>
     public const string POST = GET;
+    /// <summary>
+    /// Route for getting a user by identifier.
+    /// </summary>
     public const string GET_BY_ID = "users/{id:guid}";
+    /// <summary>
+    /// Route for updating a user.
+    /// </summary>
     public const string PUT = GET_BY_ID;
+    /// <summary>
+    /// Route for deleting a user.
+    /// </summary>
     public const string DELETE = GET_BY_ID;
 
+    /// <summary>
+    /// Creates a user.
+    /// </summary>
     [Function("CreateUser")]
     public async Task<HttpResponseData> CreateUser([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = POST)] HttpRequestData req, FunctionContext context)
     {
@@ -55,6 +73,9 @@ public sealed class UserFunctions(
         return response;
     }
 
+    /// <summary>
+    /// Returns all users.
+    /// </summary>
     [Function("GetAllUsers")]
     public async Task<HttpResponseData> GetAllUsers([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = GET)] HttpRequestData req, FunctionContext context)
     {
@@ -74,6 +95,9 @@ public sealed class UserFunctions(
         return response;
     }
 
+    /// <summary>
+    /// Returns a user by identifier.
+    /// </summary>
     [Function("GetUser")]
     public async Task<HttpResponseData> GetUser([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = GET_BY_ID)] HttpRequestData req, string id, FunctionContext context)
     {
@@ -103,6 +127,9 @@ public sealed class UserFunctions(
         return response;
     }
 
+    /// <summary>
+    /// Updates a user.
+    /// </summary>
     [Function("UpdateUser")]
     public async Task<HttpResponseData> UpdateUser([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = PUT)] HttpRequestData req, string id, FunctionContext context)
     {
@@ -141,6 +168,9 @@ public sealed class UserFunctions(
         return response;
     }
 
+    /// <summary>
+    /// Deletes a user.
+    /// </summary>
     [Function("DeleteUser")]
     public async Task<HttpResponseData> DeleteUser([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = DELETE)] HttpRequestData req, string id, FunctionContext context)
     {

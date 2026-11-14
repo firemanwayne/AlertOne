@@ -5,7 +5,13 @@ namespace AlertOne.Maui.Services;
 /// </summary>
 public sealed class DeepLinkService
 {
+    /// <summary>
+    /// The deep link received before the app was ready to navigate.
+    /// </summary>
     private string? _pendingDeepLink;
+    /// <summary>
+    /// Synchronizes access to the pending deep link.
+    /// </summary>
     private readonly object _lock = new();
 
     /// <summary>
@@ -107,6 +113,9 @@ public sealed class DeepLinkService
         }
     }
 
+    /// <summary>
+    /// Converts an <c>alertone://</c> link into an app route, or null when it is not recognized.
+    /// </summary>
     private static string? ProcessAlertOneScheme(Uri uri)
     {
         // alertone://accept-invitation?code=123456
@@ -123,6 +132,9 @@ public sealed class DeepLinkService
         };
     }
 
+    /// <summary>
+    /// Converts an <c>https://</c> link into an app route.
+    /// </summary>
     private static string? ProcessHttpsScheme(Uri uri)
     {
         // https://app.alertone.com/accept-invitation?code=123456

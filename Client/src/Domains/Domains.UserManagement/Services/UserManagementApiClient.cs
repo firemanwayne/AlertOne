@@ -5,11 +5,15 @@ namespace Domains.UserManagement.Services;
 /// </summary>
 internal sealed class UserManagementApiClient(HttpClient client) : IUserManagementApiClient
 {
+    /// <summary>
+    /// JSON options used to read API responses.
+    /// </summary>
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
     };
 
+    /// <inheritdoc />
     public async Task<IApiResult<TResponse>> GetAsync<TResponse>(string endpoint, CancellationToken cancellationToken = default)
     {
         try
@@ -30,6 +34,7 @@ internal sealed class UserManagementApiClient(HttpClient client) : IUserManageme
         }
     }
 
+    /// <inheritdoc />
     public async Task<IApiResult<TResponse>> PostAsync<TRequest, TResponse>(string endpoint, TRequest request, CancellationToken cancellationToken = default)
     {
         try
@@ -50,6 +55,7 @@ internal sealed class UserManagementApiClient(HttpClient client) : IUserManageme
         }
     }
 
+    /// <inheritdoc />
     public async Task<IApiResult<TResponse>> PutAsync<TRequest, TResponse>(string endpoint, TRequest request, CancellationToken cancellationToken = default)
     {
         try
@@ -70,6 +76,7 @@ internal sealed class UserManagementApiClient(HttpClient client) : IUserManageme
         }
     }
 
+    /// <inheritdoc />
     public async Task<IApiResult> DeleteAsync(string endpoint, CancellationToken cancellationToken = default)
     {
         try
@@ -97,6 +104,7 @@ internal sealed class UserManagementApiClient(HttpClient client) : IUserManageme
         }
     }
 
+    /// <inheritdoc />
     public async Task<IApiResult> DeleteAsync<TRequest>(string endpoint, TRequest body, CancellationToken cancellationToken = default)
     {
         try
@@ -129,6 +137,9 @@ internal sealed class UserManagementApiClient(HttpClient client) : IUserManageme
         }
     }
 
+    /// <summary>
+    /// Reads a response and converts it to a typed result, mapping failures to an error.
+    /// </summary>
     private async Task<IApiResult<TResponse>> ProcessResponseAsync<TResponse>(HttpResponseMessage response)
     {
         if (response.IsSuccessStatusCode)

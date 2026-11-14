@@ -14,11 +14,29 @@ namespace AlertManagement.Client.Functions;
 public sealed class NotificationFunctions(IPushNotificationService pushNotificationService, ILogger<NotificationFunctions> logger)
 {
     // Route constants
+    /// <summary>
+    /// Route for registering a device for push notifications.
+    /// </summary>
     public const string REGISTER = "notifications/register";
+    /// <summary>
+    /// Route for unregistering a device.
+    /// </summary>
     public const string UNREGISTER = "notifications/unregister/{registrationId}";
+    /// <summary>
+    /// Route for sending a notification to one user.
+    /// </summary>
     public const string SEND_TO_USER = "notifications/send/user/{userId}";
+    /// <summary>
+    /// Route for sending a notification to all registered devices.
+    /// </summary>
     public const string SEND_TO_ALL = "notifications/send/all";
+    /// <summary>
+    /// Route for sending a notification to devices matching tags.
+    /// </summary>
     public const string SEND_TO_TAGS = "notifications/send/tags";
+    /// <summary>
+    /// Route for sending a test notification.
+    /// </summary>
     public const string TEST = "notifications/test";
 
     /// <summary>
@@ -348,27 +366,72 @@ public sealed class NotificationFunctions(IPushNotificationService pushNotificat
         return response;
     }
 
+    /// <summary>
+    /// Request body for the test notification endpoint.
+    /// </summary>
     private sealed class TestNotificationRequest
     {
+        /// <summary>
+        /// Gets or sets the notification title.
+        /// </summary>
         public string Title { get; set; } = "This is a test";
+        /// <summary>
+        /// Gets or sets the notification body.
+        /// </summary>
         public string? Body { get; set; } = "This is the test body";
+        /// <summary>
+        /// Gets or sets the target user identifier.
+        /// </summary>
         public string? UserId { get; set; }
+        /// <summary>
+        /// Gets or sets the target tags.
+        /// </summary>
         public IEnumerable<string>? Tags { get; set; }
+        /// <summary>
+        /// Gets or sets the additional data payload.
+        /// </summary>
         public Dictionary<string, string>? Data { get; set; }
     }
 
+    /// <summary>
+    /// Request body for sending a notification to a user or to everyone.
+    /// </summary>
     private sealed class SendNotificationRequest
     {
+        /// <summary>
+        /// Gets or sets the notification title.
+        /// </summary>
         public required string Title { get; set; }
+        /// <summary>
+        /// Gets or sets the notification body.
+        /// </summary>
         public required string Body { get; set; }
+        /// <summary>
+        /// Gets or sets the additional data payload.
+        /// </summary>
         public Dictionary<string, string>? Data { get; set; }
     }
 
+    /// <summary>
+    /// Request body for sending a notification to devices matching tags.
+    /// </summary>
     private sealed class SendToTagsRequest
     {
+        /// <summary>
+        /// Gets or sets the notification title.
+        /// </summary>
         public required string Title { get; set; }
+        /// <summary>
+        /// Gets or sets the notification body.
+        /// </summary>
         public required string Body { get; set; }
+        /// <summary>
+        /// Gets or sets the tags to target.
+        /// </summary>
         public required IEnumerable<string> Tags { get; set; }
+        /// <summary>
+        /// Gets or sets the additional data payload.
+        /// </summary>
         public Dictionary<string, string>? Data { get; set; }
     }
 }

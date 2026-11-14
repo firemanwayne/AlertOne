@@ -21,6 +21,7 @@ internal sealed class InvitationService(
     UserManager<ApplicationUser> userManager,
     IUserSettingsService userSettingsService) : IInvitationService
 {
+    /// <inheritdoc />
     public async Task<Result<InvitationResponse>> CreateAsync(CreateInvitationRequest request, CancellationToken cancellationToken = default)
     {
         logger
@@ -92,6 +93,7 @@ internal sealed class InvitationService(
         return Result.Success(MapToResponse(invitation));
     }
 
+    /// <inheritdoc />
     public async Task<Result<IEnumerable<InvitationResponse>>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting all invitations");
@@ -106,6 +108,7 @@ internal sealed class InvitationService(
         return Result.Success(responses);
     }
 
+    /// <inheritdoc />
     public async Task<Result<InvitationResponse>> GetByCodeAsync(string activationCode, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting invitation by activation code");
@@ -131,6 +134,7 @@ internal sealed class InvitationService(
         return Result.Success(MapToResponse(invitation));
     }
 
+    /// <inheritdoc />
     public async Task<Result<InvitationResponse>> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting invitation by ID: {InvitationId}", id);
@@ -150,6 +154,7 @@ internal sealed class InvitationService(
         return Result.Success(MapToResponse(invitation));
     }
 
+    /// <inheritdoc />
     public async Task<Result<InvitationResponse>> ValidateCodeAsync(string activationCode, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Validating activation code");
@@ -187,6 +192,7 @@ internal sealed class InvitationService(
         return Result.Success(MapToResponse(invitation));
     }
 
+    /// <inheritdoc />
     public async Task<Result<UserResponse>> AcceptAsync(AcceptInvitationRequest request, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Accepting invitation with activation code");
@@ -305,6 +311,7 @@ internal sealed class InvitationService(
         ));
     }
 
+    /// <inheritdoc />
     public async Task<Result> DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Deleting invitation: {InvitationId}", id);
@@ -329,6 +336,7 @@ internal sealed class InvitationService(
         return Result.Success();
     }
 
+    /// <inheritdoc />
     public async Task<Result<InvitationResponse>> ResendAsync(string id, string resendBy, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Resending invitation: {InvitationId}", id);
@@ -382,11 +390,17 @@ internal sealed class InvitationService(
         return Result.Success(MapToResponse(invitation));
     }
 
+    /// <summary>
+    /// Generates a random activation code.
+    /// </summary>
     private static string GenerateActivationCode()
     {
         return Random.Shared.Next(100000, 999999).ToString();
     }
 
+    /// <summary>
+    /// Maps an invitation entity to its response.
+    /// </summary>
     private static InvitationResponse MapToResponse(UserInvitationEntity entity)
     {
         var isExpired = DateTime.UtcNow > entity.ExpiresAt;

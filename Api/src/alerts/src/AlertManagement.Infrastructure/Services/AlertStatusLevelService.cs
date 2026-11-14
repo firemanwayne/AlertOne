@@ -16,6 +16,7 @@ internal sealed class AlertStatusLevelService(
     AlertDbContext context,
     ILogger<AlertStatusLevelService> logger) : IAlertStatusLevelService
 {
+    /// <inheritdoc />
     public async Task<Result<IEnumerable<AlertStatusLevelResponse>>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting all alert status levels");
@@ -29,6 +30,7 @@ internal sealed class AlertStatusLevelService(
         return Result.Success(responses);
     }
 
+    /// <inheritdoc />
     public async Task<Result<AlertStatusLevelResponse>> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting alert status level {AlertStatusLevelId}", id);
@@ -46,6 +48,7 @@ internal sealed class AlertStatusLevelService(
         return Result.Success(MapToResponse(statusLevel));
     }
 
+    /// <inheritdoc />
     public async Task<Result<AlertStatusLevelResponse>> CreateAsync(CreateAlertStatusLevelRequest request, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Creating alert status level: {AlertStatusLevelName}", request.Name);
@@ -115,6 +118,7 @@ internal sealed class AlertStatusLevelService(
         return Result.Success(MapToResponse(statusLevel));
     }
 
+    /// <inheritdoc />
     public async Task<Result<AlertStatusLevelResponse>> UpdateAsync(string id, UpdateAlertStatusLevelRequest request, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Updating alert status level {AlertStatusLevelId}", id);
@@ -187,6 +191,7 @@ internal sealed class AlertStatusLevelService(
         return Result.Success(MapToResponse(statusLevel));
     }
 
+    /// <inheritdoc />
     public async Task<Result> DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Deleting alert status level {AlertStatusLevelId}", id);
@@ -223,6 +228,9 @@ internal sealed class AlertStatusLevelService(
         return Result.Success();
     }
 
+    /// <summary>
+    /// Maps a status level entity to its response.
+    /// </summary>
     private static AlertStatusLevelResponse MapToResponse(AlertStatusLevel statusLevel)
     {
         return new AlertStatusLevelResponse(

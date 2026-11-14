@@ -19,7 +19,7 @@
 		<ProjectReference Include="..\Core\AlertOne.Core.csproj" />
 		<ProjectReference Include="..\Domains\Domains.AlertManagement\Domains.AlertManagement.csproj" />
 		<ProjectReference Include="..\Domains\Domains.UserManagement\Domains.UserManagement.csproj" />
-		<ProjectReference Include="..\Shared\AlertOne.Shared.csproj" />
+		<ProjectReference Include="..\Blazor\AlertOne.Shared.Blazor.csproj" />
 	</ItemGroup>
 
 </Project>

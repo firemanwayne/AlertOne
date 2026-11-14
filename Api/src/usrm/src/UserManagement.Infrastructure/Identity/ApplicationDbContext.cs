@@ -8,21 +8,57 @@ namespace UserManagement.Infrastructure.Identity;
 /// </summary>
 public sealed class ApplicationDbContext : DbContext
 {
+    /// <summary>
+    /// Gets the users.
+    /// </summary>
     public DbSet<ApplicationUser> Users => Set<ApplicationUser>();
+    /// <summary>
+    /// Gets the roles.
+    /// </summary>
     public DbSet<IdentityRole<Guid>> Roles => Set<IdentityRole<Guid>>();
+    /// <summary>
+    /// Gets the user to role links.
+    /// </summary>
     public DbSet<IdentityUserRole<Guid>> UserRoles => Set<IdentityUserRole<Guid>>();
+    /// <summary>
+    /// Gets the user claims.
+    /// </summary>
     public DbSet<IdentityUserClaim<Guid>> UserClaims => Set<IdentityUserClaim<Guid>>();
+    /// <summary>
+    /// Gets the external logins.
+    /// </summary>
     public DbSet<IdentityUserLogin<Guid>> UserLogins => Set<IdentityUserLogin<Guid>>();
+    /// <summary>
+    /// Gets the role claims.
+    /// </summary>
     public DbSet<IdentityRoleClaim<Guid>> RoleClaims => Set<IdentityRoleClaim<Guid>>();
+    /// <summary>
+    /// Gets the user tokens.
+    /// </summary>
     public DbSet<IdentityUserToken<Guid>> UserTokens => Set<IdentityUserToken<Guid>>();
+    /// <summary>
+    /// Gets the user devices (sessions).
+    /// </summary>
     public DbSet<UserDevice> UserDevices => Set<UserDevice>();
+    /// <summary>
+    /// Gets the user invitations.
+    /// </summary>
     public DbSet<UserInvitationEntity> UserInvitations => Set<UserInvitationEntity>();
+    /// <summary>
+    /// Gets the user settings.
+    /// </summary>
     public DbSet<UserSettings> UserSettings => Set<UserSettings>();
 
+    /// <summary>
+    /// Initializes the context with its options.
+    /// </summary>
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
     }
 
+    /// <summary>
+    /// Maps each entity to its Cosmos DB container and partition key and configures its properties.
+    /// </summary>
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

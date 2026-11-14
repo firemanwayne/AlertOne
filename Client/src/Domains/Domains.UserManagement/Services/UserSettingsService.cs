@@ -5,6 +5,7 @@ namespace Domains.UserManagement.Services;
 /// </summary>
 internal sealed class UserSettingsService(IUserManagementApiClient apiClient) : IUserSettingsService
 {
+    /// <inheritdoc />
     public async Task<IApiResult<UserSettingsResponse>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         return await apiClient
@@ -13,6 +14,7 @@ internal sealed class UserSettingsService(IUserManagementApiClient apiClient) : 
             cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<IApiResult<UserSettingsResponse>> UpdateAsync(Guid userId, UpdateUserSettingsRequest request, CancellationToken cancellationToken = default)
     {
         return await apiClient

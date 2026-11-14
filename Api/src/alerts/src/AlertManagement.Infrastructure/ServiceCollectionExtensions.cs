@@ -1,3 +1,4 @@
+using Microsoft.Azure.Cosmos;
 using AlertManagement.Core.Interfaces;
 using AlertManagement.Infrastructure.Data;
 using AlertManagement.Infrastructure.Services;
@@ -28,6 +29,9 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    /// <summary>
+    /// Registers the Cosmos DB context, using the account key (emulator) or managed identity (Azure).
+    /// </summary>
     private static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
     {
         var cosmosEndpoint = configuration.GetValue<string>("CosmosDb:Endpoint");
@@ -42,10 +46,14 @@ public static class ServiceCollectionExtensions
             // Use account key for local development (Cosmos Emulator), managed identity for Azure
             if (!string.IsNullOrWhiteSpace(cosmosAccountKey))
             {
+                // The Cosmos emulator only supports gateway mode and a single endpoint
                 options.UseCosmos(
                     cosmosEndpoint,
                     cosmosAccountKey,
-                    cosmosDatabase);
+                    cosmosDatabase,
+                    cosmosOptions => cosmosOptions
+                        .ConnectionMode(ConnectionMode.Gateway)
+                        .LimitToEndpoint());
             }
             else
             {

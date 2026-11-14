@@ -23,6 +23,7 @@ internal sealed class AuthenticationService(
     SignInManager<ApplicationUser> signInManager,
     ApplicationDbContext dbContext) : IAuthenticationService
 {
+    /// <inheritdoc />
     public async Task<Result<AuthenticationResponse>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Processing registration for email: {Email}", request.Email);
@@ -135,6 +136,7 @@ internal sealed class AuthenticationService(
         return Result.Success(response);
     }
 
+    /// <inheritdoc />
     public async Task<Result<AuthenticationResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Processing login for email: {Email}", request.Email);
@@ -214,6 +216,7 @@ internal sealed class AuthenticationService(
         return Result.Success(response);
     }
 
+    /// <inheritdoc />
     public async Task<Result<AuthenticationResponse>> RefreshTokenAsync(RefreshTokenRequest request, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Processing token refresh");
@@ -292,6 +295,7 @@ internal sealed class AuthenticationService(
         return Result.Success(response);
     }
 
+    /// <inheritdoc />
     public async Task<Result> RevokeTokenAsync(UserId userId, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Revoking all devices for user: {UserId}", userId.Value);
@@ -319,6 +323,7 @@ internal sealed class AuthenticationService(
         return Result.Success();
     }
 
+    /// <inheritdoc />
     public async Task<Result<bool>> HasUsersAsync(CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Checking if any users exist");

@@ -3,6 +3,7 @@ using Azure.NotificationHubs.Options;
 using Azure.NotificationHubs.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Azure.NotificationHubs;
 
@@ -21,7 +22,17 @@ public static class ServiceRegistryExtensions
     {
         services.Configure<AzureNotificationHubsOptions>(configuration.GetSection(AzureNotificationHubsOptions.SectionName));
 
-        services.AddSingleton<IPushNotificationService, PushNotificationService>();
+        var connectionString = configuration[$"{AzureNotificationHubsOptions.SectionName}:{nameof(AzureNotificationHubsOptions.ConnectionString)}"];
+
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            // No Notification Hub configured (local development): log instead of sending
+            services.TryAddSingleton<IPushNotificationService, LoggingPushNotificationService>();
+
+            return services;
+        }
+
+        services.TryAddSingleton<IPushNotificationService, PushNotificationService>();
 
         return services;
     }

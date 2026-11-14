@@ -6,6 +6,9 @@ using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text.Json.Serialization;
 
+/// <summary>
+/// Base class for view models that edit an entity, with change notification, spinner state and audit fields.
+/// </summary>
 public abstract class ViewModelBase : INotifyPropertyChanged
 {
     /// <summary>
@@ -69,19 +72,37 @@ public abstract class ViewModelBase : INotifyPropertyChanged
     [Display(Name = "Is New?")]
     public bool IsNew { get; set; }
 
+    /// <summary>
+    /// Gets a value indicating whether the busy spinner is visible.
+    /// </summary>
     public bool SpinnerVisible { get; private set; }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether the submit button is disabled.
+    /// </summary>
     public bool DisableSpinnerButton { get; set; }
 
+    /// <summary>
+    /// Gets the submit button text: "Submit" for new entities, "Update" for existing ones.
+    /// </summary>
     public string AddEditButtonText => IsNew ? "Submit" : "Update";
 
+    /// <summary>
+    /// Occurs when a property value changes.
+    /// </summary>
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    /// <summary>
+    /// Raises <see cref="PropertyChanged"/> for a property.
+    /// </summary>
     public void OnPropertyChanged([CallerMemberName] string property = "")
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
     }
 
+    /// <summary>
+    /// Shows the spinner and disables the submit button.
+    /// </summary>
     public void ShowSpinnerAndDisableButton()
     {
         SpinnerVisible = true;
@@ -90,6 +111,9 @@ public abstract class ViewModelBase : INotifyPropertyChanged
         OnPropertyChanged();
     }
 
+    /// <summary>
+    /// Hides the spinner and enables the submit button.
+    /// </summary>
     public void HideSpinnerAndEnableButton()
     {
         SpinnerVisible = false;
@@ -105,8 +129,14 @@ public abstract class ViewModelBase : INotifyPropertyChanged
 
     [JsonIgnore] public ClaimsPrincipal CurrentUser { get; set; }
 
+    /// <summary>
+    /// Gets a hash code from the identifier and last update time.
+    /// </summary>
     public override int GetHashCode() => HashCode.Combine(Id, UpdatedDate);
 
+    /// <summary>
+    /// Sets a field and raises <see cref="PropertyChanged"/> when the value changed; returns whether it changed.
+    /// </summary>
     protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
@@ -120,6 +150,9 @@ public abstract class ViewModelBase : INotifyPropertyChanged
     }
 }
 
+/// <summary>
+/// Base class for view models bound to a typed data model.
+/// </summary>
 public abstract class ViewModelBase<T> : ViewModelBase where T : DataModelBase
 {
     /// <summary>

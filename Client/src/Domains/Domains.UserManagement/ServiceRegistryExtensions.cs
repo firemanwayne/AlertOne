@@ -1,8 +1,9 @@
-using AlertOne.Shared.Handlers;
+using AlertOne.Shared.Blazor.Handlers;
 
 using Domains.UserManagement.Options;
 
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Domains.UserManagement;
 
@@ -22,30 +23,31 @@ public static class ServiceRegistryExtensions
         // Bind options from configuration
         services.Configure<UserManagementOptions>(configuration.GetSection("Api:UserManagement"));
 
-        services.AddScoped<IAuthenticationService, AuthenticationService>();
-        services.AddScoped<IUserManagementService, UserManagementService>();
-        services.AddScoped<IRoleManagementService, RoleManagementService>();
-        services.AddScoped<IInvitationService, InvitationService>();
-        services.AddScoped<IUserSettingsService, UserSettingsService>();
+        services.TryAddScoped<IAuthenticationService, AuthenticationService>();
+
+        services.TryAddScoped<IUserManagementService, UserManagementService>();
+
+        services.TryAddScoped<IRoleManagementService, RoleManagementService>();
+
+        services.TryAddScoped<IInvitationService, InvitationService>();
+
+        services.TryAddScoped<IUserSettingsService, UserSettingsService>();
 
         services
             .AddHttpClient<IUserManagementApiClient, UserManagementApiClient>((sp, client) =>
             {
-                var options = configuration.GetSection("Api:UserManagement").Get<UserManagementOptions>();
-                var baseUri = options?.BaseUri;
+                var options = configuration
+                .GetSection("Api:UserManagement")
+                .Get<UserManagementOptions>() ?? throw new InvalidCastException(nameof(UserManagementOptions));
 
-#if DEBUG
-                // Use local development URL if not configured
-                baseUri ??= "http://localhost:7072";
-#endif
+                ArgumentException.ThrowIfNullOrWhiteSpace(options.BaseUri);
 
-                if (!string.IsNullOrWhiteSpace(baseUri))
-                {
-                    client.BaseAddress = new Uri(baseUri);
-                }
+                //ArgumentException.ThrowIfNullOrWhiteSpace(options.FunctionKey);
+
+                client.BaseAddress = new Uri(options.BaseUri);
 
                 // Add function key header if configured
-                if (!string.IsNullOrWhiteSpace(options?.FunctionKey))
+                if (!string.IsNullOrWhiteSpace(options.FunctionKey))
                 {
                     client.DefaultRequestHeaders.Add("x-functions-key", options.FunctionKey);
                 }

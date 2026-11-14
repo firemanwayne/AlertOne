@@ -13,10 +13,20 @@ public sealed class PushNotificationRegistrationService(
     IAlertManagementApiClient apiClient,
     ILogger<PushNotificationRegistrationService> logger) : IPushNotificationRegistrationService
 {
+    /// <summary>
+    /// The current push device token.
+    /// </summary>
     private string? _deviceToken;
+    /// <summary>
+    /// The current notification registration identifier.
+    /// </summary>
     private string? _registrationId;
+    /// <summary>
+    /// Whether push notifications have been initialized.
+    /// </summary>
     private bool _isInitialized;
 
+    /// <inheritdoc />
     public bool IsSupported =>
 #if ANDROID
         true;
@@ -28,14 +38,19 @@ public sealed class PushNotificationRegistrationService(
 
     public bool IsRegistered => !string.IsNullOrEmpty(_registrationId);
 
+    /// <inheritdoc />
     public string? DeviceToken => _deviceToken;
 
+    /// <inheritdoc />
     public string? RegistrationId => _registrationId;
 
+    /// <inheritdoc />
     public event EventHandler<PushNotificationReceivedEventArgs>? NotificationReceived;
 
+    /// <inheritdoc />
     public event EventHandler<string>? TokenRefreshed;
 
+    /// <inheritdoc />
     public async Task<bool> InitializeAsync()
     {
         if (_isInitialized)
@@ -62,6 +77,7 @@ public sealed class PushNotificationRegistrationService(
         }
     }
 
+    /// <inheritdoc />
     public async Task<string?> RegisterAsync(string userId, IEnumerable<string>? tags = null, CancellationToken cancellationToken = default)
     {
         if (!_isInitialized)
@@ -113,6 +129,7 @@ public sealed class PushNotificationRegistrationService(
         }
     }
 
+    /// <inheritdoc />
     public async Task<bool> UnregisterAsync(CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(_registrationId))
@@ -144,6 +161,9 @@ public sealed class PushNotificationRegistrationService(
         }
     }
 
+    /// <summary>
+    /// Stores a new device token and notifies subscribers; called by the platform messaging service.
+    /// </summary>
     internal void OnTokenReceived(string token)
     {
         logger.LogInformation("FCM token received");
@@ -151,6 +171,9 @@ public sealed class PushNotificationRegistrationService(
         TokenRefreshed?.Invoke(this, token);
     }
 
+    /// <summary>
+    /// Raises the notification received event; called by the platform messaging service.
+    /// </summary>
     internal void OnNotificationReceived(string? title, string? body, IDictionary<string, string>? data, bool inForeground)
     {
         logger.LogInformation("Push notification received. Title: {Title}, InForeground: {InForeground}", title, inForeground);
@@ -164,6 +187,9 @@ public sealed class PushNotificationRegistrationService(
         });
     }
 
+    /// <summary>
+    /// Gets the push platform identifier for the current OS.
+    /// </summary>
     private static string GetPlatformIdentifier()
     {
 #if ANDROID
@@ -216,8 +242,14 @@ public sealed class PushNotificationRegistrationService(
         return tcs.Task;
     }
 
+    /// <summary>
+    /// Task listener that forwards a Firebase task's success or failure to callbacks.
+    /// </summary>
     private sealed class TokenCompleteListener(Action<string?> onSuccess, Action<Exception> onFailure) : Java.Lang.Object, Android.Gms.Tasks.IOnCompleteListener
     {
+        /// <summary>
+        /// Invokes the success or failure callback when the Firebase task completes.
+        /// </summary>
         public void OnComplete(Android.Gms.Tasks.Task task)
         {
             if (task.IsSuccessful)

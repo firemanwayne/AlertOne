@@ -1,13 +1,19 @@
 using AlertOne.Core.Interfaces;
 
-namespace AlertOne.Shared.States;
+namespace AlertOne.Shared.Blazor.States;
 
 /// <summary>
 /// State for storing and managing in-app notifications
 /// </summary>
 public sealed class NotificationState
 {
+    /// <summary>
+    /// The notifications received, newest first.
+    /// </summary>
     private readonly List<NotificationItem> _notifications = [];
+    /// <summary>
+    /// The maximum number of notifications kept.
+    /// </summary>
     private readonly int _maxNotifications = 50;
 
     /// <summary>
@@ -114,6 +120,9 @@ public sealed class NotificationState
         }
     }
 
+    /// <summary>
+    /// Notifies subscribers that the notification list changed.
+    /// </summary>
     private void NotifyStateChanged() => OnChange?.Invoke();
 }
 
@@ -122,11 +131,29 @@ public sealed class NotificationState
 /// </summary>
 public sealed class NotificationItem
 {
+    /// <summary>
+    /// Gets the notification identifier.
+    /// </summary>
     public required string Id { get; init; }
+    /// <summary>
+    /// Gets the notification title.
+    /// </summary>
     public required string Title { get; init; }
+    /// <summary>
+    /// Gets the notification body.
+    /// </summary>
     public string? Body { get; init; }
+    /// <summary>
+    /// Gets the additional data payload.
+    /// </summary>
     public IDictionary<string, string>? Data { get; init; }
+    /// <summary>
+    /// Gets the UTC time the notification was received.
+    /// </summary>
     public DateTime ReceivedAt { get; init; }
+    /// <summary>
+    /// Gets or sets a value indicating whether the notification was read.
+    /// </summary>
     public bool IsRead { get; set; }
 
     /// <summary>

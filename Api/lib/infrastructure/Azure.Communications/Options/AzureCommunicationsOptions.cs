@@ -5,6 +5,9 @@ namespace Azure.Communications.Options;
 /// </summary>
 public sealed class AzureCommunicationsOptions
 {
+    /// <summary>
+    /// The configuration section name.
+    /// </summary>
     public const string SectionName = "AzureCommunications";
 
     /// <summary>

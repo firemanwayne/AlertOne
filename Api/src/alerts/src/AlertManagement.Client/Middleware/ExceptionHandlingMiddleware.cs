@@ -12,6 +12,9 @@ namespace AlertManagement.Client.Middleware;
 /// </summary>
 public sealed class ExceptionHandlingMiddleware(ILogger<ExceptionHandlingMiddleware> logger) : IFunctionsWorkerMiddleware
 {
+    /// <summary>
+    /// Runs the next function and converts an unhandled exception into a 500 error response.
+    /// </summary>
     public async Task Invoke(FunctionContext context, FunctionExecutionDelegate next)
     {
         try
