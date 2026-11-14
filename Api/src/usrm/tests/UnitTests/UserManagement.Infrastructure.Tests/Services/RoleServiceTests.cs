@@ -15,9 +15,20 @@ namespace UserManagement.Infrastructure.Tests.Services;
 public sealed class RoleServiceTests
 {
     private Mock<RoleManager<IdentityRole<Guid>>> _roleManagerMock = null!;
+
     private Mock<UserManager<ApplicationUser>> _userManagerMock = null!;
+
     private Mock<ILogger<RoleService>> _loggerMock = null!;
+
     private RoleService _roleService = null!;
+
+    private ApplicationDbContext _dbContext = null!;
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        _dbContext.Dispose();
+    }
 
     [TestInitialize]
     public void Setup()
@@ -25,10 +36,12 @@ public sealed class RoleServiceTests
         _roleManagerMock = MockHelpers.MockRoleManager();
         _userManagerMock = MockHelpers.MockUserManager();
         _loggerMock = new Mock<ILogger<RoleService>>();
+        _dbContext = TestDbContextFactory.Create();
 
         _roleService = new RoleService(
             _roleManagerMock.Object,
             _userManagerMock.Object,
+            _dbContext,
             _loggerMock.Object);
     }
 
@@ -665,6 +678,40 @@ public sealed class RoleServiceTests
         result.Value.Should().BeEmpty();
     }
 
-    // Note: GetAllRolesAsync test omitted due to EF Core async queryable mocking complexity
-    // This scenario is better covered by integration tests
+    [TestMethod]
+    public async Task GetAllRolesAsync_NoRoles_ReturnsEmptyList()
+    {
+        // Act
+        var result = await _roleService.GetAllRolesAsync();
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public async Task GetAllRolesAsync_WithRoles_ReturnsEveryRoleWithUserCount()
+    {
+        // Arrange
+        var admin = new IdentityRole<Guid> { Id = Guid.NewGuid(), Name = "Admin", NormalizedName = "ADMIN" };
+        var user = new IdentityRole<Guid> { Id = Guid.NewGuid(), Name = "User", NormalizedName = "USER" };
+
+        _dbContext.Roles.AddRange(admin, user);
+
+        await _dbContext.SaveChangesAsync();
+
+        _userManagerMock.Setup(x => x.GetUsersInRoleAsync("Admin"))
+            .ReturnsAsync([new ApplicationUser(), new ApplicationUser()]);
+        _userManagerMock.Setup(x => x.GetUsersInRoleAsync("User"))
+            .ReturnsAsync([]);
+
+        // Act
+        var result = await _roleService.GetAllRolesAsync();
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().HaveCount(2);
+        result.Value.Single(r => r.Name == "Admin").UserCount.Should().Be(2);
+        result.Value.Single(r => r.Name == "User").UserCount.Should().Be(0);
+    }
 }

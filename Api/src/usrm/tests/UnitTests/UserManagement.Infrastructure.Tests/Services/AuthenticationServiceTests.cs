@@ -19,12 +19,26 @@ namespace UserManagement.Infrastructure.Tests.Services;
 public sealed class AuthenticationServiceTests
 {
     private Mock<UserManager<ApplicationUser>> _userManagerMock = null!;
+
     private Mock<SignInManager<ApplicationUser>> _signInManagerMock = null!;
+
     private Mock<ITokenService> _tokenServiceMock = null!;
+
     private Mock<IDeviceService> _deviceServiceMock = null!;
+
     private Mock<IUserSettingsService> _userSettingsServiceMock = null!;
+
     private Mock<ILogger<AuthenticationService>> _loggerMock = null!;
+
     private AuthenticationService _authenticationService = null!;
+
+    private ApplicationDbContext _dbContext = null!;
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        _dbContext.Dispose();
+    }
 
     [TestInitialize]
     public void Setup()
@@ -35,6 +49,7 @@ public sealed class AuthenticationServiceTests
         _deviceServiceMock = new Mock<IDeviceService>();
         _userSettingsServiceMock = new Mock<IUserSettingsService>();
         _loggerMock = new Mock<ILogger<AuthenticationService>>();
+        _dbContext = TestDbContextFactory.Create();
 
         _authenticationService = new AuthenticationService(
             _tokenServiceMock.Object,
@@ -42,7 +57,8 @@ public sealed class AuthenticationServiceTests
             _userSettingsServiceMock.Object,
             _loggerMock.Object,
             _userManagerMock.Object,
-            _signInManagerMock.Object);
+            _signInManagerMock.Object,
+            _dbContext);
     }
 
     [TestMethod]
@@ -375,6 +391,33 @@ public sealed class AuthenticationServiceTests
         {
             result.Error.Code.Should().Be("User.NotFound");
         }
+    }
+
+    [TestMethod]
+    public async Task HasUsersAsync_NoUsers_ReturnsFalse()
+    {
+        // Act
+        var result = await _authenticationService.HasUsersAsync();
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public async Task HasUsersAsync_WithAnUser_ReturnsTrue()
+    {
+        // Arrange
+        _dbContext.Users.Add(new ApplicationUser { Id = Guid.NewGuid(), Email = "first@example.com", FirstName = "First", LastName = "User" });
+
+        await _dbContext.SaveChangesAsync();
+
+        // Act
+        var result = await _authenticationService.HasUsersAsync();
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeTrue();
     }
 
     private static DeviceInfo CreateTestDeviceInfo()

@@ -4,10 +4,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using UserManagement.Core.DTOs.Requests;
+using UserManagement.Core.Interfaces;
 using UserManagement.Core.ValueObjects;
 using UserManagement.Infrastructure.Identity;
 using UserManagement.Infrastructure.Services;
-using UserManagement.Core.Interfaces;
 using UserManagement.Infrastructure.Tests.Helpers;
 
 namespace UserManagement.Infrastructure.Tests.Services;
@@ -16,9 +16,20 @@ namespace UserManagement.Infrastructure.Tests.Services;
 public sealed class UserServiceTests
 {
     private Mock<UserManager<ApplicationUser>> _userManagerMock = null!;
+
     private Mock<ILogger<UserService>> _loggerMock = null!;
+
     private Mock<IUserSettingsService> _userSettingsServiceMock = null!;
+
     private UserService _userService = null!;
+
+    private ApplicationDbContext _dbContext = null!;
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        _dbContext.Dispose();
+    }
 
     [TestInitialize]
     public void Setup()
@@ -26,8 +37,9 @@ public sealed class UserServiceTests
         _userManagerMock = MockHelpers.MockUserManager();
         _loggerMock = new Mock<ILogger<UserService>>();
         _userSettingsServiceMock = new Mock<IUserSettingsService>();
+        _dbContext = TestDbContextFactory.Create();
 
-        _userService = new UserService(_loggerMock.Object, _userManagerMock.Object, _userSettingsServiceMock.Object);
+        _userService = new UserService(_loggerMock.Object, _userManagerMock.Object, _dbContext, _userSettingsServiceMock.Object);
     }
 
     [TestMethod]
@@ -369,6 +381,41 @@ public sealed class UserServiceTests
         }
     }
 
-    // Note: GetAllUsersAsync tests are omitted due to EF Core async queryable mocking complexity
+    [TestMethod]
+    public async Task GetAllUsersAsync_NoUsers_ReturnsEmptyList()
+    {
+        // Act
+        var result = await _userService.GetAllUsersAsync();
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public async Task GetAllUsersAsync_WithUsers_ReturnsEveryUserWithRoles()
+    {
+        // Arrange
+        var admin = new ApplicationUser { Id = Guid.NewGuid(), Email = "admin@example.com", FirstName = "Ada", LastName = "Admin" };
+        var member = new ApplicationUser { Id = Guid.NewGuid(), Email = "member@example.com", FirstName = "Max", LastName = "Member" };
+
+        _dbContext.Users.AddRange(admin, member);
+
+        await _dbContext.SaveChangesAsync();
+
+        _userManagerMock.Setup(x => x.GetRolesAsync(It.Is<ApplicationUser>(u => u.Id == admin.Id)))
+            .ReturnsAsync(["Admin"]);
+        _userManagerMock.Setup(x => x.GetRolesAsync(It.Is<ApplicationUser>(u => u.Id == member.Id)))
+            .ReturnsAsync(["User"]);
+
+        // Act
+        var result = await _userService.GetAllUsersAsync();
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().HaveCount(2);
+        result.Value.Single(u => u.Id == admin.Id).Roles.Should().BeEquivalentTo(["Admin"]);
+        result.Value.Single(u => u.Id == member.Id).Email.Should().Be("member@example.com");
+    }
     // These scenarios are better covered by integration tests
 }
