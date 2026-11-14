@@ -32,4 +32,5 @@ The Blazor app cannot read process environment variables, so its API URLs live i
 - **Docker** must be running (Cosmos emulator and Azurite).
 - The first start pulls the emulator image and the emulator takes a minute or two to accept requests. The APIs create the database and containers in the background and retry, so early requests can fail; look for `Cosmos DB ready` in the API logs.
 - The `cosmos` resource may show as unhealthy in the dashboard: Aspire's built-in check does not suit the preview emulator. The APIs therefore wait for the container to *start*, not to be healthy.
+- The Cosmos DB vNext emulator answers queries in a binary format the .NET SDK cannot parse (`ArgumentOutOfRangeException: Unknown JsonNodeType` when reading documents). The APIs avoid this by asking for plain JSON through `Azure.CosmosDb`'s `CosmosEmulatorHttpClient`; keep that in place when changing the Cosmos setup.
 - Email and push notifications are logged, not sent, because no Communication Services or Notification Hubs connection strings are configured locally.

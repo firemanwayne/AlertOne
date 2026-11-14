@@ -1,5 +1,6 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using System.Net;
@@ -99,7 +100,14 @@ public sealed class HealthFunctions(ApplicationDbContext dbContext, ILogger<Heal
 
         try
         {
-            var canConnect = await dbContext.Database.CanConnectAsync(cancellationToken);
+            // The Cosmos provider does not support CanConnectAsync, so read the account properties instead
+            var account = await dbContext
+                .Database
+                .GetCosmosClient()
+                .ReadAccountAsync()
+                .WaitAsync(cancellationToken);
+
+            var canConnect = account is not null;
 
             if (canConnect)
             {

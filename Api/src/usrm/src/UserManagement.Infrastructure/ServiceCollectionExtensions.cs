@@ -1,3 +1,4 @@
+using Azure.CosmosDb;
 using Microsoft.Azure.Cosmos;
 using Azure.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -84,14 +85,15 @@ public static class ServiceCollectionExtensions
             // Use account key for local development (Cosmos Emulator), managed identity for Azure
             if (!string.IsNullOrWhiteSpace(cosmosAccountKey))
             {
-                // The Cosmos emulator only supports gateway mode and a single endpoint
+                // The Cosmos emulator only supports gateway mode and a single endpoint, and its binary responses cannot be read, so ask for plain JSON
                 options.UseCosmos(
                     cosmosEndpoint,
                     cosmosAccountKey,
                     cosmosDatabase,
                     cosmosOptions => cosmosOptions
                         .ConnectionMode(ConnectionMode.Gateway)
-                        .LimitToEndpoint());
+                        .LimitToEndpoint()
+                        .HttpClientFactory(CosmosEmulatorHttpClient.Create));
             }
             else
             {

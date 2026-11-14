@@ -24,4 +24,5 @@ builder.Services
 
 - Do **not** reference `Azure.AppConfig` from the Blazor WebAssembly client. The provider blocks while loading and `DefaultAzureCredential` cannot run in a browser.
 - Registrations use `TryAdd*`, so a host can pre-register its own implementation (for example in tests).
+- `CosmosEmulatorHttpClient.Create()` is used by both APIs when connecting with the emulator account key. It makes the SDK ask the Cosmos DB vNext emulator for plain JSON, because the emulator's binary responses cannot be read by the .NET SDK (any query returning whole documents fails with `Unknown JsonNodeType` on the `_rid` field).
 - The Cosmos initializer runs after the host starts, so API calls made in the first moments of a cold start can fail until the database exists. Watch the log for `Cosmos DB ready`.

@@ -11,6 +11,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\..\lib\core\AlertOne.Api.Core\AlertOne.Api.Core.csproj" />
+		<ProjectReference Include="..\..\..\..\lib\infrastructure\Azure.CosmosDb\Azure.CosmosDb.csproj" />
 		<ProjectReference Include="..\UserManagement.Core\UserManagement.Core.csproj" />
 	</ItemGroup>
 
