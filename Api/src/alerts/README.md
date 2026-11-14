@@ -33,6 +33,19 @@ Route strings are constants on each Functions class.
 
 Under Aspire these are injected as environment variables by [`Aspire/AlertOne.AppHost`](../../../Aspire).
 
+## API documentation (OpenAPI / Swagger)
+
+The API describes itself with OpenAPI 3 through `Microsoft.Azure.Functions.Worker.Extensions.OpenApi`. Every function carries `[OpenApiOperation]`, parameter, request body and response attributes, so the document lists each route with its request and response types and the error responses it can return.
+
+| URL | Content |
+| --- | --- |
+| `http://localhost:7072/api/swagger/ui` | Swagger UI, to read and try the endpoints |
+| `http://localhost:7072/api/swagger.json` | OpenAPI document (also `/api/openapi/v3.json`) |
+
+Under Aspire this API is on port 7072.
+
+The document title and description live in `OpenApi/OpenApiConfiguration.cs`. The extension registers itself, so no call in `Program.cs` is needed. When you add a function, add the same `[OpenApi*]` attributes above its `[Function]` attribute so it shows up with the right types.
+
 ## Run
 
 Start the **AlertOne.AppHost** project. It starts the Cosmos emulator (Docker is required), this API, the User Management API and the Blazor app.

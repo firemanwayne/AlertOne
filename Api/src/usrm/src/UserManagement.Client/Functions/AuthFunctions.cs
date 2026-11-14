@@ -1,5 +1,8 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.OpenApi.Models;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using UserManagement.Client.Extensions;
@@ -37,6 +40,12 @@ public sealed class AuthFunctions(
     /// <summary>
     /// Registers a new user and returns tokens.
     /// </summary>
+    [OpenApiOperation(operationId: "Register", tags: new[] { "Authentication" }, Summary = "Registers a new user and returns tokens.")]
+    [OpenApiRequestBody("application/json", typeof(global::UserManagement.Core.DTOs.Requests.RegisterRequest), Required = true, Description = "The register request.")]
+    [OpenApiResponseWithBody(HttpStatusCode.Created, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.AuthenticationResponse), Description = "Created.")]
+    [OpenApiResponseWithBody(HttpStatusCode.BadRequest, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The request is invalid.")]
+    [OpenApiResponseWithBody(HttpStatusCode.Conflict, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The request conflicts with the current state.")]
+    [OpenApiResponseWithBody(HttpStatusCode.InternalServerError, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "An unexpected error occurred.")]
     [Function("Register")]
     public async Task<HttpResponseData> Register([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = REGISTER)] HttpRequestData req, FunctionContext context)
     {
@@ -70,6 +79,14 @@ public sealed class AuthFunctions(
     /// <summary>
     /// Authenticates a user and returns tokens.
     /// </summary>
+    [OpenApiOperation(operationId: "Login", tags: new[] { "Authentication" }, Summary = "Authenticates a user and returns tokens.")]
+    [OpenApiSecurity("bearer_auth", SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Bearer, BearerFormat = "JWT")]
+    [OpenApiRequestBody("application/json", typeof(global::UserManagement.Core.DTOs.Requests.LoginRequest), Required = true, Description = "The login request.")]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.AuthenticationResponse), Description = "Success.")]
+    [OpenApiResponseWithBody(HttpStatusCode.BadRequest, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The request is invalid.")]
+    [OpenApiResponseWithBody(HttpStatusCode.Unauthorized, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The caller is not authenticated.")]
+    [OpenApiResponseWithBody(HttpStatusCode.Forbidden, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The caller is not allowed to do this.")]
+    [OpenApiResponseWithBody(HttpStatusCode.InternalServerError, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "An unexpected error occurred.")]
     [Function("Login")]
     public async Task<HttpResponseData> Login([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = LOGIN)] HttpRequestData req, FunctionContext context)
     {
@@ -104,6 +121,13 @@ public sealed class AuthFunctions(
     /// <summary>
     /// Exchanges a refresh token for new tokens.
     /// </summary>
+    [OpenApiOperation(operationId: "RefreshToken", tags: new[] { "Authentication" }, Summary = "Exchanges a refresh token for new tokens.")]
+    [OpenApiSecurity("bearer_auth", SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Bearer, BearerFormat = "JWT")]
+    [OpenApiRequestBody("application/json", typeof(global::UserManagement.Core.DTOs.Requests.RefreshTokenRequest), Required = true, Description = "The refresh token request.")]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.AuthenticationResponse), Description = "Success.")]
+    [OpenApiResponseWithBody(HttpStatusCode.BadRequest, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The request is invalid.")]
+    [OpenApiResponseWithBody(HttpStatusCode.Unauthorized, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The caller is not authenticated.")]
+    [OpenApiResponseWithBody(HttpStatusCode.InternalServerError, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "An unexpected error occurred.")]
     [Function("RefreshToken")]
     public async Task<HttpResponseData> RefreshToken([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = REFRESH)] HttpRequestData req, FunctionContext context)
     {
@@ -137,6 +161,8 @@ public sealed class AuthFunctions(
     /// <summary>
     /// Returns whether at least one user exists (used for first-run setup).
     /// </summary>
+    [OpenApiOperation(operationId: "HasUsers", tags: new[] { "Authentication" }, Summary = "Returns whether at least one user exists (used for first-run setup).")]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(Dictionary<string, bool>), Description = "An object with a hasUsers flag.")]
     [Function("HasUsers")]
     public async Task<HttpResponseData> HasUsers([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = HAS_USERS)] HttpRequestData req, FunctionContext context)
     {

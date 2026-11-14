@@ -4,6 +4,9 @@ using AlertManagement.Core.DTOs.Requests;
 using AlertManagement.Core.Interfaces;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.OpenApi.Models;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
 using System.Net;
 
@@ -47,6 +50,9 @@ public sealed class AlertFunctions(IAlertService alertService, ILogger<AlertFunc
     /// <summary>
     /// Returns all alerts.
     /// </summary>
+    [OpenApiOperation(operationId: "GetAllAlerts", tags: new[] { "Alerts" }, Summary = "Returns all alerts.")]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(List<global::AlertManagement.Core.DTOs.Responses.AlertResponse>), Description = "Success.")]
+    [OpenApiResponseWithBody(HttpStatusCode.InternalServerError, "application/json", typeof(global::AlertManagement.Core.DTOs.Responses.ErrorResponse), Description = "An unexpected error occurred.")]
     [Function("GetAllAlerts")]
     public async Task<HttpResponseData> GetAllAlerts([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = GET)] HttpRequestData req, FunctionContext context)
     {
@@ -69,6 +75,10 @@ public sealed class AlertFunctions(IAlertService alertService, ILogger<AlertFunc
     /// <summary>
     /// Returns the currently active alert, if any.
     /// </summary>
+    [OpenApiOperation(operationId: "GetActiveAlert", tags: new[] { "Alerts" }, Summary = "Returns the currently active alert, if any.")]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(global::AlertManagement.Core.DTOs.Responses.AlertResponse), Description = "Success.")]
+    [OpenApiResponseWithoutBody(HttpStatusCode.NoContent, Description = "Success, no content.")]
+    [OpenApiResponseWithBody(HttpStatusCode.InternalServerError, "application/json", typeof(global::AlertManagement.Core.DTOs.Responses.ErrorResponse), Description = "An unexpected error occurred.")]
     [Function("GetActiveAlert")]
     public async Task<HttpResponseData> GetActiveAlert([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = GET_ACTIVE)] HttpRequestData req, FunctionContext context)
     {
@@ -96,6 +106,12 @@ public sealed class AlertFunctions(IAlertService alertService, ILogger<AlertFunc
     /// <summary>
     /// Returns an alert by identifier.
     /// </summary>
+    [OpenApiOperation(operationId: "GetAlertById", tags: new[] { "Alerts" }, Summary = "Returns an alert by identifier.")]
+    [OpenApiParameter(name: "id", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "The id.")]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(global::AlertManagement.Core.DTOs.Responses.AlertResponse), Description = "Success.")]
+    [OpenApiResponseWithBody(HttpStatusCode.BadRequest, "application/json", typeof(global::AlertManagement.Core.DTOs.Responses.ErrorResponse), Description = "The request is invalid.")]
+    [OpenApiResponseWithBody(HttpStatusCode.NotFound, "application/json", typeof(global::AlertManagement.Core.DTOs.Responses.ErrorResponse), Description = "The resource was not found.")]
+    [OpenApiResponseWithBody(HttpStatusCode.InternalServerError, "application/json", typeof(global::AlertManagement.Core.DTOs.Responses.ErrorResponse), Description = "An unexpected error occurred.")]
     [Function("GetAlertById")]
     public async Task<HttpResponseData> GetAlertById([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = GET_BY_ID)] HttpRequestData req, string id, FunctionContext context)
     {
@@ -127,6 +143,12 @@ public sealed class AlertFunctions(IAlertService alertService, ILogger<AlertFunc
     /// <summary>
     /// Returns the event history of an alert.
     /// </summary>
+    [OpenApiOperation(operationId: "GetAlertHistory", tags: new[] { "Alerts" }, Summary = "Returns the event history of an alert.")]
+    [OpenApiParameter(name: "id", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "The id.")]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(List<global::AlertManagement.Core.DTOs.Responses.AlertHistoryResponse>), Description = "Success.")]
+    [OpenApiResponseWithBody(HttpStatusCode.BadRequest, "application/json", typeof(global::AlertManagement.Core.DTOs.Responses.ErrorResponse), Description = "The request is invalid.")]
+    [OpenApiResponseWithBody(HttpStatusCode.NotFound, "application/json", typeof(global::AlertManagement.Core.DTOs.Responses.ErrorResponse), Description = "The resource was not found.")]
+    [OpenApiResponseWithBody(HttpStatusCode.InternalServerError, "application/json", typeof(global::AlertManagement.Core.DTOs.Responses.ErrorResponse), Description = "An unexpected error occurred.")]
     [Function("GetAlertHistory")]
     public async Task<HttpResponseData> GetAlertHistory([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = GET_HISTORY)] HttpRequestData req, string id, FunctionContext context)
     {
@@ -158,6 +180,13 @@ public sealed class AlertFunctions(IAlertService alertService, ILogger<AlertFunc
     /// <summary>
     /// Changes the status level of an alert.
     /// </summary>
+    [OpenApiOperation(operationId: "UpdateAlertStatus", tags: new[] { "Alerts" }, Summary = "Changes the status level of an alert.")]
+    [OpenApiParameter(name: "id", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "The id.")]
+    [OpenApiRequestBody("application/json", typeof(global::AlertManagement.Core.DTOs.Requests.UpdateAlertStatusRequest), Required = true, Description = "The update alert status request.")]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(global::AlertManagement.Core.DTOs.Responses.AlertResponse), Description = "Success.")]
+    [OpenApiResponseWithBody(HttpStatusCode.BadRequest, "application/json", typeof(global::AlertManagement.Core.DTOs.Responses.ErrorResponse), Description = "The request is invalid.")]
+    [OpenApiResponseWithBody(HttpStatusCode.NotFound, "application/json", typeof(global::AlertManagement.Core.DTOs.Responses.ErrorResponse), Description = "The resource was not found.")]
+    [OpenApiResponseWithBody(HttpStatusCode.InternalServerError, "application/json", typeof(global::AlertManagement.Core.DTOs.Responses.ErrorResponse), Description = "An unexpected error occurred.")]
     [Function("UpdateAlertStatus")]
     public async Task<HttpResponseData> UpdateAlertStatus([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = UPDATE_STATUS)] HttpRequestData req, string id, FunctionContext context)
     {
@@ -197,6 +226,12 @@ public sealed class AlertFunctions(IAlertService alertService, ILogger<AlertFunc
     /// <summary>
     /// Creates a new alert.
     /// </summary>
+    [OpenApiOperation(operationId: "CreateAlert", tags: new[] { "Alerts" }, Summary = "Creates a new alert.")]
+    [OpenApiRequestBody("application/json", typeof(global::AlertManagement.Core.DTOs.Requests.CreateAlertRequest), Required = true, Description = "The create alert request.")]
+    [OpenApiResponseWithBody(HttpStatusCode.Created, "application/json", typeof(global::AlertManagement.Core.DTOs.Responses.AlertResponse), Description = "Created.")]
+    [OpenApiResponseWithBody(HttpStatusCode.BadRequest, "application/json", typeof(global::AlertManagement.Core.DTOs.Responses.ErrorResponse), Description = "The request is invalid.")]
+    [OpenApiResponseWithBody(HttpStatusCode.NotFound, "application/json", typeof(global::AlertManagement.Core.DTOs.Responses.ErrorResponse), Description = "The resource was not found.")]
+    [OpenApiResponseWithBody(HttpStatusCode.InternalServerError, "application/json", typeof(global::AlertManagement.Core.DTOs.Responses.ErrorResponse), Description = "An unexpected error occurred.")]
     [Function("CreateAlert")]
     public async Task<HttpResponseData> CreateAlert([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = POST)] HttpRequestData req, FunctionContext context)
     {
@@ -231,6 +266,13 @@ public sealed class AlertFunctions(IAlertService alertService, ILogger<AlertFunc
     /// <summary>
     /// Rescinds (deactivates) an alert.
     /// </summary>
+    [OpenApiOperation(operationId: "RescindAlert", tags: new[] { "Alerts" }, Summary = "Rescinds (deactivates) an alert.")]
+    [OpenApiParameter(name: "id", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "The id.")]
+    [OpenApiRequestBody("application/json", typeof(global::AlertManagement.Core.DTOs.Requests.RescindAlertRequest), Required = true, Description = "The rescind alert request.")]
+    [OpenApiResponseWithoutBody(HttpStatusCode.NoContent, Description = "Success, no content.")]
+    [OpenApiResponseWithBody(HttpStatusCode.BadRequest, "application/json", typeof(global::AlertManagement.Core.DTOs.Responses.ErrorResponse), Description = "The request is invalid.")]
+    [OpenApiResponseWithBody(HttpStatusCode.NotFound, "application/json", typeof(global::AlertManagement.Core.DTOs.Responses.ErrorResponse), Description = "The resource was not found.")]
+    [OpenApiResponseWithBody(HttpStatusCode.InternalServerError, "application/json", typeof(global::AlertManagement.Core.DTOs.Responses.ErrorResponse), Description = "An unexpected error occurred.")]
     [Function("RescindAlert")]
     public async Task<HttpResponseData> RescindAlert([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = RESCIND)] HttpRequestData req, string id, FunctionContext context)
     {

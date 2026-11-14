@@ -1,5 +1,8 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.OpenApi.Models;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using UserManagement.Client.Extensions;
@@ -28,6 +31,12 @@ public sealed class UserSettingsFunctions(IUserSettingsService userSettingsServi
     /// <summary>
     /// Returns a user's settings.
     /// </summary>
+    [OpenApiOperation(operationId: "GetUserSettings", tags: new[] { "User Settings" }, Summary = "Returns a user's settings.")]
+    [OpenApiParameter(name: "userId", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "The user id.")]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.UserSettingsResponse), Description = "Success.")]
+    [OpenApiResponseWithBody(HttpStatusCode.BadRequest, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The request is invalid.")]
+    [OpenApiResponseWithBody(HttpStatusCode.NotFound, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The resource was not found.")]
+    [OpenApiResponseWithBody(HttpStatusCode.InternalServerError, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "An unexpected error occurred.")]
     [Function("GetUserSettings")]
     public async Task<HttpResponseData> GetUserSettings([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = GET_BY_USER_ID)] HttpRequestData req, string userId, FunctionContext context)
     {
@@ -59,6 +68,13 @@ public sealed class UserSettingsFunctions(IUserSettingsService userSettingsServi
     /// <summary>
     /// Updates a user's settings.
     /// </summary>
+    [OpenApiOperation(operationId: "UpdateUserSettings", tags: new[] { "User Settings" }, Summary = "Updates a user's settings.")]
+    [OpenApiParameter(name: "userId", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "The user id.")]
+    [OpenApiRequestBody("application/json", typeof(global::UserManagement.Core.DTOs.Requests.UpdateUserSettingsRequest), Required = true, Description = "The update user settings request.")]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.UserSettingsResponse), Description = "Success.")]
+    [OpenApiResponseWithBody(HttpStatusCode.BadRequest, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The request is invalid.")]
+    [OpenApiResponseWithBody(HttpStatusCode.NotFound, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The resource was not found.")]
+    [OpenApiResponseWithBody(HttpStatusCode.InternalServerError, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "An unexpected error occurred.")]
     [Function("UpdateUserSettings")]
     public async Task<HttpResponseData> UpdateUserSettings([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = PUT)] HttpRequestData req, string userId, FunctionContext context)
     {

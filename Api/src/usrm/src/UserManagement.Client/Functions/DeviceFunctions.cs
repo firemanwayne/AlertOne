@@ -1,5 +1,8 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.OpenApi.Models;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Security.Claims;
@@ -55,6 +58,11 @@ public sealed class DeviceFunctions(
     /// <summary>
     /// Returns the caller's active devices.
     /// </summary>
+    [OpenApiOperation(operationId: "GetActiveDevices", tags: new[] { "Devices" }, Summary = "Returns the caller's active devices.")]
+    [OpenApiSecurity("bearer_auth", SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Bearer, BearerFormat = "JWT")]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(List<global::UserManagement.Core.DTOs.Responses.DeviceSessionResponse>), Description = "Success.")]
+    [OpenApiResponseWithBody(HttpStatusCode.Unauthorized, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The caller is not authenticated.")]
+    [OpenApiResponseWithBody(HttpStatusCode.InternalServerError, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "An unexpected error occurred.")]
     [Function("GetActiveDevices")]
     public async Task<HttpResponseData> GetActiveDevices([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = GET_DEVICES)] HttpRequestData req, FunctionContext context)
     {
@@ -84,6 +92,14 @@ public sealed class DeviceFunctions(
     /// <summary>
     /// Returns a device by identifier.
     /// </summary>
+    [OpenApiOperation(operationId: "GetDevice", tags: new[] { "Devices" }, Summary = "Returns a device by identifier.")]
+    [OpenApiSecurity("bearer_auth", SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Bearer, BearerFormat = "JWT")]
+    [OpenApiParameter(name: "id", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "The id.")]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.DeviceSessionResponse), Description = "Success.")]
+    [OpenApiResponseWithBody(HttpStatusCode.BadRequest, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The request is invalid.")]
+    [OpenApiResponseWithBody(HttpStatusCode.Unauthorized, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The caller is not authenticated.")]
+    [OpenApiResponseWithBody(HttpStatusCode.NotFound, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The resource was not found.")]
+    [OpenApiResponseWithBody(HttpStatusCode.InternalServerError, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "An unexpected error occurred.")]
     [Function("GetDevice")]
     public async Task<HttpResponseData> GetDevice([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = GET_DEVICE)] HttpRequestData req, string id, FunctionContext context)
     {
@@ -122,6 +138,14 @@ public sealed class DeviceFunctions(
     /// <summary>
     /// Revokes a device.
     /// </summary>
+    [OpenApiOperation(operationId: "RevokeDevice", tags: new[] { "Devices" }, Summary = "Revokes a device.")]
+    [OpenApiSecurity("bearer_auth", SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Bearer, BearerFormat = "JWT")]
+    [OpenApiParameter(name: "id", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "The id.")]
+    [OpenApiResponseWithoutBody(HttpStatusCode.NoContent, Description = "Success, no content.")]
+    [OpenApiResponseWithBody(HttpStatusCode.BadRequest, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The request is invalid.")]
+    [OpenApiResponseWithBody(HttpStatusCode.Unauthorized, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The caller is not authenticated.")]
+    [OpenApiResponseWithBody(HttpStatusCode.NotFound, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The resource was not found.")]
+    [OpenApiResponseWithBody(HttpStatusCode.InternalServerError, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "An unexpected error occurred.")]
     [Function("RevokeDevice")]
     public async Task<HttpResponseData> RevokeDevice([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = DELETE_DEVICE)] HttpRequestData req, string id, FunctionContext context)
     {
@@ -156,6 +180,11 @@ public sealed class DeviceFunctions(
     /// <summary>
     /// Revokes all of the caller's devices.
     /// </summary>
+    [OpenApiOperation(operationId: "RevokeAllDevices", tags: new[] { "Devices" }, Summary = "Revokes all of the caller's devices.")]
+    [OpenApiSecurity("bearer_auth", SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Bearer, BearerFormat = "JWT")]
+    [OpenApiResponseWithoutBody(HttpStatusCode.NoContent, Description = "Success, no content.")]
+    [OpenApiResponseWithBody(HttpStatusCode.Unauthorized, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The caller is not authenticated.")]
+    [OpenApiResponseWithBody(HttpStatusCode.InternalServerError, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "An unexpected error occurred.")]
     [Function("RevokeAllDevices")]
     public async Task<HttpResponseData> RevokeAllDevices([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = DELETE_ALL_DEVICES)] HttpRequestData req, FunctionContext context)
     {
@@ -181,6 +210,13 @@ public sealed class DeviceFunctions(
     /// <summary>
     /// Revokes all of the caller's devices except the given one.
     /// </summary>
+    [OpenApiOperation(operationId: "RevokeAllDevicesExcept", tags: new[] { "Devices" }, Summary = "Revokes all of the caller's devices except the given one.")]
+    [OpenApiSecurity("bearer_auth", SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Bearer, BearerFormat = "JWT")]
+    [OpenApiParameter(name: "id", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "The id.")]
+    [OpenApiResponseWithoutBody(HttpStatusCode.NoContent, Description = "Success, no content.")]
+    [OpenApiResponseWithBody(HttpStatusCode.BadRequest, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The request is invalid.")]
+    [OpenApiResponseWithBody(HttpStatusCode.Unauthorized, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The caller is not authenticated.")]
+    [OpenApiResponseWithBody(HttpStatusCode.InternalServerError, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "An unexpected error occurred.")]
     [Function("RevokeAllDevicesExcept")]
     public async Task<HttpResponseData> RevokeAllDevicesExcept([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = DELETE_ALL_EXCEPT)] HttpRequestData req, string id, FunctionContext context)
     {
@@ -211,6 +247,14 @@ public sealed class DeviceFunctions(
     /// <summary>
     /// Marks a device as trusted.
     /// </summary>
+    [OpenApiOperation(operationId: "TrustDevice", tags: new[] { "Devices" }, Summary = "Marks a device as trusted.")]
+    [OpenApiSecurity("bearer_auth", SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Bearer, BearerFormat = "JWT")]
+    [OpenApiParameter(name: "id", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "The id.")]
+    [OpenApiResponseWithoutBody(HttpStatusCode.NoContent, Description = "Success, no content.")]
+    [OpenApiResponseWithBody(HttpStatusCode.BadRequest, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The request is invalid.")]
+    [OpenApiResponseWithBody(HttpStatusCode.Unauthorized, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The caller is not authenticated.")]
+    [OpenApiResponseWithBody(HttpStatusCode.NotFound, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The resource was not found.")]
+    [OpenApiResponseWithBody(HttpStatusCode.InternalServerError, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "An unexpected error occurred.")]
     [Function("TrustDevice")]
     public async Task<HttpResponseData> TrustDevice([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = TRUST_DEVICE)] HttpRequestData req, string id, FunctionContext context)
     {
@@ -245,6 +289,15 @@ public sealed class DeviceFunctions(
     /// <summary>
     /// Renames a device.
     /// </summary>
+    [OpenApiOperation(operationId: "UpdateDeviceName", tags: new[] { "Devices" }, Summary = "Renames a device.")]
+    [OpenApiSecurity("bearer_auth", SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Bearer, BearerFormat = "JWT")]
+    [OpenApiParameter(name: "id", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "The id.")]
+    [OpenApiRequestBody("application/json", typeof(global::UserManagement.Core.DTOs.Requests.UpdateDeviceNameRequest), Required = true, Description = "The update device name request.")]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.DeviceSessionResponse), Description = "Success.")]
+    [OpenApiResponseWithBody(HttpStatusCode.BadRequest, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The request is invalid.")]
+    [OpenApiResponseWithBody(HttpStatusCode.Unauthorized, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The caller is not authenticated.")]
+    [OpenApiResponseWithBody(HttpStatusCode.NotFound, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The resource was not found.")]
+    [OpenApiResponseWithBody(HttpStatusCode.InternalServerError, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "An unexpected error occurred.")]
     [Function("UpdateDeviceName")]
     public async Task<HttpResponseData> UpdateDeviceName([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = UPDATE_DEVICE_NAME)] HttpRequestData req, string id, FunctionContext context)
     {
@@ -291,6 +344,11 @@ public sealed class DeviceFunctions(
     /// <summary>
     /// Returns the devices of a user that can receive push notifications.
     /// </summary>
+    [OpenApiOperation(operationId: "GetDevicesForNotifications", tags: new[] { "Devices" }, Summary = "Returns the devices of a user that can receive push notifications.")]
+    [OpenApiParameter(name: "userId", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "The user id.")]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(List<global::UserManagement.Core.DTOs.Responses.DeviceNotificationInfo>), Description = "Success.")]
+    [OpenApiResponseWithBody(HttpStatusCode.BadRequest, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "The request is invalid.")]
+    [OpenApiResponseWithBody(HttpStatusCode.InternalServerError, "application/json", typeof(global::UserManagement.Core.DTOs.Responses.ErrorResponse), Description = "An unexpected error occurred.")]
     [Function("GetDevicesForNotifications")]
     public async Task<HttpResponseData> GetDevicesForNotifications([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = GET_DEVICES_FOR_NOTIFICATIONS)] HttpRequestData req, string userId, FunctionContext context)
     {

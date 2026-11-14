@@ -3,6 +3,9 @@ using AlertManagement.Core.DTOs.Responses;
 using AlertOne.Api.Core.Interfaces;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.OpenApi.Models;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
 using System.Net;
 
@@ -42,6 +45,11 @@ public sealed class NotificationFunctions(IPushNotificationService pushNotificat
     /// <summary>
     /// Registers a device for push notifications.
     /// </summary>
+    [OpenApiOperation(operationId: "NotificationRegister", tags: new[] { "Notifications" }, Summary = "Registers a device for push notifications.")]
+    [OpenApiRequestBody("application/json", typeof(global::AlertManagement.Core.DTOs.Requests.RegisterDeviceRequest), Required = true, Description = "The register device request.")]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(global::AlertManagement.Core.DTOs.Responses.DeviceRegistrationResponse), Description = "Success.")]
+    [OpenApiResponseWithBody(HttpStatusCode.BadRequest, "application/json", typeof(Dictionary<string, string>), Description = "The request is invalid.")]
+    [OpenApiResponseWithBody(HttpStatusCode.InternalServerError, "application/json", typeof(Dictionary<string, string>), Description = "An unexpected error occurred.")]
     [Function("NotificationRegister")]
     public async Task<HttpResponseData> Register([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = REGISTER)] HttpRequestData req, FunctionContext context)
     {
@@ -165,6 +173,11 @@ public sealed class NotificationFunctions(IPushNotificationService pushNotificat
     /// <summary>
     /// Unregisters a device from push notifications.
     /// </summary>
+    [OpenApiOperation(operationId: "NotificationUnregister", tags: new[] { "Notifications" }, Summary = "Unregisters a device from push notifications.")]
+    [OpenApiParameter(name: "registrationId", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The registration id.")]
+    [OpenApiResponseWithoutBody(HttpStatusCode.NoContent, Description = "Success, no content.")]
+    [OpenApiResponseWithBody(HttpStatusCode.BadRequest, "application/json", typeof(Dictionary<string, string>), Description = "The request is invalid.")]
+    [OpenApiResponseWithBody(HttpStatusCode.InternalServerError, "application/json", typeof(Dictionary<string, string>), Description = "An unexpected error occurred.")]
     [Function("NotificationUnregister")]
     public async Task<HttpResponseData> Unregister([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = UNREGISTER)] HttpRequestData req, string registrationId, FunctionContext context)
     {
@@ -200,6 +213,11 @@ public sealed class NotificationFunctions(IPushNotificationService pushNotificat
     /// <summary>
     /// Test endpoint to verify notification hub connectivity.
     /// </summary>
+    [OpenApiOperation(operationId: "NotificationTest", tags: new[] { "Notifications" }, Summary = "Test endpoint to verify notification hub connectivity.")]
+    [OpenApiRequestBody("application/json", typeof(TestNotificationRequest), Required = true, Description = "The test notification request.")]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(Dictionary<string, object>), Description = "Success.")]
+    [OpenApiResponseWithBody(HttpStatusCode.BadRequest, "application/json", typeof(Dictionary<string, string>), Description = "The request is invalid.")]
+    [OpenApiResponseWithBody(HttpStatusCode.InternalServerError, "application/json", typeof(Dictionary<string, string>), Description = "An unexpected error occurred.")]
     [Function("NotificationTest")]
     public async Task<HttpResponseData> Test([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = TEST)] HttpRequestData req, FunctionContext context)
     {
@@ -271,6 +289,12 @@ public sealed class NotificationFunctions(IPushNotificationService pushNotificat
     /// <summary>
     /// Send notification to a specific user.
     /// </summary>
+    [OpenApiOperation(operationId: "NotificationSendToUser", tags: new[] { "Notifications" }, Summary = "Send notification to a specific user.")]
+    [OpenApiParameter(name: "userId", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The user id.")]
+    [OpenApiRequestBody("application/json", typeof(SendNotificationRequest), Required = true, Description = "The send notification request.")]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(Dictionary<string, object>), Description = "Success.")]
+    [OpenApiResponseWithBody(HttpStatusCode.BadRequest, "application/json", typeof(Dictionary<string, string>), Description = "The request is invalid.")]
+    [OpenApiResponseWithBody(HttpStatusCode.InternalServerError, "application/json", typeof(Dictionary<string, string>), Description = "An unexpected error occurred.")]
     [Function("NotificationSendToUser")]
     public async Task<HttpResponseData> SendToUser([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = SEND_TO_USER)] HttpRequestData req, string userId, FunctionContext context)
     {
@@ -301,6 +325,11 @@ public sealed class NotificationFunctions(IPushNotificationService pushNotificat
     /// <summary>
     /// Send notification to all registered devices.
     /// </summary>
+    [OpenApiOperation(operationId: "NotificationSendToAll", tags: new[] { "Notifications" }, Summary = "Send notification to all registered devices.")]
+    [OpenApiRequestBody("application/json", typeof(SendNotificationRequest), Required = true, Description = "The send notification request.")]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(Dictionary<string, object>), Description = "Success.")]
+    [OpenApiResponseWithBody(HttpStatusCode.BadRequest, "application/json", typeof(Dictionary<string, string>), Description = "The request is invalid.")]
+    [OpenApiResponseWithBody(HttpStatusCode.InternalServerError, "application/json", typeof(Dictionary<string, string>), Description = "An unexpected error occurred.")]
     [Function("NotificationSendToAll")]
     public async Task<HttpResponseData> SendToAll([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = SEND_TO_ALL)] HttpRequestData req, FunctionContext context)
     {
@@ -331,6 +360,11 @@ public sealed class NotificationFunctions(IPushNotificationService pushNotificat
     /// <summary>
     /// Send notification to devices with specific tags.
     /// </summary>
+    [OpenApiOperation(operationId: "NotificationSendToTags", tags: new[] { "Notifications" }, Summary = "Send notification to devices with specific tags.")]
+    [OpenApiRequestBody("application/json", typeof(SendToTagsRequest), Required = true, Description = "The send to tags request.")]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(Dictionary<string, object>), Description = "Success.")]
+    [OpenApiResponseWithBody(HttpStatusCode.BadRequest, "application/json", typeof(Dictionary<string, string>), Description = "The request is invalid.")]
+    [OpenApiResponseWithBody(HttpStatusCode.InternalServerError, "application/json", typeof(Dictionary<string, string>), Description = "An unexpected error occurred.")]
     [Function("NotificationSendToTags")]
     public async Task<HttpResponseData> SendToTags([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = SEND_TO_TAGS)] HttpRequestData req, FunctionContext context)
     {

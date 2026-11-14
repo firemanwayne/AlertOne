@@ -1,5 +1,8 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.OpenApi.Models;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -30,6 +33,8 @@ public sealed class HealthFunctions(ApplicationDbContext dbContext, ILogger<Heal
     /// <summary>
     /// Returns a simple response showing the host is running.
     /// </summary>
+    [OpenApiOperation(operationId: "HealthPing", tags: new[] { "Health" }, Summary = "Returns a simple response showing the host is running.")]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "text/plain", typeof(string), Description = "pong")]
     [Function("HealthPing")]
     public HttpResponseData Ping([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = PING)] HttpRequestData req)
     {
@@ -45,6 +50,8 @@ public sealed class HealthFunctions(ApplicationDbContext dbContext, ILogger<Heal
     /// <summary>
     /// Liveness probe: returns healthy while the host process is running.
     /// </summary>
+    [OpenApiOperation(operationId: "HealthLive", tags: new[] { "Health" }, Summary = "Liveness probe: returns healthy while the host process is running.")]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "text/plain", typeof(string), Description = "alive")]
     [Function("HealthLive")]
     public HttpResponseData Live([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = LIVE)] HttpRequestData req)
     {
@@ -60,6 +67,9 @@ public sealed class HealthFunctions(ApplicationDbContext dbContext, ILogger<Heal
     /// <summary>
     /// Readiness probe: verifies dependencies such as the database.
     /// </summary>
+    [OpenApiOperation(operationId: "HealthReady", tags: new[] { "Health" }, Summary = "Readiness probe: verifies dependencies such as the database.")]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(HealthCheckResult), Description = "All dependencies are healthy.")]
+    [OpenApiResponseWithBody(HttpStatusCode.ServiceUnavailable, "application/json", typeof(HealthCheckResult), Description = "A dependency is not healthy.")]
     [Function("HealthReady")]
     public async Task<HttpResponseData> Ready([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = READY)] HttpRequestData req, FunctionContext context)
     {
